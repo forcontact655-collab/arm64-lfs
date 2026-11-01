@@ -1,0 +1,19 @@
+version: 2.1
+
+jobs:
+  probe-arm64:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - run:
+          name: Probe native ARM64 host
+          command: bash scripts/probe.sh
+      - store_artifacts:
+          path: artifacts
+
+workflows:
+  staged-lfs:
+    jobs:
+      - probe-arm64
