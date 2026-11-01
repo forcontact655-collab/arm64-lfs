@@ -1,0 +1,22 @@
+name: arm64-probe
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run native ARM64 probe
+        shell: bash
+        run: bash scripts/probe.sh
+      - name: Upload probe report
+        uses: actions/upload-artifact@v4
+        with:
+          name: arm64-probe
+          path: artifacts/probe.txt
+          retention-days: 7
