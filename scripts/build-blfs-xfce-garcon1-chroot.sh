@@ -74,7 +74,7 @@ main (void)
       garcon_gtk_menu_get_type () == 0)
     return 1;
 
-  action = garcon_menu_item_action_new ();
+  action = g_object_new (GARCON_TYPE_MENU_ITEM_ACTION, NULL);
   if (action == NULL)
     return 2;
   garcon_menu_item_action_set_command (action, "/bin/true");
