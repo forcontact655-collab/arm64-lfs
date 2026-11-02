@@ -47,21 +47,16 @@ cleanup
 for name in report progress; do
   sudo -n cat "$LFS/root/blfs-xfce-power-deps1-$name.txt" >"$ARTIFACTS/blfs-xfce-power-deps1-$name.txt"
 done
-sudo -n cat "$LFS/root/blfs-xfce-power-deps1-upower-testlog.jsonl" >"$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.jsonl"
+sudo -n cat "$LFS/root/blfs-xfce-power-deps1-upower-testlog.txt" >"$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.txt"
 sudo -n cat "$LFS/root/blfs-xfce-power-deps1-smoke.c" >"$ARTIFACTS/blfs-xfce-power-deps1-smoke.c"
 sudo -n rm -f "$LFS/root/build-blfs-xfce-power-deps1-chroot.sh" \
   "$LFS/root/blfs-xfce-power-deps1-report.txt" \
   "$LFS/root/blfs-xfce-power-deps1-progress.txt" \
-  "$LFS/root/blfs-xfce-power-deps1-upower-testlog.jsonl" \
+  "$LFS/root/blfs-xfce-power-deps1-upower-testlog.txt" \
   "$LFS/root/blfs-xfce-power-deps1-smoke.c"
-python3 - "$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.jsonl" <<'PY'
-import json, sys
-records = [json.loads(line) for line in open(sys.argv[1], encoding='utf-8') if line.strip()]
-tests = [record for record in records if 'result' in record]
-assert len(tests) == 1, tests
-assert tests[0].get('name') == 'self-test', tests
-assert tests[0].get('result') == 'OK', tests
-PY
+grep -Eq '^1/1 self-test[[:space:]]+OK' "$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.txt"
+grep -Eq '^Ok:[[:space:]]+1$' "$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.txt"
+grep -Eq '^Fail:[[:space:]]+0$' "$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.txt"
 grep -q '^BLFS_XFCE_POWER_DEPS1_RESULT=ok$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"
 grep -q '^PACKAGE_COUNT=2$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"
 grep -q '^NATIVE_BINARY_EXEC=libusb-upower-native-c-and-cli-help$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"

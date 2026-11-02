@@ -8,7 +8,7 @@ set +h
 SOURCES=/sources
 REPORT=/root/blfs-xfce-power-deps1-report.txt
 PROGRESS=/root/blfs-xfce-power-deps1-progress.txt
-TESTLOG=/root/blfs-xfce-power-deps1-upower-testlog.jsonl
+TESTLOG=/root/blfs-xfce-power-deps1-upower-testlog.txt
 SMOKE_SOURCE=/root/blfs-xfce-power-deps1-smoke.c
 [[ "$(id -u)" -eq 0 ]]
 [[ "$(uname -m)" == aarch64 ]]
@@ -64,7 +64,7 @@ meson setup .. \
 ninja
 export LC_ALL=C
 meson test --print-errorlogs self-test
-cp meson-logs/testlog.jsonl "$TESTLOG"
+cp meson-logs/testlog.txt "$TESTLOG"
 ninja install
 cd /sources
 rm -rf upower-v1.90.9
