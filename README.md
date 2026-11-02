@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds BLFS core1 to the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, Qt, or KDE build.
+The current verified checkpoint adds the BLFS display1 font/XCB/Wayland layer to core1 and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, Qt, or KDE build.
 
 ## Safety and scope
 
@@ -91,6 +91,12 @@ CircleCI pipeline **#11**, at commit `3ba10da43df36b9e83e1e3d2d7eeffec056a9ad8`,
 
 The verified rootfs is saved as the `blfs-12.4-core1-aarch64-v1` CircleCI cache checkpoint. Qt and KDE remain absent.
 
-## Active BLFS display1 stage
+## Completed BLFS display1 — 2026-11-02
 
-The next stage restores core1 and builds the font/Unicode stack, XCB protocol/client foundation, and Wayland/Wayland Protocols. FreeType is intentionally built once before HarfBuzz and again afterwards to resolve their documented circular dependency. Full Xorg Libraries, libxkbcommon, Mesa, Qt, Frameworks, and Plasma remain later checkpoints.
+CircleCI pipeline **#12**, at commit `e7eb269b5b6b55a3ec0fe99eb8059bf2db24330d`, restored core1 and completed **16 build stages** from **15 MD5-verified archives**. It installed the libpng/Brotli/Graphite2/ICU/FreeType/HarfBuzz/Fontconfig stack, XCB and its protocol libraries, Wayland 1.24.0, and Wayland Protocols 1.45. FreeType was intentionally rebuilt after HarfBuzz to resolve their circular dependency. A fresh AArch64 smoke executable printed `BLFS_DISPLAY1_EXEC_OK`.
+
+The verified rootfs is saved as the `blfs-12.4-display1-aarch64-v1` CircleCI cache checkpoint. Qt and KDE remain absent.
+
+## Active BLFS display2 stage
+
+The next stage restores display1 and builds the official ordered set of **32 Xorg Libraries**, followed by xkeyboard-config 2.45 and libxkbcommon 1.11.0 with X11 and Wayland support. The smoke check compiles a keymap from the installed xkeyboard data. Mesa, Qt, Frameworks, and Plasma remain later checkpoints.

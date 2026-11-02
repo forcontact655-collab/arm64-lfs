@@ -184,7 +184,41 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-display2:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-display1-aarch64-v1-{{ checksum "scripts/build-blfs-display1-chroot.sh" }}-{{ checksum "scripts/run-blfs-display1.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-display2-sources-v1-{{ checksum "manifests/blfs-display2.md5" }}-{{ checksum "manifests/wget-list-blfs-display2" }}-{{ checksum "scripts/fetch-blfs-display2-sources.sh" }}
+      - run:
+          name: Download and verify official BLFS display2 sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-display2-sources bash scripts/fetch-blfs-display2-sources.sh 2>&1 | tee artifacts/blfs-display2-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-display2-sources-v1-{{ checksum "manifests/blfs-display2.md5" }}-{{ checksum "manifests/wget-list-blfs-display2" }}-{{ checksum "scripts/fetch-blfs-display2-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-display2-sources
+      - run:
+          name: Build BLFS display2 Xorg Libraries and libxkbcommon
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-display2.sh 2>&1 | tee artifacts/blfs-display2-host.log
+      - save_cache:
+          key: blfs-12.4-display2-aarch64-v1-{{ checksum "scripts/build-blfs-display2-chroot.sh" }}-{{ checksum "scripts/run-blfs-display2.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-display1
+      - blfs-display2
