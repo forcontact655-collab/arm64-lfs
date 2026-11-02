@@ -54,9 +54,14 @@ sudo -n rm -f "$LFS/root/build-blfs-xfce-power-deps1-chroot.sh" \
   "$LFS/root/blfs-xfce-power-deps1-progress.txt" \
   "$LFS/root/blfs-xfce-power-deps1-upower-testlog.txt" \
   "$LFS/root/blfs-xfce-power-deps1-smoke.c"
-grep -Eq '^1/1 self-test[[:space:]]+OK' "$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.txt"
-grep -Eq '^Ok:[[:space:]]+1$' "$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.txt"
-grep -Eq '^Fail:[[:space:]]+0$' "$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.txt"
+grep -Eq '^test:[[:space:]]+self-test[[:space:]]*$' "$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.txt"
+grep -Eq '^result:[[:space:]]+exit status 0[[:space:]]*$' "$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.txt"
+grep -q '^1\.\.7$' "$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.txt"
+for test_number in {1..7}; do
+  grep -q "^ok $test_number " "$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.txt"
+done
+! grep -q '^not ok ' "$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.txt"
+[[ "$(grep -c '^No system D-BUS running, skipping test$' "$ARTIFACTS/blfs-xfce-power-deps1-upower-testlog.txt")" -eq 2 ]]
 grep -q '^BLFS_XFCE_POWER_DEPS1_RESULT=ok$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"
 grep -q '^PACKAGE_COUNT=2$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"
 grep -q '^NATIVE_BINARY_EXEC=libusb-upower-native-c-and-cli-help$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"
@@ -64,6 +69,8 @@ grep -q '^LIBUSB=1.0.29$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"
 grep -q '^LIBUSB_TEST_SUITE=not-provided$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"
 grep -q '^UPOWER=1.90.9$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"
 grep -q '^UPOWER_SELF_TEST=passed$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"
+grep -q '^UPOWER_SELF_TEST_TAP=7-passed-0-failed$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"
+grep -q '^UPOWER_SELF_TEST_DBUS_CASES=2-skipped-no-system-bus$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"
 grep -q '^UPOWER_INTEGRATION_TESTS=not-run-optional-dbusmock-umockdev-session-deps-absent$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"
 grep -q '^UPOWER_CLI_SMOKE=help-only-no-daemon$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"
 grep -q '^POLKIT=not-built-recommended-deferred$' "$ARTIFACTS/blfs-xfce-power-deps1-report.txt"

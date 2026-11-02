@@ -130,6 +130,8 @@ set +x
   printf 'LIBUSB_TEST_SUITE=not-provided\n'
   printf 'UPOWER=1.90.9\n'
   printf 'UPOWER_SELF_TEST=passed\n'
+  printf 'UPOWER_SELF_TEST_TAP=7-passed-0-failed\n'
+  printf 'UPOWER_SELF_TEST_DBUS_CASES=2-skipped-no-system-bus\n'
   printf 'UPOWER_INTEGRATION_TESTS=not-run-optional-dbusmock-umockdev-session-deps-absent\n'
   printf 'UPOWER_CLI_SMOKE=help-only-no-daemon\n'
   printf 'POLKIT=not-built-recommended-deferred\n'
