@@ -116,7 +116,41 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-core1:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - lfs-12.4-ch8b-aarch64-v1-{{ checksum "scripts/build-lfs-chapter8b-chroot.sh" }}-{{ checksum "scripts/run-lfs-chapter8b.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-core1-sources-v1-{{ checksum "manifests/blfs-core1.md5" }}-{{ checksum "manifests/wget-list-blfs-core1" }}
+      - run:
+          name: Download and verify official BLFS core1 sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-sources bash scripts/fetch-blfs-core1-sources.sh 2>&1 | tee artifacts/blfs-core1-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-core1-sources-v1-{{ checksum "manifests/blfs-core1.md5" }}-{{ checksum "manifests/wget-list-blfs-core1" }}
+          paths:
+            - /home/circleci/blfs-sources
+      - run:
+          name: Build BLFS core1 certificates build tools D-Bus and GLib
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-core1.sh 2>&1 | tee artifacts/blfs-core1-host.log
+      - save_cache:
+          key: blfs-12.4-core1-aarch64-v1-{{ checksum "scripts/build-blfs-core1-chroot.sh" }}-{{ checksum "scripts/run-blfs-core1.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - chapter8a
+      - chapter8b
