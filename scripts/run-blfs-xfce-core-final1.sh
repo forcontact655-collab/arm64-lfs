@@ -16,7 +16,7 @@ ARTIFACTS="$REPO/artifacts"
 [[ ! -x "$LFS/usr/bin/xfdesktop" ]]
 [[ ! -x "$LFS/usr/bin/xfwm4" ]]
 [[ ! -x "$LFS/usr/bin/xfce4-session" ]]
-for archive in xfdesktop-4.20.1.tar.bz2 xfwm4-4.20.0.tar.bz2 xfce4-session-4.20.3.tar.bz2; do
+for archive in iceauth-1.0.10.tar.xz xfdesktop-4.20.1.tar.bz2 xfwm4-4.20.0.tar.bz2 xfce4-session-4.20.3.tar.bz2; do
   [[ -f "$HOST_SOURCES/$archive" ]]
 done
 mkdir -p "$ARTIFACTS"
@@ -57,8 +57,11 @@ sudo -n rm -f "$LFS/root/build-blfs-xfce-core-final1-chroot.sh" \
   "$LFS/root/blfs-xfce-core-final1-versions.txt"
 REPORT="$ARTIFACTS/blfs-xfce-core-final1-report.txt"
 grep -q '^BLFS_XFCE_CORE_FINAL1_RESULT=ok$' "$REPORT"
-grep -q '^PACKAGE_COUNT=3$' "$REPORT"
-grep -q '^NATIVE_BINARY_EXEC=three-settings-version-via-broadway$' "$REPORT"
+grep -q '^PACKAGE_COUNT=4$' "$REPORT"
+grep -q '^NATIVE_BINARY_EXEC=iceauth-version+three-settings-via-broadway$' "$REPORT"
+grep -q '^ICEAUTH=1.0.10$' "$REPORT"
+grep -q '^ICEAUTH_TEST_SUITE=not-provided$' "$REPORT"
+grep -q '^ICEAUTH_PROGRAM=1-present$' "$REPORT"
 grep -q '^XFDESKTOP=4.20.1$' "$REPORT"
 grep -q '^XFDESKTOP_TEST_SUITE=not-provided$' "$REPORT"
 grep -q '^XFDESKTOP_PROGRAMS=2-present$' "$REPORT"
@@ -72,7 +75,7 @@ grep -q '^SESSION_PROGRAMS=3-elf+2-scripts$' "$REPORT"
 grep -q '^CORE_PROGRAMS=9-elf+2-scripts$' "$REPORT"
 grep -q '^DESKTOP_DATABASE=updated$' "$REPORT"
 grep -q '^MIME_DATABASE=updated$' "$REPORT"
-grep -q '^NATIVE_VERSION_SMOKES=3-passed$' "$REPORT"
+grep -q '^NATIVE_VERSION_SMOKES=4-passed$' "$REPORT"
 grep -q '^GUI_SMOKE=headless-broadway-version-only$' "$REPORT"
 grep -q '^XFDESKTOP_PROCESS=not-started$' "$REPORT"
 grep -q '^XFWM4_PROCESS=not-started$' "$REPORT"
@@ -85,9 +88,9 @@ grep -q '^DESKTOP_LAUNCH=not-tested$' "$REPORT"
 grep -q '^KDE=attica-only$' "$REPORT"
 grep -q '^PLASMA=absent$' "$REPORT"
 grep -q '^BOOTABLE=no$' "$REPORT"
-[[ "$(grep -c '^BLFS_XFCE_CORE_FINAL1_BUILT=' "$ARTIFACTS/blfs-xfce-core-final1-progress.txt")" -eq 3 ]]
-[[ "$(grep -c '^RESULT=ok$' "$ARTIFACTS/blfs-xfce-core-final1-versions.txt")" -eq 3 ]]
-for program in xfdesktop-settings xfwm4-workspace-settings xfce4-session-settings; do
+[[ "$(grep -c '^BLFS_XFCE_CORE_FINAL1_BUILT=' "$ARTIFACTS/blfs-xfce-core-final1-progress.txt")" -eq 4 ]]
+[[ "$(grep -c '^RESULT=ok$' "$ARTIFACTS/blfs-xfce-core-final1-versions.txt")" -eq 4 ]]
+for program in iceauth xfdesktop-settings xfwm4-workspace-settings xfce4-session-settings; do
   grep -q "^PROGRAM=$program$" "$ARTIFACTS/blfs-xfce-core-final1-versions.txt"
 done
 cat "$REPORT"
