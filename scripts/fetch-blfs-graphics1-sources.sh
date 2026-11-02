@@ -35,7 +35,7 @@ while IFS= read -r url; do
   count=$((count + 1))
 done < "$URL_MANIFEST"
 
-[[ "$count" -eq 9 ]]
+[[ "$count" -eq 8 ]]
 (cd "$SOURCES" && md5sum -c "$MD5_MANIFEST")
 : >"$ARTIFACTS/blfs-graphics1-source-sha256sums.txt"
 while read -r _ name; do

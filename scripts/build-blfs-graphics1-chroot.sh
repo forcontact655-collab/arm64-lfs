@@ -77,7 +77,7 @@ ninja
 ninja install
 finish_package
 
-printf 'BUILD_BLFS_GRAPHICS1=llvm-and-clang\n'
+printf 'BUILD_BLFS_GRAPHICS1=llvm-host-only\n'
 extract llvm-20.1.8.src.tar.xz
 tar -xf /sources/llvm-cmake-20.1.8.src.tar.xz
 tar -xf /sources/llvm-third-party-20.1.8.src.tar.xz
@@ -85,10 +85,7 @@ sed '/LLVM_COMMON_CMAKE_UTILS/s@../cmake@cmake-20.1.8.src@' \
     -i CMakeLists.txt
 sed '/LLVM_THIRD_PARTY_DIR/s@../third-party@third-party-20.1.8.src@' \
     -i cmake/modules/HandleLLVMOptions.cmake
-tar -xf /sources/clang-20.1.8.src.tar.xz -C tools
-mv tools/clang-20.1.8.src tools/clang
 grep -rl '#!.*python' | xargs sed -i '1s/python$/python3/'
-sed 's/utility/tool/' -i utils/FileCheck/CMakeLists.txt
 mkdir -v build
 cd build
 CC=gcc CXX=g++                               \
@@ -99,14 +96,20 @@ cmake -D CMAKE_INSTALL_PREFIX=/usr           \
       -D LLVM_BUILD_LLVM_DYLIB=ON            \
       -D LLVM_LINK_LLVM_DYLIB=ON             \
       -D LLVM_ENABLE_RTTI=ON                 \
-      -D LLVM_TARGETS_TO_BUILD="host;AMDGPU" \
+      -D LLVM_TARGETS_TO_BUILD=host          \
       -D LLVM_BINUTILS_INCDIR=/usr/include   \
+      -D LLVM_BUILD_TOOLS=OFF                \
+      -D LLVM_INCLUDE_UTILS=OFF              \
+      -D LLVM_BUILD_UTILS=OFF                \
+      -D LLVM_INCLUDE_TESTS=OFF              \
+      -D LLVM_INCLUDE_EXAMPLES=OFF           \
+      -D LLVM_INCLUDE_DOCS=OFF               \
       -D LLVM_INCLUDE_BENCHMARKS=OFF         \
-      -D CLANG_DEFAULT_PIE_ON_LINUX=ON       \
-      -D CLANG_CONFIG_FILE_SYSTEM_DIR=/etc/clang \
       -W no-dev -G Ninja ..
 ninja
+ninja llvm-config
 ninja install
+install -m0755 bin/llvm-config /usr/bin/llvm-config
 finish_package
 
 [[ "$(grep -c '^BLFS_GRAPHICS1_BUILT=' "$PROGRESS")" -eq 6 ]]
@@ -122,13 +125,22 @@ assert yaml.__version__ == '6.0.2'
 print('GRAPHICS1_PYTHON_MODULES=ok')
 PY
 cat >/tmp/blfs-graphics1-smoke.c <<'EOF'
+#include <llvm-c/Core.h>
 #include <stdio.h>
 int main(void) {
+  LLVMContextRef context = LLVMContextCreate();
+  LLVMModuleRef module = LLVMModuleCreateWithNameInContext("graphics1-smoke", context);
+  char *ir = LLVMPrintModuleToString(module);
+  if (!ir) return 1;
   puts("BLFS_GRAPHICS1_EXEC_OK");
+  LLVMDisposeMessage(ir);
+  LLVMDisposeModule(module);
+  LLVMContextDispose(context);
   return 0;
 }
 EOF
-clang /tmp/blfs-graphics1-smoke.c -o /tmp/blfs-graphics1-smoke
+gcc /tmp/blfs-graphics1-smoke.c -o /tmp/blfs-graphics1-smoke \
+  $(llvm-config --cflags --ldflags --libs core --system-libs)
 OUTPUT="$(/tmp/blfs-graphics1-smoke)"
 [[ "$OUTPUT" == BLFS_GRAPHICS1_EXEC_OK ]]
 readelf -h /tmp/blfs-graphics1-smoke | grep -q 'Machine:.*AArch64'
@@ -137,13 +149,14 @@ INTERPRETER="$(readelf -l /tmp/blfs-graphics1-smoke | sed -n 's/.*Requesting pro
 {
   printf 'BLFS_GRAPHICS1_RESULT=ok\n'
   printf 'PACKAGE_COUNT=6\n'
-  printf 'SOURCE_ARCHIVES=9\n'
+  printf 'SOURCE_ARCHIVES=8\n'
   printf 'ARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=%s\n' "$OUTPUT"
   printf 'DYNAMIC_LINKER=%s\n' "$INTERPRETER"
   printf 'LIBDRM=%s\n' "$(pkg-config --modversion libdrm)"
   printf 'LLVM=%s\n' "$(llvm-config --version)"
-  printf 'CLANG=%s\n' "$(clang --version | sed -n '1p')"
+  printf 'LLVM_TARGETS=host\n'
+  printf 'CLANG=absent\n'
   printf 'PYYAML_LIBYAML=yes\n'
   printf 'BOOTABLE=no\n'
   printf 'MESA=absent\n'

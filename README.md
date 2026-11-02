@@ -105,4 +105,4 @@ The verified rootfs is saved as the `blfs-12.4-display2-aarch64-v1` CircleCI cac
 
 ## Active BLFS graphics1 stage
 
-The next stage restores display2 and installs libyaml, Cython, PyYAML with libyaml acceleration, Mako, libdrm 2.4.125, and LLVM/Clang 20.1.8. These are kept in a separate checkpoint from Mesa so a long LLVM build is not repeated if a later Mesa command needs correction. Vulkan, VA-API, Mesa, Qt, Frameworks, and Plasma remain later stages.
+The next stage restores display2 and installs libyaml, Cython, PyYAML with libyaml acceleration, Mako, libdrm 2.4.125, and host-only LLVM 20.1.8 for Mesa. The initial full LLVM/Clang attempt reached the one-hour CircleCI limit; the revised stage omits Clang, non-host backends, tests, examples, documentation, and unrelated tools while retaining the required `llvm-config`. Vulkan, VA-API, Mesa, Qt, Frameworks, and Plasma remain later stages.

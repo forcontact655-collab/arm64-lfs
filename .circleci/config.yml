@@ -241,7 +241,7 @@ jobs:
           paths:
             - /home/circleci/blfs-graphics1-sources
       - run:
-          name: Build BLFS graphics1 Python dependencies libdrm LLVM and Clang
+          name: Build BLFS graphics1 Python dependencies libdrm and host-only LLVM
           command: |
             set -o pipefail
             bash scripts/run-blfs-graphics1.sh 2>&1 | tee artifacts/blfs-graphics1-host.log
