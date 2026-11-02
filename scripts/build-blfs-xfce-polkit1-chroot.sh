@@ -165,7 +165,7 @@ set -x
 
 [[ "$(grep -c '^BLFS_XFCE_POLKIT1_BUILT=' "$PROGRESS")" -eq 3 ]]
 [[ "$(pkg-config --modversion duktape)" == 2.7.0 ]]
-[[ "$(pkg-config --modversion libelogind)" == 255.17 ]]
+[[ "$(pkg-config --modversion libelogind)" == 255 ]]
 [[ "$(pkg-config --modversion polkit-gobject-1)" == 126 ]]
 [[ -e /usr/lib/libduktape.so ]]
 [[ -e /usr/lib/libduktaped.so ]]
@@ -190,7 +190,7 @@ cat >"$SMOKE_SOURCE" <<'EOF'
 
 int main(void) {
   duk_context *context = duk_create_heap_default();
-  PolkitUnixUser *user;
+  PolkitIdentity *user;
   int value;
   if (context == NULL)
     return 1;
@@ -202,13 +202,13 @@ int main(void) {
   if (user == NULL)
     return 1;
   printf("BLFS_XFCE_POLKIT1_EXEC_OK=duktape-eval-%d+polkit-uid-%u\n",
-         value, (unsigned int) polkit_unix_user_get_uid(user));
+         value, (unsigned int) polkit_unix_user_get_uid(POLKIT_UNIX_USER(user)));
   g_object_unref(user);
   return value == 2 ? 0 : 1;
 }
 EOF
 cc "$SMOKE_SOURCE" -o /root/blfs-xfce-polkit1-smoke \
-  $(pkg-config --cflags --libs duktape polkit-gobject-1)
+  $(pkg-config --cflags --libs duktape polkit-gobject-1) -lm
 OUTPUT="$(/root/blfs-xfce-polkit1-smoke)"
 printf '%s\n' "$OUTPUT"
 [[ "$OUTPUT" == 'BLFS_XFCE_POLKIT1_EXEC_OK=duktape-eval-2+polkit-uid-0' ]]
@@ -216,7 +216,7 @@ printf '%s\n' "$OUTPUT"
 [[ "$(pkexec --version)" == 'pkexec version 126' ]]
 LOGINCTL_VERSION="$(loginctl --version)"
 printf '%s\n' "$LOGINCTL_VERSION"
-grep -q '255.17' <<<"$LOGINCTL_VERSION"
+[[ "$(head -n1 <<<"$LOGINCTL_VERSION")" == 'elogind 255 (255)' ]]
 rm -f /root/blfs-xfce-polkit1-smoke
 set +x
 {
@@ -229,6 +229,8 @@ set +x
   printf 'DUKTAPE=2.7.0\n'
   printf 'DUKTAPE_TEST_SUITE=not-provided-by-blfs\n'
   printf 'ELOGIND=255.17\n'
+  printf 'ELOGIND_PKGCONFIG=255\n'
+  printf 'ELOGIND_VERSION_TOOL=upstream-project-255-release-255.17\n'
   printf 'OS_RELEASE=etc-os-release-lfs-12.4\n'
   printf 'ELOGIND_TESTS=no-unexpected-failures\n'
   printf 'ELOGIND_KNOWN_FAILURE_POLICY=only-test-login+dbus-docs-fresh+check-version-history-allowed\n'
