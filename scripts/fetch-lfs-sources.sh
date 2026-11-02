@@ -3,6 +3,8 @@ set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MANIFESTS="$REPO/manifests"
+LFS_VERSION="$(<"$MANIFESTS/VERSION")"
+LFS_MIRROR="${LFS_MIRROR:-https://mirror.koddos.net/lfs/lfs-packages/$LFS_VERSION}"
 LFS="${LFS:-$HOME/lfs}"
 SOURCES="$LFS/sources"
 ARTIFACTS="$REPO/artifacts"
@@ -31,8 +33,14 @@ while IFS= read -r url; do
   else
     rm -f "$SOURCES/$name" "$SOURCES/$name.part"
     printf 'DOWNLOAD %s\n' "$url"
-    curl -fL --retry 4 --retry-delay 5 --connect-timeout 30 \
-      --output "$SOURCES/$name.part" "$url"
+    if ! curl -fL --retry 4 --retry-delay 5 --connect-timeout 30 \
+      --output "$SOURCES/$name.part" "$url"; then
+      mirror_url="$LFS_MIRROR/$name"
+      printf 'PRIMARY_FAILED_TRYING_LFS_MIRROR %s\n' "$mirror_url"
+      rm -f "$SOURCES/$name.part"
+      curl -fL --retry 4 --retry-delay 5 --connect-timeout 30 \
+        --output "$SOURCES/$name.part" "$mirror_url"
+    fi
     printf '%s  %s\n' "${EXPECTED[$name]}" "$name.part" | (cd "$SOURCES" && md5sum -c -)
     mv "$SOURCES/$name.part" "$SOURCES/$name"
   fi
@@ -48,7 +56,7 @@ done <"$MANIFESTS/md5sums"
 bytes="$(du -sb "$SOURCES" | awk '{print $1}')"
 {
   printf 'SOURCE_RESULT=ok\n'
-  printf 'LFS_VERSION=12.4\n'
+  printf 'LFS_VERSION=%s\n' "$LFS_VERSION"
   printf 'INIT=sysv\n'
   printf 'ARCH=%s\n' "$(uname -m)"
   printf 'VERIFIED_FILES=%s\n' "$count"
