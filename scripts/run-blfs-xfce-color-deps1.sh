@@ -10,6 +10,8 @@ ARTIFACTS="$REPO/artifacts"
 [[ "$HOST_SOURCES" == /home/circleci/blfs-xfce-color-deps1-sources/sources ]]
 [[ -x "$LFS/usr/bin/xfce4-power-manager" ]]
 [[ -x "$LFS/usr/bin/meson" ]]
+[[ -x "$LFS/usr/bin/valac" ]]
+[[ -x "$LFS/usr/bin/umockdev-run" ]]
 [[ -f "$LFS/usr/share/hwdata/usb.ids" ]]
 [[ ! -e "$LFS/usr/lib/libcolord.so" ]]
 for archive in lcms2-2.17.tar.gz json-glib-1.10.6.tar.xz libgusb-0.4.9.tar.xz colord-1.4.8.tar.xz; do
@@ -44,18 +46,21 @@ sudo -n chroot "$LFS" /usr/bin/env -i \
   /bin/bash --login /root/build-blfs-xfce-color-deps1-chroot.sh
 
 cleanup
-for name in report progress lcms2-testlog json-glib-testlog libgusb-testlog colord-testlog; do
+for name in report progress lcms2-testlog json-glib-testlog libgusb-testlog libgusb-self-testlog colord-testlog; do
   sudo -n cat "$LFS/root/blfs-xfce-color-deps1-$name.txt" >"$ARTIFACTS/blfs-xfce-color-deps1-$name.txt"
 done
 sudo -n cat "$LFS/root/blfs-xfce-color-deps1-smoke.c" >"$ARTIFACTS/blfs-xfce-color-deps1-smoke.c"
+sudo -n cat "$LFS/root/blfs-xfce-color-deps1-canon.umockdev" >"$ARTIFACTS/blfs-xfce-color-deps1-canon.umockdev"
 sudo -n rm -f "$LFS/root/build-blfs-xfce-color-deps1-chroot.sh" \
   "$LFS/root/blfs-xfce-color-deps1-report.txt" \
   "$LFS/root/blfs-xfce-color-deps1-progress.txt" \
   "$LFS/root/blfs-xfce-color-deps1-lcms2-testlog.txt" \
   "$LFS/root/blfs-xfce-color-deps1-json-glib-testlog.txt" \
   "$LFS/root/blfs-xfce-color-deps1-libgusb-testlog.txt" \
+  "$LFS/root/blfs-xfce-color-deps1-libgusb-self-testlog.txt" \
   "$LFS/root/blfs-xfce-color-deps1-colord-testlog.txt" \
-  "$LFS/root/blfs-xfce-color-deps1-smoke.c"
+  "$LFS/root/blfs-xfce-color-deps1-smoke.c" \
+  "$LFS/root/blfs-xfce-color-deps1-canon.umockdev"
 grep -q '^BLFS_XFCE_COLOR_DEPS1_RESULT=ok$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^PACKAGE_COUNT=4$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^NATIVE_BINARY_EXEC=compiled-color-stack-smoke$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
@@ -64,13 +69,18 @@ grep -q '^LCMS2_TEST_SUITE=make-check-passed$' "$ARTIFACTS/blfs-xfce-color-deps1
 grep -q '^JSON_GLIB=1.10.6$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^JSON_GLIB_UNEXPECTED_FAILURES=0$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^LIBGUSB=0.4.9$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
-grep -q '^LIBGUSB_TEST_SUITE=meson-passed$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
+grep -q '^LIBGUSB_TEST_SUITE=meson+wrapped-self-test-passed$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
+grep -q '^LIBGUSB_SELF_TEST=umockdev-canon-7-subtests-passed$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
+grep -q '^UMOCKDEV=0.19.3-enabled$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
+grep -q '^USB_DEVICE_ACCESS=virtual-canon-only$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^COLORD=1.4.8$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^COLORD_TEST_SUITE=meson-passed$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^DBUS_SYSTEM=started-for-tests-stopped$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^INTROSPECTION=Json+GUsb+Colord+Colorhug$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
+grep -q '^VAPI=GUsb+Colord$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
+grep -q '^VALA=0.56.18-vapi-enabled$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^NATIVE_SMOKE=lcms-2170+json-true+gusb-GUsbContext+colord-CdProfile$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
-grep -q '^XFCE=through-power-manager+color-deps$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
+grep -q '^XFCE=through-usb-test-deps+color-deps$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^KDE=attica-only$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^PLASMA=absent$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 [[ "$(grep -c '^BLFS_XFCE_COLOR_DEPS1_BUILT=' "$ARTIFACTS/blfs-xfce-color-deps1-progress.txt")" -eq 4 ]]

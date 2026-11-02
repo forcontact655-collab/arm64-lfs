@@ -702,7 +702,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-xfce-xfce4-power-manager1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-xfce4-power-manager1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-xfce4-power-manager1.sh" }}
+            - blfs-12.4-xfce-usb-test-deps1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-usb-test-deps1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-usb-test-deps1.sh" }}
       - restore_cache:
           keys:
             - blfs-12.4-xfce-color-deps1-sources-v1-{{ checksum "manifests/blfs-xfce-color-deps1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-color-deps1" }}-{{ checksum "scripts/fetch-blfs-xfce-color-deps1-sources.sh" }}
@@ -765,4 +765,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-xfce-usb-test-deps1
+      - blfs-xfce-color-deps1

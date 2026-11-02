@@ -11,6 +11,8 @@ PROGRESS=/root/blfs-xfce-color-deps1-progress.txt
 LCMS_TESTLOG=/root/blfs-xfce-color-deps1-lcms2-testlog.txt
 JSON_TESTLOG=/root/blfs-xfce-color-deps1-json-glib-testlog.txt
 GUSB_TESTLOG=/root/blfs-xfce-color-deps1-libgusb-testlog.txt
+GUSB_SELF_TESTLOG=/root/blfs-xfce-color-deps1-libgusb-self-testlog.txt
+CANON_DEVICE=/root/blfs-xfce-color-deps1-canon.umockdev
 COLORD_TESTLOG=/root/blfs-xfce-color-deps1-colord-testlog.txt
 SMOKE_SOURCE=/root/blfs-xfce-color-deps1-smoke.c
 [[ "$(id -u)" -eq 0 ]]
@@ -23,7 +25,10 @@ SMOKE_SOURCE=/root/blfs-xfce-color-deps1-smoke.c
 [[ -x /usr/bin/python3 ]]
 [[ -x /usr/bin/dbus-daemon ]]
 [[ -x /usr/bin/xfce4-power-manager ]]
-[[ ! -x /usr/bin/vala ]]
+[[ -x /usr/bin/valac ]]
+[[ -x /usr/bin/umockdev-run ]]
+[[ "$(valac --version)" == 'Vala 0.56.18' ]]
+[[ "$(pkg-config --modversion umockdev-1.0)" == 0.19.3 ]]
 [[ ! -e /usr/lib/liblcms2.so ]]
 [[ ! -e /usr/lib/libjson-glib-1.0.so ]]
 [[ ! -e /usr/lib/libgusb.so ]]
@@ -35,7 +40,6 @@ SMOKE_SOURCE=/root/blfs-xfce-color-deps1-smoke.c
 [[ "$(pkg-config --modversion libjpeg)" == 3.0.1 ]]
 [[ "$(pkg-config --modversion libusb-1.0)" == 1.0.29 ]]
 [[ "$(pkg-config --modversion polkit-gobject-1)" == 126 ]]
-! pkg-config --exists umockdev-1.0
 [[ -d /sources ]]
 : >"$PROGRESS"
 
@@ -117,13 +121,13 @@ meson setup .. \
   --libdir=lib \
   --buildtype=release \
   -D tests=true \
-  -D vapi=false \
+  -D vapi=true \
   -D docs=false \
   -D introspection=true \
-  -D umockdev=disabled \
+  -D umockdev=enabled \
   -D usb_ids=/usr/share/hwdata/usb.ids
 ninja
-meson test --print-errorlogs
+meson test --print-errorlogs gusb-exported-api gusb-umockdev-test
 cp meson-logs/testlog.txt "$GUSB_TESTLOG"
 read -r GUSB_RECORDS < <(python3 - "$GUSB_TESTLOG" <<'PY'
 import sys
@@ -136,13 +140,35 @@ for line in open(sys.argv[1], encoding='utf-8'):
         current['result'] = line.split(':', 1)[1].strip()
         records.append(current)
         current = None
-assert len(records) >= 2, len(records)
+assert len(records) == 2, records
 unexpected = [r for r in records if r['result'] != 'exit status 0']
 assert not unexpected, unexpected
 print(len(records))
 PY
 )
-printf 'LIBGUSB_TEST_RECORDS=%s UNEXPECTED_FAILURES=0\n' "$GUSB_RECORDS"
+cat >"$CANON_DEVICE" <<'EOF'
+P: /devices/usb1
+N: bus/usb/001/001
+E: SUBSYSTEM=usb
+E: DRIVER=usb
+E: BUSNUM=001
+E: DEVNUM=001
+E: DEVNAME=/dev/bus/usb/001/001
+E: DEVTYPE=usb_device
+A: bConfigurationValue=1\n
+A: busnum=1\n
+A: devnum=1\n
+A: bConfigurationValue=1\n
+A: speed=480\n
+H: descriptors=1201000200000040a904c03102000102030109022700010100c001090400000306010100070581020002000705020200020007058303080009
+EOF
+umockdev-run --device "$CANON_DEVICE" -- ./gusb/gusb-self-test 2>&1 | tee "$GUSB_SELF_TESTLOG"
+grep -q '^1\.\.7$' "$GUSB_SELF_TESTLOG"
+GUSB_SELF_PASSES="$(grep -c '^ok ' "$GUSB_SELF_TESTLOG")"
+[[ "$GUSB_SELF_PASSES" -eq 7 ]]
+! grep -q '^not ok' "$GUSB_SELF_TESTLOG"
+printf 'GUSB_SELF_TEST_WRAPPED_RESULT=ok PASSES=%s\n' "$GUSB_SELF_PASSES" | tee -a "$GUSB_SELF_TESTLOG"
+printf 'LIBGUSB_TEST_RECORDS=%s UNEXPECTED_FAILURES=0 SELF_TEST_PASSES=%s\n' "$GUSB_RECORDS" "$GUSB_SELF_PASSES"
 ninja install
 cd /sources
 rm -rf libgusb-0.4.9
@@ -166,7 +192,7 @@ meson setup .. \
   -D systemd=false \
   -D libcolordcompat=true \
   -D argyllcms_sensor=false \
-  -D vapi=false \
+  -D vapi=true \
   -D introspection=true \
   -D tests=true \
   -D man=false \
@@ -248,6 +274,9 @@ done
 for gir in Json-1.0 GUsb-1.0 Colord-1.0 Colorhug-1.0; do
   [[ -f "/usr/share/gir-1.0/$gir.gir" ]]
   [[ -f "/usr/lib/girepository-1.0/$gir.typelib" ]]
+done
+for vapi in gusb colord; do
+  [[ -f "/usr/share/vala/vapi/$vapi.vapi" ]]
 done
 programs=(
   /usr/bin/transicc
@@ -334,11 +363,14 @@ set +x
   printf 'JSON_GLIB_UNEXPECTED_FAILURES=0\n'
   printf 'JSON_GLIB_PROGRAMS=2-present\n'
   printf 'LIBGUSB=0.4.9\n'
-  printf 'LIBGUSB_TEST_SUITE=meson-passed\n'
+  printf 'LIBGUSB_TEST_SUITE=meson+wrapped-self-test-passed\n'
   printf 'LIBGUSB_TEST_RECORDS=%s\n' "$GUSB_RECORDS"
+  printf 'LIBGUSB_SELF_TEST=umockdev-canon-7-subtests-passed\n'
+  printf 'LIBGUSB_SELF_TEST_DEVICE=virtual-canon-04a9-31c0\n'
   printf 'LIBGUSB_UNEXPECTED_FAILURES=0\n'
   printf 'LIBGUSB_PROGRAM=gusbcmd-present\n'
-  printf 'UMOCKDEV=optional-disabled\n'
+  printf 'UMOCKDEV=0.19.3-enabled\n'
+  printf 'USB_DEVICE_ACCESS=virtual-canon-only\n'
   printf 'COLORD=1.4.8\n'
   printf 'COLORD_TEST_SUITE=meson-passed\n'
   printf 'COLORD_TEST_RECORDS=%s\n' "$COLORD_RECORDS"
@@ -349,12 +381,13 @@ set +x
   printf 'COLORD_ARGYLL_SENSOR=disabled\n'
   printf 'DBUS_SYSTEM=started-for-tests-stopped\n'
   printf 'COLORD_DAEMON=not-started\n'
-  printf 'VALA=not-installed-vapi-disabled\n'
+  printf 'VALA=0.56.18-vapi-enabled\n'
   printf 'INTROSPECTION=Json+GUsb+Colord+Colorhug\n'
+  printf 'VAPI=GUsb+Colord\n'
   printf 'NATIVE_SMOKE=%s\n' "$SMOKE_OUTPUT"
   printf 'COLOR_MANAGEMENT=not-tested\n'
   printf 'XFCE4_SETTINGS=not-rebuilt\n'
-  printf 'XFCE=through-power-manager+color-deps\n'
+  printf 'XFCE=through-usb-test-deps+color-deps\n'
   printf 'KDE=attica-only\n'
   printf 'PLASMA=absent\n'
   printf 'BOOTABLE=no\n'
