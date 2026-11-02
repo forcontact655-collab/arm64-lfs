@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds QtBase, QtShaderTools, and QtSvg 6.9.2 plus the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full Qt, or KDE build.
+The current verified checkpoint adds QtBase, QtShaderTools, QtSvg, and QtDeclarative 6.9.2 plus the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full Qt, or KDE build.
 
 ## Safety and scope
 
@@ -127,6 +127,12 @@ CircleCI pipeline **#27**, at commit `39e8de257a6ee1f096d5a91b2cbba80ffa8ab436`,
 
 The verified rootfs is saved as the `blfs-12.4-qtquickdeps1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun.
 
-## Active BLFS qtdeclarative1 stage
+## Completed BLFS qtdeclarative1 — 2026-11-02
 
-This stage restores qtquickdeps1 and builds the official QtDeclarative **6.9.2** archive, providing QML, Qt Quick, and Quick Controls. The source is SHA-256-verified. Acceptance requires a compiled native AArch64 smoke test that imports QtQuick and QtQuick.Controls and instantiates a QML control with the offscreen platform. Frameworks and Plasma remain later stages; no KDE is installed.
+CircleCI pipeline **#28**, at commit `16a1b3221babf8318ec6d94c5339cea91b204389`, restored qtquickdeps1 and built the official QtDeclarative **6.9.2** archive. All ten job steps succeeded, and eight artifacts were downloaded for separate inspection. The report verifies a compiled native AArch64 smoke test that imports QtQuick and QtQuick.Controls and instantiates a QML control with the offscreen platform.
+
+The verified rootfs is saved as the `blfs-12.4-qtdeclarative1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. Further Qt modules, Frameworks, and Plasma remain later stages; no KDE is installed and the system is not bootable.
+
+## Active BLFS qt5compat1 stage
+
+This stage restores qtdeclarative1 and builds the official Qt5Compat **6.9.2** archive. It provides the Core5Compat library and Qt5Compat.GraphicalEffects QML module used by KDE software that still needs Qt 5 compatibility APIs. Acceptance requires a compiled native AArch64 Core5Compat smoke test and the installed GraphicalEffects module. Frameworks and Plasma remain later stages; no KDE is installed.
