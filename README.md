@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds Garcon 4.20.0, Exo 4.20.0, libxfce4ui 4.20.2, startup-notification 0.12, GTK 3.24.50, libjpeg-turbo 3.0.1, GDK-Pixbuf 2.42.12, DejaVu fonts 2.37, Pango 1.56.4, gsettings-desktop-schemas 48.0, at-spi2-core 2.56.4, FriBidi 1.0.16, pixman 0.46.4, Cairo 1.18.4, libepoxy 1.5.10, libxfce4util 4.20.1, and Xfconf 4.20.0, plus the earlier Qt/KDE dependency checkpoints, to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
+The current verified checkpoint adds libwnck 43.2, Garcon 4.20.0, Exo 4.20.0, libxfce4ui 4.20.2, startup-notification 0.12, GTK 3.24.50, libjpeg-turbo 3.0.1, GDK-Pixbuf 2.42.12, DejaVu fonts 2.37, Pango 1.56.4, gsettings-desktop-schemas 48.0, at-spi2-core 2.56.4, FriBidi 1.0.16, pixman 0.46.4, Cairo 1.18.4, libepoxy 1.5.10, libxfce4util 4.20.1, and Xfconf 4.20.0, plus the earlier Qt/KDE dependency checkpoints, to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
 
 ## Safety and scope
 
@@ -205,6 +205,12 @@ CircleCI pipeline **#46**, at commit `a4ec9925c6aa241a00d9483a11efcc39c109f842`,
 
 Acceptance verified both libraries and GIR/typelib pairs plus the compiled native AArch64 smoke test. BLFS provides no Garcon test suite. The verified rootfs is saved as the `blfs-12.4-xfce-garcon1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun; the system is not bootable.
 
-## Active BLFS xfce-libwnck1 stage
+## Completed BLFS xfce-libwnck1 — 2026-11-02
 
-The next unverified stage restores Garcon and builds libwnck **43.2** with X11 tools, startup-notification, and GObject Introspection. BLFS provides no test suite. Acceptance requires every job step and artifact, the installed tools and Wnck GIR/typelib, startup-notification linkage, and a compiled native AArch64 type/version smoke test; no live window-manager session is claimed.
+CircleCI pipeline **#48**, at commit `ed8cabf29b5872f25360f1d6401ee1c39eebe144`, restored Garcon and built libwnck **43.2** with X11 tools, startup-notification, and GObject Introspection. Pipeline #47 completed the package but stopped at the additional native smoke because libwnck requires consumers to acknowledge its unstable API; the corrected smoke defines `WNCK_I_KNOW_THIS_IS_UNSTABLE`. All ten job steps succeeded, and eight artifacts were downloaded for separate inspection.
+
+Acceptance verified the installed tools, Wnck GIR/typelib, startup-notification linkage, and a compiled native AArch64 type/version smoke test. BLFS provides no libwnck test suite, and no live window-manager session is claimed. The verified rootfs is saved as the `blfs-12.4-xfce-libwnck1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun; the system is not bootable.
+
+## Active BLFS xfce-devtools1 stage
+
+The next unverified stage restores libwnck1 and builds xfce4-dev-tools **4.20.0**. It runs the upstream `make check` suite and executes the installed native `xdt-csource` to verify its version and AArch64 loader. Acceptance requires every job step and artifact, the upstream test log, `xdt-autogen`, the installed m4 macros, and the native execution report.
