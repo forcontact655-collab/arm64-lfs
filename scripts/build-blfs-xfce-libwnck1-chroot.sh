@@ -64,6 +64,7 @@ set -x
 readelf -d /usr/lib/libwnck-3.so | grep -q 'Shared library: \[libstartup-notification-1.so.0\]'
 
 cat >"$SMOKE_SOURCE" <<'EOF'
+#define WNCK_I_KNOW_THIS_IS_UNSTABLE
 #include <libwnck/libwnck.h>
 
 int
