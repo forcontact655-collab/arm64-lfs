@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds GTK 3.24.50, libjpeg-turbo 3.0.1, GDK-Pixbuf 2.42.12, DejaVu fonts 2.37, Pango 1.56.4, gsettings-desktop-schemas 48.0, at-spi2-core 2.56.4, FriBidi 1.0.16, pixman 0.46.4, Cairo 1.18.4, libepoxy 1.5.10, libxfce4util 4.20.1, and Xfconf 4.20.0, plus the earlier Qt/KDE dependency checkpoints, to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
+The current verified checkpoint adds libxfce4ui 4.20.2, startup-notification 0.12, GTK 3.24.50, libjpeg-turbo 3.0.1, GDK-Pixbuf 2.42.12, DejaVu fonts 2.37, Pango 1.56.4, gsettings-desktop-schemas 48.0, at-spi2-core 2.56.4, FriBidi 1.0.16, pixman 0.46.4, Cairo 1.18.4, libepoxy 1.5.10, libxfce4util 4.20.1, and Xfconf 4.20.0, plus the earlier Qt/KDE dependency checkpoints, to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
 
 ## Safety and scope
 
@@ -187,6 +187,12 @@ CircleCI pipeline **#41**, at commit `f4da3a3d045bbd9b0348cdd5da64635446513be8`,
 
 The verified rootfs is saved as the `blfs-12.4-xfce-gtk3-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. GTK3 is now installed; libxfce4ui and the remaining XFCE packages are still separate stages, and the system is not bootable.
 
-## Active BLFS xfce-libxfce4ui1 stage
+## Completed BLFS xfce-libxfce4ui1 — 2026-11-02
 
-The next unverified stage restores GTK3 and builds the BLFS-recommended startup-notification **0.12** dependency followed by libxfce4ui **4.20.2**, in XFCE book order. It enables GObject Introspection, disables unavailable documentation/Vala tooling, and checks the keyboard library and startup-notification linkage. Acceptance will require every job step and artifact plus a compiled native AArch64 libxfce4ui smoke test; neither package provides a test suite.
+CircleCI pipeline **#43**, at commit `b057e8fc1fcfddff88da5ac455f60546dfcc148f`, restored GTK3 and built startup-notification **0.12** followed by libxfce4ui **4.20.2**. Pipeline #42 had stopped before compilation because startup-notification's 2011 `config.guess` did not recognize AArch64; the corrected stage passes an explicit native build triplet. All ten job steps succeeded, and seven artifacts were downloaded for separate inspection.
+
+Acceptance verified both package versions, the keyboard library, GObject Introspection, startup-notification linkage, and a compiled native AArch64 libxfce4ui smoke test. Neither package provides a test suite. The verified rootfs is saved as the `blfs-12.4-xfce-libxfce4ui1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun; the system is not bootable.
+
+## Active BLFS xfce-exo1 stage
+
+The next unverified stage restores libxfce4ui1 and builds Exo **4.20.0**, the next XFCE core package in BLFS book order. It runs the package's `make check` suite and compiles a native AArch64 library smoke test. Acceptance will require every job step and artifact, the source checksum, both upstream tests, and the native execution report.
