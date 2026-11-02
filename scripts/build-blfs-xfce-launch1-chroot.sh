@@ -82,6 +82,7 @@ mkdir build
 cd build
 meson setup .. \
   --prefix=/usr \
+  --libdir=lib \
   --localstatedir=/var \
   -D glamor=true \
   -D systemd_logind=true \
@@ -115,7 +116,7 @@ set -x
 [[ "$(pkg-config --modversion fontutil)" == 1.4.1 ]]
 [[ "$(pkg-config --modversion xkbcomp)" == 1.4.7 ]]
 [[ -x /usr/bin/bdftruncate && -x /usr/bin/ucs2any ]]
-[[ -s /usr/share/fonts/util/map-ISO8859-1 ]]
+[[ -s /usr/share/fonts/X11/util/map-ISO8859-1 ]]
 programs=(/usr/bin/cvt /usr/bin/xkbcomp /usr/bin/Xvfb /usr/bin/Xorg /usr/bin/xrdb)
 for program in "${programs[@]}"; do
   [[ -x "$program" ]]
@@ -131,7 +132,11 @@ grep -q 'Modeline.*1280x800' "$NATIVE_LOG"
 grep -q '^xkbcomp 1.4.7$' "$NATIVE_LOG"
 grep -q '^xrdb 1.2.2$' "$NATIVE_LOG"
 cat "$NATIVE_LOG"
-grep -q 'tests:.*[1-9]' "$XORG_TESTLOG" || grep -qE 'Ok: *[1-9]' "$XORG_TESTLOG"
+grep -qE 'Ok: *5' "$XORG_TESTLOG"
+grep -qE 'Fail: *0' "$XORG_TESTLOG"
+grep -qE 'Skipped: *1' "$XORG_TESTLOG"
+grep -q 'XTS' "$XORG_TESTLOG"
+grep -q 'exit status 77' "$XORG_TESTLOG"
 ! grep -qE 'Fail: *[1-9]|ERROR: *[1-9]' "$XORG_TESTLOG"
 
 gcc /root/blfs-xfce-launch1-x11-smoke.c -o "$PROBE" $(pkg-config --cflags --libs x11 libpng)
@@ -238,6 +243,7 @@ set +x
   printf 'XKBCOMP_TEST_SUITE=not-provided\n'
   printf 'XORG_SERVER=21.1.18\n'
   printf 'XORG_TEST_SUITE=ninja-test-passed\n'
+  printf 'XORG_TESTS=5-ok+1-xts-skip+0-failed\n'
   printf 'XRDB=1.2.2\n'
   printf 'XRDB_TEST_SUITE=not-provided\n'
   printf 'XVFB=1280x800x24-no-tcp\n'

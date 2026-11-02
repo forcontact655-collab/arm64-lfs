@@ -61,6 +61,7 @@ for expected in \
   'XKBCOMP=1.4.7' \
   'XORG_SERVER=21.1.18' \
   'XORG_TEST_SUITE=ninja-test-passed' \
+  'XORG_TESTS=5-ok+1-xts-skip+0-failed' \
   'XRDB=1.2.2' \
   'XVFB=1280x800x24-no-tcp' \
   'XVFB_ACCESS_CONTROL=disabled-for-isolated-test-only' \
@@ -87,8 +88,11 @@ done
 grep -q 'Modeline.*1280x800' "$ARTIFACTS/blfs-xfce-launch1-native.txt"
 grep -q '^xkbcomp 1.4.7$' "$ARTIFACTS/blfs-xfce-launch1-native.txt"
 grep -q '^xrdb 1.2.2$' "$ARTIFACTS/blfs-xfce-launch1-native.txt"
-grep -qE 'Ok: *[1-9]' "$ARTIFACTS/blfs-xfce-launch1-xorg-testlog.txt"
+grep -qE 'Ok: *5' "$ARTIFACTS/blfs-xfce-launch1-xorg-testlog.txt"
 grep -qE 'Fail: *0' "$ARTIFACTS/blfs-xfce-launch1-xorg-testlog.txt"
+grep -qE 'Skipped: *1' "$ARTIFACTS/blfs-xfce-launch1-xorg-testlog.txt"
+grep -q 'XTS' "$ARTIFACTS/blfs-xfce-launch1-xorg-testlog.txt"
+grep -q 'exit status 77' "$ARTIFACTS/blfs-xfce-launch1-xorg-testlog.txt"
 grep -q '^X11_CONNECTION=ok$' "$ARTIFACTS/blfs-xfce-launch1-x11.txt"
 grep -q '^X11_WM_CHECK=present$' "$ARTIFACTS/blfs-xfce-launch1-x11.txt"
 grep -qE '^X11_CLIENT_COUNT=[1-9][0-9]*$' "$ARTIFACTS/blfs-xfce-launch1-x11.txt"
