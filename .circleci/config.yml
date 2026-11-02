@@ -48,7 +48,41 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  chapter8a:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - lfs-12.4-ch7-aarch64-v1-acde9ca99aa0f0714c700c71d3101f84c77e9830e80bd6c3c313a724a8cd03c1
+      - restore_cache:
+          keys:
+            - lfs-12.4-sources-v1-{{ checksum "manifests/md5sums" }}-{{ checksum "manifests/wget-list-sysv" }}
+      - run:
+          name: Download and verify official LFS sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/lfs-sources bash scripts/fetch-lfs-sources.sh 2>&1 | tee artifacts/lfs-sources-circleci.log
+      - save_cache:
+          key: lfs-12.4-sources-v1-{{ checksum "manifests/md5sums" }}-{{ checksum "manifests/wget-list-sysv" }}
+          paths:
+            - /home/circleci/lfs-sources
+      - run:
+          name: Build LFS chapter 8a final toolchain
+          command: |
+            set -o pipefail
+            bash scripts/run-lfs-chapter8a.sh 2>&1 | tee artifacts/chapter8a-host.log
+      - save_cache:
+          key: lfs-12.4-ch8a-aarch64-v1-{{ checksum "scripts/build-lfs-chapter8a-chroot.sh" }}-{{ checksum "scripts/run-lfs-chapter8a.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - verify-lfs-checkpoint
+      - chapter8a
