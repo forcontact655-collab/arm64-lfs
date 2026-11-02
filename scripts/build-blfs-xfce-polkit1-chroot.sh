@@ -174,7 +174,7 @@ set -x
 [[ -e /usr/lib/libpolkit-agent-1.so ]]
 [[ -L /usr/lib/pkgconfig/libsystemd.pc ]]
 [[ -L /usr/include/systemd ]]
-for program in /usr/bin/loginctl /usr/bin/busctl /usr/lib/elogind/elogind \
+for program in /usr/bin/loginctl /usr/bin/busctl /usr/libexec/elogind \
   /usr/bin/pkaction /usr/bin/pkcheck /usr/bin/pkexec /usr/bin/pkttyagent \
   /usr/lib/polkit-1/polkitd; do
   [[ -x "$program" ]]
