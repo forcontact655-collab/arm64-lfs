@@ -119,4 +119,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - chapter8b
+      - chapter8a

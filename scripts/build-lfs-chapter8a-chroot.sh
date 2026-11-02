@@ -325,6 +325,10 @@ python3 -c 'from pty import spawn; spawn(["echo", "ok"])'
 
 patch -Np1 -i ../expect-5.45.4-gcc15-1.patch
 
+# The bundled 2003 config scripts do not recognize AArch64.
+tar -xf ../gcc-15.2.0.tar.xz -C tclconfig --strip-components=1 \
+  gcc-15.2.0/config.guess gcc-15.2.0/config.sub
+
 ./configure --prefix=/usr           \
             --with-tcl=/usr/lib     \
             --enable-shared         \
