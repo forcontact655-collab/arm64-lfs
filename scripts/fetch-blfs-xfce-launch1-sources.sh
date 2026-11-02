@@ -30,7 +30,7 @@ while IFS= read -r url; do
   fi
   count=$((count + 1))
 done < "$URL_MANIFEST"
-[[ "$count" -eq 6 ]]
+[[ "$count" -eq 5 ]]
 (cd "$SOURCES" && sha256sum -c "$SHA256_MANIFEST")
 while read -r _ name; do
   (cd "$SOURCES" && sha256sum "$name")

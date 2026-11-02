@@ -10,7 +10,6 @@ set +h
 SOURCES=/sources
 REPORT=/root/blfs-xfce-launch1-report.txt
 PROGRESS=/root/blfs-xfce-launch1-progress.txt
-EPOXY_TESTLOG=/root/blfs-xfce-launch1-libepoxy-testlog.txt
 XORG_TESTLOG=/root/blfs-xfce-launch1-xorg-testlog.txt
 NATIVE_LOG=/root/blfs-xfce-launch1-native.txt
 XVFB_LOG=/root/blfs-xfce-launch1-xvfb.log
@@ -29,11 +28,11 @@ TEST_RUNTIME=/tmp/blfs-xfce-launch1-runtime
 [[ -x /usr/bin/iceauth && -x /usr/bin/xfdesktop && -x /usr/bin/xfwm4 ]]
 [[ -x /usr/bin/xfce4-session && -x /usr/bin/xfce4-panel && -x /usr/bin/xfsettingsd ]]
 [[ ! -x /usr/bin/cvt && ! -x /usr/bin/xkbcomp && ! -x /usr/bin/Xvfb && ! -x /usr/bin/xrdb ]]
-[[ ! -e /usr/lib/libepoxy.so ]]
+[[ -e /usr/lib/libepoxy.so ]]
 [[ ! -e /usr/lib/libxcvt.so ]]
 [[ -s /root/blfs-xfce-launch1-x11-smoke.c ]]
 [[ "$(pkg-config --modversion xkeyboard-config)" == 2.45 ]]
-[[ "$(pkg-config --modversion libepoxy)" == 1.5.10 ]]
+[[ "$(pkg-config --modversion epoxy)" == 1.5.10 ]]
 [[ "$(pkg-config --modversion libelogind)" == 255 ]]
 [[ -d /sources ]]
 : >"$PROGRESS"
@@ -57,16 +56,6 @@ finish_package() {
   printf 'BLFS_XFCE_LAUNCH1_BUILT=%s\n' "$package_dir" >>"$PROGRESS"
   /sbin/ldconfig
 }
-
-build_package libepoxy-1.5.10.tar.xz libepoxy-1.5.10
-mkdir build
-cd build
-meson setup --prefix=/usr --libdir=lib --buildtype=release ..
-ninja
-ninja test
-cp meson-logs/testlog.txt "$EPOXY_TESTLOG"
-ninja install
-finish_package libepoxy-1.5.10
 
 build_package libxcvt-0.1.3.tar.xz libxcvt-0.1.3
 mkdir build
@@ -121,7 +110,7 @@ finish_package xrdb-1.2.2
 export LC_ALL=C.UTF-8
 set -x
 
-[[ "$(grep -c '^BLFS_XFCE_LAUNCH1_BUILT=' "$PROGRESS")" -eq 6 ]]
+[[ "$(grep -c '^BLFS_XFCE_LAUNCH1_BUILT=' "$PROGRESS")" -eq 5 ]]
 [[ "$(pkg-config --modversion libxcvt)" == 0.1.3 ]]
 [[ "$(pkg-config --modversion fontutil)" == 1.4.1 ]]
 [[ "$(pkg-config --modversion xkbcomp)" == 1.4.7 ]]
@@ -142,8 +131,6 @@ grep -q 'Modeline.*1280x800' "$NATIVE_LOG"
 grep -q '^xkbcomp 1.4.7$' "$NATIVE_LOG"
 grep -q '^xrdb 1.2.2$' "$NATIVE_LOG"
 cat "$NATIVE_LOG"
-grep -qE 'Ok: *[1-9]' "$EPOXY_TESTLOG"
-grep -qE 'Fail: *0' "$EPOXY_TESTLOG"
 grep -q 'tests:.*[1-9]' "$XORG_TESTLOG" || grep -qE 'Ok: *[1-9]' "$XORG_TESTLOG"
 ! grep -qE 'Fail: *[1-9]|ERROR: *[1-9]' "$XORG_TESTLOG"
 
@@ -239,12 +226,10 @@ trap - EXIT
 set +x
 {
   printf 'BLFS_XFCE_LAUNCH1_RESULT=ok\n'
-  printf 'PACKAGE_COUNT=6\n'
+  printf 'PACKAGE_COUNT=5\n'
   printf 'ARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=cvt+xkbcomp+xrdb+xvfb+xfce-session\n'
   printf 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1\n'
-  printf 'LIBEPOXY=1.5.10\n'
-  printf 'LIBEPOXY_TEST_SUITE=ninja-test-passed\n'
   printf 'LIBXCVT=0.1.3\n'
   printf 'LIBXCVT_TEST_SUITE=not-provided\n'
   printf 'FONT_UTIL=1.4.1\n'
