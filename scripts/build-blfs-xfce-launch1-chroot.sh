@@ -177,19 +177,25 @@ cleanup() {
     XVFB_PID=''
   fi
   rm -rf "$TEST_HOME" "$TEST_RUNTIME"
+  rm -f /tmp/blfs-xfce-launch1-display
   set -e
 }
 trap cleanup EXIT
 
-LIBGL_ALWAYS_SOFTWARE=1 Xvfb :99 -screen 0 1280x800x24 -nolisten tcp -ac >"$XVFB_LOG" 2>&1 &
+rm -f /tmp/blfs-xfce-launch1-display
+LIBGL_ALWAYS_SOFTWARE=1 Xvfb -displayfd 3 -screen 0 1280x800x24 -nolisten tcp -ac 3>/tmp/blfs-xfce-launch1-display >"$XVFB_LOG" 2>&1 &
 XVFB_PID=$!
 for _ in {1..100}; do
-  [[ -S /tmp/.X11-unix/X99 ]] && break
+  [[ -s /tmp/blfs-xfce-launch1-display ]] && break
   kill -0 "$XVFB_PID" 2>/dev/null || { cat "$XVFB_LOG"; exit 1; }
   sleep 0.1
 done
-[[ -S /tmp/.X11-unix/X99 ]]
-DISPLAY=:99 "$PROBE" server >"$X11_LOG"
+[[ -s /tmp/blfs-xfce-launch1-display ]]
+DISPLAY_NUMBER="$(cat /tmp/blfs-xfce-launch1-display)"
+[[ "$DISPLAY_NUMBER" =~ ^[0-9]+$ ]]
+DISPLAY=":$DISPLAY_NUMBER"
+[[ -S "/tmp/.X11-unix/X$DISPLAY_NUMBER" ]]
+DISPLAY="$DISPLAY" "$PROBE" server >"$X11_LOG"
 grep -q '^X11_CONNECTION=ok$' "$X11_LOG"
 grep -q '^SCREEN=1280x800$' "$X11_LOG"
 
@@ -198,7 +204,7 @@ setsid /usr/bin/env -i \
   HOME="$TEST_HOME" \
   TERM=xterm \
   LC_ALL=C.UTF-8 \
-  DISPLAY=:99 \
+  DISPLAY="$DISPLAY" \
   GDK_BACKEND=x11 \
   LIBGL_ALWAYS_SOFTWARE=1 \
   NO_AT_BRIDGE=1 \
@@ -217,7 +223,7 @@ cat "$PROCESS_LOG"
 for name in xfce4-session xfwm4 xfdesktop xfce4-panel xfsettingsd; do
   ps -eo stat=,comm= | awk -v n="$name" '$2 == n && $1 !~ /^Z/ { found=1 } END { exit !found }'
 done
-DISPLAY=:99 "$PROBE" session "$SCREENSHOT" >>"$X11_LOG"
+DISPLAY="$DISPLAY" "$PROBE" session "$SCREENSHOT" >>"$X11_LOG"
 grep -q '^X11_WM_CHECK=present$' "$X11_LOG"
 grep -qE '^X11_CLIENT_COUNT=[1-9][0-9]*$' "$X11_LOG"
 grep -qE '^SCREENSHOT_NON_BACKGROUND_PIXELS=[1-9][0-9]{3,}$' "$X11_LOG"
@@ -246,7 +252,7 @@ set +x
   printf 'XORG_TESTS=5-ok+1-xts-skip+0-failed\n'
   printf 'XRDB=1.2.2\n'
   printf 'XRDB_TEST_SUITE=not-provided\n'
-  printf 'XVFB=1280x800x24-no-tcp\n'
+  printf 'XVFB=1280x800x24-no-tcp-auto-display\n'
   printf 'XVFB_ACCESS_CONTROL=disabled-for-isolated-test-only\n'
   printf 'LIBGL=software-forced\n'
   printf 'STARTXFCE4=executed-with-existing-display\n'

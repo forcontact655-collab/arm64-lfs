@@ -63,7 +63,7 @@ for expected in \
   'XORG_TEST_SUITE=ninja-test-passed' \
   'XORG_TESTS=5-ok+1-xts-skip+0-failed' \
   'XRDB=1.2.2' \
-  'XVFB=1280x800x24-no-tcp' \
+  'XVFB=1280x800x24-no-tcp-auto-display' \
   'XVFB_ACCESS_CONTROL=disabled-for-isolated-test-only' \
   'LIBGL=software-forced' \
   'STARTXFCE4=executed-with-existing-display' \
