@@ -3,7 +3,8 @@ set -euo pipefail
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MANIFESTS="$REPO/manifests"
-LFS_VERSION="$(<"$MANIFESTS/VERSION")"
+LFS_VERSION="$(sed -n 's/^LFS_VERSION=//p' "$MANIFESTS/VERSION")"
+[[ "$LFS_VERSION" =~ ^[0-9]+\.[0-9]+$ ]]
 LFS_MIRROR="${LFS_MIRROR:-https://mirror.koddos.net/lfs/lfs-packages/$LFS_VERSION}"
 LFS="${LFS:-$HOME/lfs}"
 SOURCES="$LFS/sources"

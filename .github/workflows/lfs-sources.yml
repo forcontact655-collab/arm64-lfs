@@ -15,16 +15,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Restore verified source cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /home/runner/lfs/sources
           key: lfs-12.4-sources-v1-${{ hashFiles('manifests/md5sums') }}-${{ github.run_id }}
           restore-keys: |
             lfs-12.4-sources-v1-${{ hashFiles('manifests/md5sums') }}-
-          save-always: true
       - name: Download and verify official LFS sources
         shell: bash
         run: bash scripts/fetch-lfs-sources.sh
+      - name: Save source cache even after download errors
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: /home/runner/lfs/sources
+          key: lfs-12.4-sources-v1-${{ hashFiles('manifests/md5sums') }}-${{ github.run_id }}
       - name: Upload source verification report
         uses: actions/upload-artifact@v4
         with:
