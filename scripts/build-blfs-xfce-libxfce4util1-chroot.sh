@@ -46,7 +46,7 @@ set -x
 
 [[ "$(grep -c '^BLFS_XFCE_LIBXFCE4UTIL1_BUILT=' "$PROGRESS")" -eq 1 ]]
 [[ "$(pkg-config --modversion libxfce4util-1.0)" == 4.20.1 ]]
-[[ -x /usr/bin/xfce4-kiosk-query ]]
+[[ -x /usr/sbin/xfce4-kiosk-query ]]
 [[ -f /usr/share/gir-1.0/Libxfce4util-1.0.gir ]]
 [[ -f /usr/lib/girepository-1.0/Libxfce4util-1.0.typelib ]]
 
