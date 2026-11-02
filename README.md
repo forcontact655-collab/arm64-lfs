@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds thunar-volman 4.20.0, Thunar 4.20.4, libnotify 0.8.6, libgudev 238, hicolor-icon-theme 0.18, xfce4-panel 4.20.5, libxfce4windowing 4.20.4, libdisplay-info 0.3.0, hwdata 0.398, xfce4-dev-tools 4.20.0, libwnck 43.2, Garcon 4.20.0, Exo 4.20.0, libxfce4ui 4.20.2, startup-notification 0.12, GTK 3.24.50, libjpeg-turbo 3.0.1, GDK-Pixbuf 2.42.12, DejaVu fonts 2.37, Pango 1.56.4, gsettings-desktop-schemas 48.0, at-spi2-core 2.56.4, FriBidi 1.0.16, pixman 0.46.4, Cairo 1.18.4, libepoxy 1.5.10, libxfce4util 4.20.1, and Xfconf 4.20.0, plus the earlier Qt/KDE dependency checkpoints, to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
+The current verified checkpoint adds Tumbler 4.20.0, thunar-volman 4.20.0, Thunar 4.20.4, libnotify 0.8.6, libgudev 238, hicolor-icon-theme 0.18, xfce4-panel 4.20.5, libxfce4windowing 4.20.4, libdisplay-info 0.3.0, hwdata 0.398, xfce4-dev-tools 4.20.0, libwnck 43.2, Garcon 4.20.0, Exo 4.20.0, libxfce4ui 4.20.2, startup-notification 0.12, GTK 3.24.50, libjpeg-turbo 3.0.1, GDK-Pixbuf 2.42.12, DejaVu fonts 2.37, Pango 1.56.4, gsettings-desktop-schemas 48.0, at-spi2-core 2.56.4, FriBidi 1.0.16, pixman 0.46.4, Cairo 1.18.4, libepoxy 1.5.10, libxfce4util 4.20.1, and Xfconf 4.20.0, plus the earlier Qt/KDE dependency checkpoints, to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
 
 ## Safety and scope
 
@@ -241,6 +241,12 @@ CircleCI pipeline **#53**, at commit `945c550a8636d52bb4198877ffa241249c0ba947`,
 
 Acceptance verified both installed programs, their AArch64 loaders, and execution of `thunar-volman --version` through GTK's headless Broadway backend. This was only a native version smoke, not a device-management test or a live graphical session; optional GVfs runtime support is not claimed. The verified rootfs is saved as the `blfs-12.4-xfce-thunar-volman1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun; the system is not bootable.
 
-## Active BLFS xfce-tumbler1 stage
+## Completed BLFS xfce-tumbler1 — 2026-11-02
 
-The next unverified stage restores thunar-volman1 and builds Tumbler **4.20.0**, then removes its SysV-inapplicable systemd user unit as directed by BLFS. Pipeline #54 built and installed the package but stopped while compiling the additional smoke because the public Tumbler header includes GDK-Pixbuf without propagating its include flags through `tumbler-1.pc`; the corrected smoke explicitly adds `gdk-pixbuf-2.0`. Acceptance requires every job step and artifact, `tumblerd`, `libtumbler-1`, thumbnailer plugins, D-Bus service files, and a native AArch64 type/version smoke. No D-Bus session or actual thumbnail generation is claimed.
+CircleCI pipeline **#55**, at commit `41f24f03dcbe2cc1a1352da05ca528bf95ba58d3`, restored thunar-volman1 and built Tumbler **4.20.0**, then removed its SysV-inapplicable systemd user unit as directed by BLFS. Pipeline #54 built and installed the package but stopped while compiling the additional smoke because the public Tumbler header includes GDK-Pixbuf without propagating its include flags through `tumbler-1.pc`; the corrected smoke explicitly adds `gdk-pixbuf-2.0`.
+
+All ten job steps in #55 succeeded, and eight artifacts were downloaded for separate inspection. Acceptance verified `tumblerd`, `libtumbler-1`, thumbnailer plugins, D-Bus service files, and a native AArch64 type/version smoke. No D-Bus session or actual thumbnail generation is claimed. The verified rootfs is saved as the `blfs-12.4-xfce-tumbler1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun; the system is not bootable.
+
+## Active BLFS xfce-xfce4-appfinder1 stage
+
+The next unverified stage restores Tumbler1 and builds xfce4-appfinder **4.20.0**. BLFS provides no test suite. Acceptance requires every job step and artifact, `xfce4-appfinder`, the `xfrun4` symlink, their AArch64 loaders, and execution of `xfce4-appfinder --version` through GTK's headless Broadway backend. No application-search test or live graphical session is claimed.

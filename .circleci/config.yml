@@ -660,7 +660,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-xfce-tumbler1:
+  blfs-xfce-xfce4-appfinder1:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -668,27 +668,27 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-xfce-thunar-volman1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-thunar-volman1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-thunar-volman1.sh" }}
+            - blfs-12.4-xfce-tumbler1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-tumbler1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-tumbler1.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-xfce-tumbler1-sources-v1-{{ checksum "manifests/blfs-xfce-tumbler1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-tumbler1" }}-{{ checksum "scripts/fetch-blfs-xfce-tumbler1-sources.sh" }}
+            - blfs-12.4-xfce-xfce4-appfinder1-sources-v1-{{ checksum "manifests/blfs-xfce-xfce4-appfinder1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-xfce4-appfinder1" }}-{{ checksum "scripts/fetch-blfs-xfce-xfce4-appfinder1-sources.sh" }}
       - run:
-          name: Download and verify official Tumbler source
+          name: Download and verify official xfce4-appfinder source
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-xfce-tumbler1-sources bash scripts/fetch-blfs-xfce-tumbler1-sources.sh 2>&1 | tee artifacts/blfs-xfce-tumbler1-sources-circleci.log
+            LFS=/home/circleci/blfs-xfce-xfce4-appfinder1-sources bash scripts/fetch-blfs-xfce-xfce4-appfinder1-sources.sh 2>&1 | tee artifacts/blfs-xfce-xfce4-appfinder1-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-xfce-tumbler1-sources-v1-{{ checksum "manifests/blfs-xfce-tumbler1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-tumbler1" }}-{{ checksum "scripts/fetch-blfs-xfce-tumbler1-sources.sh" }}
+          key: blfs-12.4-xfce-xfce4-appfinder1-sources-v1-{{ checksum "manifests/blfs-xfce-xfce4-appfinder1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-xfce4-appfinder1" }}-{{ checksum "scripts/fetch-blfs-xfce-xfce4-appfinder1-sources.sh" }}
           paths:
-            - /home/circleci/blfs-xfce-tumbler1-sources
+            - /home/circleci/blfs-xfce-xfce4-appfinder1-sources
       - run:
-          name: Build Tumbler and run native type/version smoke
+          name: Build xfce4-appfinder and run native Broadway version smoke
           command: |
             set -o pipefail
-            bash scripts/run-blfs-xfce-tumbler1.sh 2>&1 | tee artifacts/blfs-xfce-tumbler1-host.log
+            bash scripts/run-blfs-xfce-xfce4-appfinder1.sh 2>&1 | tee artifacts/blfs-xfce-xfce4-appfinder1-host.log
       - save_cache:
-          key: blfs-12.4-xfce-tumbler1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-tumbler1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-tumbler1.sh" }}
+          key: blfs-12.4-xfce-xfce4-appfinder1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-xfce4-appfinder1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-xfce4-appfinder1.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -697,4 +697,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-xfce-tumbler1
+      - blfs-xfce-xfce4-appfinder1
