@@ -243,4 +243,4 @@ Acceptance verified both installed programs, their AArch64 loaders, and executio
 
 ## Active BLFS xfce-tumbler1 stage
 
-The next unverified stage restores thunar-volman1 and builds Tumbler **4.20.0**, then removes its SysV-inapplicable systemd user unit as directed by BLFS. Acceptance requires every job step and artifact, `tumblerd`, `libtumbler-1`, thumbnailer plugins, D-Bus service files, and a native AArch64 type/version smoke. No D-Bus session or actual thumbnail generation is claimed.
+The next unverified stage restores thunar-volman1 and builds Tumbler **4.20.0**, then removes its SysV-inapplicable systemd user unit as directed by BLFS. Pipeline #54 built and installed the package but stopped while compiling the additional smoke because the public Tumbler header includes GDK-Pixbuf without propagating its include flags through `tumbler-1.pc`; the corrected smoke explicitly adds `gdk-pixbuf-2.0`. Acceptance requires every job step and artifact, `tumblerd`, `libtumbler-1`, thumbnailer plugins, D-Bus service files, and a native AArch64 type/version smoke. No D-Bus session or actual thumbnail generation is claimed.

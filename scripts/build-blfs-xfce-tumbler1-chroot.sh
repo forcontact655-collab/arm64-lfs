@@ -85,7 +85,7 @@ main (void)
 }
 EOF
 cc -O2 -Wall -Wextra -o /tmp/blfs-xfce-tumbler1-smoke "$SMOKE_SOURCE" \
-  $(pkg-config --cflags --libs tumbler-1)
+  $(pkg-config --cflags --libs tumbler-1 gdk-pixbuf-2.0)
 OUTPUT="$(/tmp/blfs-xfce-tumbler1-smoke)"
 [[ "$OUTPUT" == BLFS_XFCE_TUMBLER1_EXEC_OK=4.20.0 ]]
 readelf -h /tmp/blfs-xfce-tumbler1-smoke | grep -q 'Machine:.*AArch64'
