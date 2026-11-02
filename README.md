@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds libxfce4windowing 4.20.4, libdisplay-info 0.3.0, hwdata 0.398, xfce4-dev-tools 4.20.0, libwnck 43.2, Garcon 4.20.0, Exo 4.20.0, libxfce4ui 4.20.2, startup-notification 0.12, GTK 3.24.50, libjpeg-turbo 3.0.1, GDK-Pixbuf 2.42.12, DejaVu fonts 2.37, Pango 1.56.4, gsettings-desktop-schemas 48.0, at-spi2-core 2.56.4, FriBidi 1.0.16, pixman 0.46.4, Cairo 1.18.4, libepoxy 1.5.10, libxfce4util 4.20.1, and Xfconf 4.20.0, plus the earlier Qt/KDE dependency checkpoints, to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
+The current verified checkpoint adds xfce4-panel 4.20.5, libxfce4windowing 4.20.4, libdisplay-info 0.3.0, hwdata 0.398, xfce4-dev-tools 4.20.0, libwnck 43.2, Garcon 4.20.0, Exo 4.20.0, libxfce4ui 4.20.2, startup-notification 0.12, GTK 3.24.50, libjpeg-turbo 3.0.1, GDK-Pixbuf 2.42.12, DejaVu fonts 2.37, Pango 1.56.4, gsettings-desktop-schemas 48.0, at-spi2-core 2.56.4, FriBidi 1.0.16, pixman 0.46.4, Cairo 1.18.4, libepoxy 1.5.10, libxfce4util 4.20.1, and Xfconf 4.20.0, plus the earlier Qt/KDE dependency checkpoints, to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
 
 ## Safety and scope
 
@@ -223,6 +223,12 @@ CircleCI pipeline **#50**, at commit `49a1fc54cd4d26f18292c69f505f90bd4461a2b5`,
 
 Acceptance verified libdisplay-info's upstream suite (**64 passed, 0 failed**), both windowing libraries and their GIR/typelibs, the X11 pkg-config module, and a native AArch64 smoke that parsed the upstream QEMU EDID fixture as EDID 1.4 with Red Hat/QEMU identity and exercised the windowing/UI types. The verified rootfs is saved as the `blfs-12.4-xfce-libxfce4windowing1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun; no live desktop session or bootability is claimed.
 
-## Active BLFS xfce-xfce4-panel1 stage
+## Completed BLFS xfce-xfce4-panel1 — 2026-11-02
 
-The next unverified stage restores libxfce4windowing1 and builds xfce4-panel **4.20.5** with X11 and GObject Introspection. BLFS provides no test suite. Acceptance requires every job step and artifact, the panel programs and plugins, `libxfce4panel-2.0`, its GIR/typelib, and a native AArch64 type/version smoke; no graphical panel session is claimed.
+CircleCI pipeline **#51**, at commit `5962f0d09f99bd238aa56d54a1a976d63033170b`, restored libxfce4windowing1 and built xfce4-panel **4.20.5** with X11 and GObject Introspection. All ten job steps succeeded, and eight artifacts were downloaded for separate inspection.
+
+Acceptance verified the panel programs and plugins, `libxfce4panel-2.0`, its GIR/typelib, and a native AArch64 type/version smoke. BLFS provides no test suite, and no graphical panel session is claimed. The verified rootfs is saved as the `blfs-12.4-xfce-xfce4-panel1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun; the system is not bootable.
+
+## Active BLFS xfce-thunar1 stage
+
+The next unverified stage restores xfce4-panel1 and builds Thunar's required/recommended chain: **hicolor-icon-theme 0.18 → libgudev 238 → libnotify 0.8.6 → Thunar 4.20.4**. It enables introspection and disables the unavailable umockdev and interactive notification tests rather than inventing results. Acceptance requires every job step and artifact, all three libraries and their GIR/typelibs, Thunar and notification programs, and a native AArch64 smoke covering GUdev types, libnotify init/uninit without a daemon, and Thunarx version/types. No file-manager GUI or notification-daemon session is claimed.
