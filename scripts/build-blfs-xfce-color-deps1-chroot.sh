@@ -212,6 +212,7 @@ meson setup .. \
   -D systemd=false \
   -D libcolordcompat=true \
   -D argyllcms_sensor=false \
+  -D bash_completion=false \
   -D vapi=true \
   -D introspection=true \
   -D tests=true \
@@ -405,6 +406,7 @@ set +x
   printf 'COLORD_PROGRAMS=5-present+daemon\n'
   printf 'COLORD_LIBCOLORDCOMPAT=present\n'
   printf 'COLORD_ARGYLL_SENSOR=disabled\n'
+  printf 'COLORD_BASH_COMPLETION=disabled-optional-absent\n'
   printf 'DBUS_SYSTEM=started-for-tests-stopped\n'
   printf 'COLORD_DAEMON=not-started\n'
   printf 'VALA=0.56.18-vapi-enabled\n'
