@@ -358,7 +358,7 @@ int main(void) {
   g_object_unref(parser);
   if (!json_ok)
     return 3;
-  gusb_type = g_type_name(GUSB_TYPE_CONTEXT);
+  gusb_type = g_type_name(G_USB_TYPE_CONTEXT);
   colord_type = g_type_name(CD_TYPE_PROFILE);
   if (g_strcmp0(gusb_type, "GUsbContext") != 0)
     return 4;
