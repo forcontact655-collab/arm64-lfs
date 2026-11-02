@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds QtBase, QtShaderTools, QtSvg, QtDeclarative, and Qt5Compat 6.9.2, the QtTools Linguist utilities, Extra CMake Modules 6.17.0, and the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full Qt, or KDE build.
+The current verified checkpoint adds QtBase, QtShaderTools, QtSvg, QtDeclarative, and Qt5Compat 6.9.2, the QtTools Linguist utilities, Extra CMake Modules and Attica 6.17.0, and the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full Qt, full KDE Frameworks, or Plasma build.
 
 ## Safety and scope
 
@@ -151,6 +151,12 @@ CircleCI pipeline **#32**, at commit `71804edcc51fbb1c7947ed9feac54a8136867384`,
 
 Acceptance verified `Qt6LinguistTools`, `lrelease`, `lconvert`, and `lupdate`; a TS/QM/TS round trip; and a compiled native AArch64 `QTranslator` smoke test using the generated Russian catalog. The verified rootfs is saved as the `blfs-12.4-qttools1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. Only ECM is installed from KDE; Frameworks and Plasma remain absent, and the system is not bootable.
 
-## Active BLFS kf6-attica1 stage
+## Completed BLFS kf6-attica1 — 2026-11-02
 
-This is the first actual KDE Frameworks module, following the BLFS 6.17.0 order. It restores qttools1, initializes `/opt/kf6` and its profile/linker configuration once, then builds Attica **6.17.0** against ECM and Qt Core/Network. Acceptance uses an offline compiled native AArch64 `Attica::Category` smoke test, so it does not contact an Open Collaboration Services provider. This stage installs only Attica: the remaining Frameworks and Plasma are still absent, and the system is not bootable.
+CircleCI pipeline **#33**, at commit `b284363397942f53a6ec2df5594b5431ddf69b4c`, restored qttools1, initialized `/opt/kf6` and its profile/linker configuration, and built Attica **6.17.0**. All ten job steps succeeded, and seven artifacts were downloaded for separate inspection. Acceptance used an offline compiled native AArch64 `Attica::Category` smoke test; no Open Collaboration Services provider was contacted.
+
+The verified rootfs is saved as the `blfs-12.4-kf6-attica1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. Only Attica is installed from KF6; the remaining Frameworks and Plasma are absent. The owner then directed an XFCE-first route for a faster initial desktop, so further KF6 stages are paused at this verified checkpoint. The system is not bootable.
+
+## Active BLFS xfce-libxfce4util1 stage
+
+Following the owner's XFCE-first decision, this stage starts the shorter initial-desktop route while preserving the accepted Attica checkpoint. It builds libxfce4util **4.20.1**, the first package in the BLFS XFCE order, against the existing GLib/GObject Introspection stack. Vala and GTK-Doc remain optional and are disabled. Acceptance checks the installed GIR/typelib files and runs a compiled native AArch64 smoke test through `libxfce4util-1.0`. Only this XFCE utility library is being installed; a full XFCE desktop and a bootable system are not claimed.
