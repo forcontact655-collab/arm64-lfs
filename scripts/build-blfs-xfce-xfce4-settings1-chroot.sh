@@ -16,8 +16,12 @@ PROGRESS=/root/blfs-xfce-xfce4-settings1-progress.txt
 [[ -x /usr/bin/pkg-config ]]
 [[ -x /usr/bin/broadwayd ]]
 [[ -x /usr/bin/xfce4-power-manager ]]
+[[ -x /usr/bin/colormgr ]]
+[[ -x /usr/libexec/colord ]]
 [[ ! -x /usr/bin/xfsettingsd ]]
 [[ ! -d /usr/share/icons/nuoveXT2 ]]
+[[ "$(pkg-config --modversion colord)" == 1.4.8 ]]
+[[ "$(pkg-config --modversion gusb)" == 0.4.9 ]]
 [[ "$(pkg-config --modversion exo-2)" == 4.20.0 ]]
 [[ "$(pkg-config --modversion garcon-1)" == 4.20.0 ]]
 [[ "$(pkg-config --modversion libnotify)" == 0.8.6 ]]
@@ -48,7 +52,9 @@ rm -rf lxde-icon-theme-0.5.1
 printf 'BLFS_XFCE_XFCE4_SETTINGS1_BUILT=lxde-icon-theme-0.5.1\n' >>"$PROGRESS"
 
 build_package xfce4-settings-4.20.2.tar.bz2 xfce4-settings-4.20.2
-./configure --prefix=/usr --sysconfdir=/etc
+./configure --prefix=/usr --sysconfdir=/etc --enable-colord
+grep -q '^#define HAVE_COLORD 1$' config.h
+cp config.h /root/blfs-xfce-xfce4-settings1-config.h
 make
 make install
 cd /sources
@@ -82,6 +88,7 @@ for name in "${programs[@]}"; do
   readelf -h "/usr/bin/$name" | grep -q 'Machine:.*AArch64'
   readelf -l "/usr/bin/$name" | grep -q '/lib/ld-linux-aarch64.so.1'
 done
+readelf -d /usr/bin/xfce4-color-settings | grep -q 'Shared library:.*\[libcolord\.so\.'
 
 RUNTIME_DIR=/tmp/blfs-xfce-xfce4-settings1-runtime
 rm -rf "$RUNTIME_DIR"
@@ -111,32 +118,41 @@ VERSION_OUTPUT="$(xfce4-settings-manager --version 2>&1)"
 VERSION_STATUS=$?
 set -e
 printf '%s\n' "$VERSION_OUTPUT"
-stop_broadway
-trap - EXIT
 [[ "$VERSION_STATUS" -eq 0 ]]
 grep -q '^xfce4-settings-manager 4.20.2 (Xfce ' <<<"$VERSION_OUTPUT"
+set +e
+COLOR_VERSION_OUTPUT="$(xfce4-color-settings --version 2>&1)"
+COLOR_VERSION_STATUS=$?
+set -e
+printf '%s\n' "$COLOR_VERSION_OUTPUT"
+[[ "$COLOR_VERSION_STATUS" -eq 0 ]]
+grep -q '^xfce4-color-settings 4.20.2 (Xfce ' <<<"$COLOR_VERSION_OUTPUT"
+stop_broadway
+trap - EXIT
 set +x
 {
   printf 'BLFS_XFCE_XFCE4_SETTINGS1_RESULT=ok\n'
   printf 'PACKAGE_COUNT=2\n'
   printf 'ARCH=%s\n' "$(uname -m)"
-  printf 'NATIVE_BINARY_EXEC=xfce4-settings-manager-version-via-broadway\n'
+  printf 'NATIVE_BINARY_EXEC=settings-manager+color-settings-version-via-broadway\n'
   printf 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1\n'
   printf 'LXDE_ICON_THEME=0.5.1\n'
   printf 'LXDE_ICON_THEME_TEST_SUITE=not-provided\n'
   printf 'ICON_THEME=nuoveXT2-cache-present\n'
   printf 'XFCE4_SETTINGS=4.20.2\n'
   printf 'XFCE4_SETTINGS_TEST_SUITE=not-provided\n'
+  printf 'COLORD=1.4.8-required-at-configure\n'
+  printf 'COLORD_CHAIN=HAVE_COLORD+libcolord-linked\n'
   printf 'SETTINGS_PROGRAMS=12-present\n'
-  printf 'GUI_SMOKE=headless-broadway-version-only\n'
+  printf 'GUI_SMOKE=headless-broadway-manager+color-version-only\n'
   printf 'SETTINGS_MANAGER=not-started\n'
   printf 'XFSETTINGSD=not-started\n'
   printf 'SETTINGS_CHANGES=not-tested\n'
   printf 'DBUS_SESSION=not-started\n'
   printf 'COLOR_MANAGEMENT=not-tested\n'
   printf 'DISPLAY_SETTINGS=not-tested\n'
-  printf 'NATIVE_SMOKE=xfce4-settings-4.20.2\n'
-  printf 'XFCE=through-power-manager+settings\n'
+  printf 'NATIVE_SMOKE=xfce4-settings+color-settings-4.20.2\n'
+  printf 'XFCE=through-color-deps+settings\n'
   printf 'KDE=attica-only\n'
   printf 'PLASMA=absent\n'
   printf 'BOOTABLE=no\n'
