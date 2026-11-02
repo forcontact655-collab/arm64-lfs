@@ -252,7 +252,41 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-mesa1:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-graphics1-aarch64-v1-{{ checksum "scripts/build-blfs-graphics1-chroot.sh" }}-{{ checksum "scripts/run-blfs-graphics1.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-mesa1-sources-v1-{{ checksum "manifests/blfs-mesa1.md5" }}-{{ checksum "manifests/wget-list-blfs-mesa1" }}-{{ checksum "scripts/fetch-blfs-mesa1-sources.sh" }}
+      - run:
+          name: Download and verify official BLFS Mesa source
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-mesa1-sources bash scripts/fetch-blfs-mesa1-sources.sh 2>&1 | tee artifacts/blfs-mesa1-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-mesa1-sources-v1-{{ checksum "manifests/blfs-mesa1.md5" }}-{{ checksum "manifests/wget-list-blfs-mesa1" }}-{{ checksum "scripts/fetch-blfs-mesa1-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-mesa1-sources
+      - run:
+          name: Build BLFS Mesa OpenGL EGL and llvmpipe
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-mesa1.sh 2>&1 | tee artifacts/blfs-mesa1-host.log
+      - save_cache:
+          key: blfs-12.4-mesa1-aarch64-v1-{{ checksum "scripts/build-blfs-mesa1-chroot.sh" }}-{{ checksum "scripts/run-blfs-mesa1.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-graphics1
+      - blfs-mesa1
