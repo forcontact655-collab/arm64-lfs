@@ -287,8 +287,16 @@ CircleCI pipeline **#75**, at commit `7584173b7665cab87cedf9be6d6caf15d3b31f80`,
 
 The verified rootfs is saved as the `blfs-12.4-xfce-xfce4-settings1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. XFCE core is now **15/18**; no settings GUI, xfsettingsd, D-Bus session, or color/display operation is claimed. Pipeline #67 remains failed and unaccepted and will not be rerun.
 
-## Active BLFS xfce-core-final1 stage — 2026-11-03
+## Completed BLFS xfce-core-final1 — 2026-11-03
 
-Pipeline **#76** built Xfdesktop and Xfwm4 but failed at xfce4-session configure because `iceauth` was absent. It is not accepted and will not be rerun. The correction restores accepted settings1 and first builds official Xorg **iceauth 1.0.10**, then the remaining three XFCE core packages in book order: Xfdesktop **4.20.1**, Xfwm4 **4.20.0**, and xfce4-session **4.20.3** with legacy session management disabled. None of these four packages provides an upstream test suite.
+CircleCI pipeline **#77**, at commit `69f371fbdc1d8225e53b44e01801f66d23b7e877`, restored accepted settings1 and built official Xorg iceauth **1.0.10**, Xfdesktop **4.20.1**, Xfwm4 **4.20.0**, and xfce4-session **4.20.3**. All ten job steps succeeded; eight artifacts were independently inspected. Acceptance verified iceauth, all nine XFCE ELF programs, the `startxfce4` and `xflock4` scripts, desktop/MIME database updates, and four native version checks including three safe Broadway paths.
 
-Acceptance requires the iceauth binary, nine XFCE AArch64 ELF programs plus the `startxfce4` and `xflock4` scripts, refreshed desktop and MIME databases, a native `iceauth -V` check, and three native Broadway version smokes: `xfdesktop-settings`, `xfwm4-workspace-settings`, and `xfce4-session-settings`. These version paths were selected from source because they return before window-manager or session operations. The stage does not start Xfdesktop, Xfwm4, xfce4-session, xfsettingsd, or a D-Bus session. `DESKTOP_LAUNCH=not-tested` and `BOOTABLE=no` remain explicit even after all **18/18** core packages are built. KDE remains paused at Attica and Plasma is absent.
+The verified rootfs is saved as the `blfs-12.4-xfce-core-final1-aarch64-v1` CircleCI cache checkpoint. **XFCE core is 18/18.** Pipeline #77 is accepted and must not be rerun. Pipeline #76 failed only because xfce4-session could not find iceauth; it was not accepted and was not rerun. Core completion did not itself test a desktop launch and did not make the rootfs bootable.
+
+## Active BLFS xfce-launch1 stage — 2026-11-03
+
+The active stage restores accepted core-final1 and builds libxcvt **0.1.3**, font-util **1.4.1**, xkbcomp **1.4.7**, Xorg Server **21.1.18**, and xrdb **1.2.2**. Xorg Server's `ninja test` is mandatory; libxcvt and the three small Xorg utility packages have no upstream test suites. Native `cvt`, `xkbcomp -version`, and `xrdb -version` checks are also required.
+
+Launch validation uses an isolated **Xvfb :99** screen at 1280x800x24 with TCP disabled, software GL, a temporary HOME and a private D-Bus session. Because DISPLAY already exists, `startxfce4` runs through its direct `/bin/sh` path and xinit is not used. Acceptance requires live xfce4-session, Xfwm4, Xfdesktop, xfce4-panel and xfsettingsd processes, an X11 `_NET_SUPPORTING_WM_CHECK`, a nonempty client list, and a nonblank PNG screenshot. The session and Xvfb are stopped and temporary configuration is removed afterward.
+
+This is a headless launch test only. Real displays, hardware acceleration, rootless Xorg and bootability remain untested; `BOOTABLE=no` stays explicit. KDE remains paused at Attica and Plasma is absent.
