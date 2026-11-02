@@ -44,7 +44,7 @@ printf 'BUILD_BLFS_XFCE_GTKDEPS1=fribidi\n'
 extract fribidi-1.0.16.tar.xz fribidi-1.0.16
 mkdir build
 cd build
-meson setup .. --prefix=/usr --buildtype=release --wrap-mode=nofallback
+meson setup .. --prefix=/usr --libdir=lib --buildtype=release --wrap-mode=nofallback
 ninja
 ninja test
 cp meson-logs/testlog.txt /root/blfs-xfce-gtkdeps1-fribidi-testlog.txt
@@ -58,7 +58,7 @@ printf 'BUILD_BLFS_XFCE_GTKDEPS1=pixman\n'
 extract pixman-0.46.4.tar.gz pixman-0.46.4
 mkdir build
 cd build
-meson setup .. --prefix=/usr --buildtype=release --wrap-mode=nofallback
+meson setup .. --prefix=/usr --libdir=lib --buildtype=release --wrap-mode=nofallback
 ninja
 ninja test
 cp meson-logs/testlog.txt /root/blfs-xfce-gtkdeps1-pixman-testlog.txt
@@ -72,7 +72,7 @@ printf 'BUILD_BLFS_XFCE_GTKDEPS1=cairo\n'
 extract cairo-1.18.4.tar.xz cairo-1.18.4
 mkdir build
 cd build
-meson setup .. --prefix=/usr --buildtype=release --wrap-mode=nofallback
+meson setup .. --prefix=/usr --libdir=lib --buildtype=release --wrap-mode=nofallback
 ninja
 ninja install
 cd /sources
@@ -84,7 +84,7 @@ printf 'BUILD_BLFS_XFCE_GTKDEPS1=libepoxy\n'
 extract libepoxy-1.5.10.tar.xz libepoxy-1.5.10
 mkdir build
 cd build
-meson setup .. --prefix=/usr --buildtype=release --wrap-mode=nofallback
+meson setup .. --prefix=/usr --libdir=lib --buildtype=release --wrap-mode=nofallback
 ninja
 ninja test
 cp meson-logs/testlog.txt /root/blfs-xfce-gtkdeps1-libepoxy-testlog.txt
@@ -102,6 +102,12 @@ set -x
 [[ "$(pkg-config --modversion cairo)" == 1.18.4 ]]
 [[ "$(pkg-config --modversion epoxy)" == 1.5.10 ]]
 pkg-config --exists cairo-ft cairo-gobject cairo-png cairo-xlib cairo-xcb
+for name in fribidi pixman-1 cairo epoxy; do
+  [[ -f "/usr/lib/pkgconfig/$name.pc" ]]
+done
+for name in libfribidi.so libpixman-1.so libcairo.so libepoxy.so; do
+  [[ -e "/usr/lib/$name" ]]
+done
 [[ -f /usr/include/fribidi/fribidi.h ]]
 [[ -f /usr/include/pixman-1/pixman.h ]]
 [[ -f /usr/include/cairo/cairo.h ]]
