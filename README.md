@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds the BLFS display1 font/XCB/Wayland layer to core1 and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, Qt, or KDE build.
+The current verified checkpoint adds the BLFS display2 Xorg/libxkbcommon layer to display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, Qt, or KDE build.
 
 ## Safety and scope
 
@@ -97,6 +97,12 @@ CircleCI pipeline **#12**, at commit `e7eb269b5b6b55a3ec0fe99eb8059bf2db24330d`,
 
 The verified rootfs is saved as the `blfs-12.4-display1-aarch64-v1` CircleCI cache checkpoint. Qt and KDE remain absent.
 
-## Active BLFS display2 stage
+## Completed BLFS display2 — 2026-11-02
 
-The next stage restores display1 and builds the official ordered set of **32 Xorg Libraries**, followed by xkeyboard-config 2.45 and libxkbcommon 1.11.0 with X11 and Wayland support. The smoke check compiles a keymap from the installed xkeyboard data. Mesa, Qt, Frameworks, and Plasma remain later checkpoints.
+CircleCI pipeline **#13**, at commit `b6d88516900c0880e2abfaaec3e5153315c1cead`, restored display1 and completed **34 build stages** from **34 MD5-verified archives**: the official ordered set of 32 Xorg Libraries, xkeyboard-config 2.45, and libxkbcommon 1.11.0 with X11 and Wayland support. A native AArch64 executable initialized Xlib and compiled a real keymap from the installed xkeyboard data, printing `BLFS_DISPLAY2_EXEC_OK`.
+
+The verified rootfs is saved as the `blfs-12.4-display2-aarch64-v1` CircleCI cache checkpoint. Mesa, Qt, and KDE remain absent.
+
+## Active BLFS graphics1 stage
+
+The next stage restores display2 and installs libyaml, Cython, PyYAML with libyaml acceleration, Mako, libdrm 2.4.125, and LLVM/Clang 20.1.8. These are kept in a separate checkpoint from Mesa so a long LLVM build is not repeated if a later Mesa command needs correction. Vulkan, VA-API, Mesa, Qt, Frameworks, and Plasma remain later stages.
