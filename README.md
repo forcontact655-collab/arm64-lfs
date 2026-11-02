@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds libxfce4ui 4.20.2, startup-notification 0.12, GTK 3.24.50, libjpeg-turbo 3.0.1, GDK-Pixbuf 2.42.12, DejaVu fonts 2.37, Pango 1.56.4, gsettings-desktop-schemas 48.0, at-spi2-core 2.56.4, FriBidi 1.0.16, pixman 0.46.4, Cairo 1.18.4, libepoxy 1.5.10, libxfce4util 4.20.1, and Xfconf 4.20.0, plus the earlier Qt/KDE dependency checkpoints, to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
+The current verified checkpoint adds Exo 4.20.0, libxfce4ui 4.20.2, startup-notification 0.12, GTK 3.24.50, libjpeg-turbo 3.0.1, GDK-Pixbuf 2.42.12, DejaVu fonts 2.37, Pango 1.56.4, gsettings-desktop-schemas 48.0, at-spi2-core 2.56.4, FriBidi 1.0.16, pixman 0.46.4, Cairo 1.18.4, libepoxy 1.5.10, libxfce4util 4.20.1, and Xfconf 4.20.0, plus the earlier Qt/KDE dependency checkpoints, to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
 
 ## Safety and scope
 
@@ -193,6 +193,12 @@ CircleCI pipeline **#43**, at commit `b057e8fc1fcfddff88da5ac455f60546dfcc148f`,
 
 Acceptance verified both package versions, the keyboard library, GObject Introspection, startup-notification linkage, and a compiled native AArch64 libxfce4ui smoke test. Neither package provides a test suite. The verified rootfs is saved as the `blfs-12.4-xfce-libxfce4ui1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun; the system is not bootable.
 
-## Active BLFS xfce-exo1 stage
+## Completed BLFS xfce-exo1 — 2026-11-02
 
-The next unverified stage restores libxfce4ui1 and builds Exo **4.20.0**, the next XFCE core package in BLFS book order. It runs the package's `make check` suite and compiles a native AArch64 library smoke test. Acceptance will require every job step and artifact, the source checksum, both upstream tests, and the native execution report.
+CircleCI pipeline **#44**, at commit `809558ad478d235244997ccaba1bf99caea22df8`, restored libxfce4ui1 and built Exo **4.20.0**. All ten job steps succeeded, and nine artifacts were downloaded for separate inspection. Acceptance verified the official source checksum, **2/2** upstream tests, the ABI check, and a compiled native AArch64 Exo library smoke test.
+
+The verified rootfs is saved as the `blfs-12.4-xfce-exo1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. Exo is installed; Garcon and the remaining XFCE packages are still separate stages, and the system is not bootable.
+
+## Active BLFS xfce-garcon1 stage
+
+The next unverified stage restores Exo and builds Garcon **4.20.0**, including its core and GTK3 libraries plus GObject Introspection. BLFS provides no test suite for this package, so acceptance requires all job steps and artifacts, both installed libraries and GIR/typelib pairs, and a compiled native AArch64 smoke test exercising both libraries.
