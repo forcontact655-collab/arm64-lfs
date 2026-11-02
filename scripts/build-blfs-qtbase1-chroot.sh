@@ -91,7 +91,7 @@ set -x
 QT_VERSION="$(/opt/qt6/bin/qmake6 -query QT_VERSION)"
 printf 'QT_VERSION_QUERY=%s\n' "$QT_VERSION"
 [[ "$QT_VERSION" == 6.9.2 ]]
-PLUGIN_DIR="$QT6PREFIX/plugins"
+PLUGIN_DIR="$QT6PREFIX/plugins/platforms"
 printf 'PLUGIN_DIR=%s\n' "$PLUGIN_DIR"
 [[ -f "$PLUGIN_DIR/libqxcb.so" ]]
 [[ -f "$PLUGIN_DIR/libqoffscreen.so" ]]
