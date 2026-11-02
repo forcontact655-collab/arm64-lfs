@@ -1,0 +1,45 @@
+name: lfs-kde-sources
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lfs-kde-sources
+  cancel-in-progress: false
+
+jobs:
+  verify-kde-sources:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore KDE source checkpoint
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/kde-sources
+          key: lfs-12.4-kde-sources-v1-${{ hashFiles('scripts/fetch-kde-sources.sh', 'manifests/frameworks-6.17.0.md5', 'manifests/plasma-6.4.4.md5') }}
+      - name: Download and verify KF6 and Plasma sources
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts
+          bash scripts/fetch-kde-sources.sh 2>&1 | tee artifacts/kde-source-report.txt
+      - name: Save verified KDE sources
+        uses: actions/cache/save@v4
+        with:
+          path: /home/runner/kde-sources
+          key: lfs-12.4-kde-sources-v1-${{ hashFiles('scripts/fetch-kde-sources.sh', 'manifests/frameworks-6.17.0.md5', 'manifests/plasma-6.4.4.md5') }}
+      - name: Upload KDE source verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lfs-kde-source-report
+          path: |
+            artifacts/kde-source-report.txt
+            /home/runner/kde-sources/KF6.sha256
+            /home/runner/kde-sources/PLASMA.sha256
+          if-no-files-found: warn
+          retention-days: 14
