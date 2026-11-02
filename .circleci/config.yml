@@ -388,7 +388,41 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-qtdeclarative1:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-qtquickdeps1-aarch64-v1-{{ checksum "scripts/build-blfs-qtquickdeps1-chroot.sh" }}-{{ checksum "scripts/run-blfs-qtquickdeps1.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-qtdeclarative1-sources-v1-{{ checksum "manifests/blfs-qtdeclarative1.sha256" }}-{{ checksum "manifests/wget-list-blfs-qtdeclarative1" }}-{{ checksum "scripts/fetch-blfs-qtdeclarative1-sources.sh" }}
+      - run:
+          name: Download and verify official QtDeclarative source
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-qtdeclarative1-sources bash scripts/fetch-blfs-qtdeclarative1-sources.sh 2>&1 | tee artifacts/blfs-qtdeclarative1-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-qtdeclarative1-sources-v1-{{ checksum "manifests/blfs-qtdeclarative1.sha256" }}-{{ checksum "manifests/wget-list-blfs-qtdeclarative1" }}-{{ checksum "scripts/fetch-blfs-qtdeclarative1-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-qtdeclarative1-sources
+      - run:
+          name: Build QtDeclarative and run native QML Quick Controls smoke test
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-qtdeclarative1.sh 2>&1 | tee artifacts/blfs-qtdeclarative1-host.log
+      - save_cache:
+          key: blfs-12.4-qtdeclarative1-aarch64-v1-{{ checksum "scripts/build-blfs-qtdeclarative1-chroot.sh" }}-{{ checksum "scripts/run-blfs-qtdeclarative1.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-qtquickdeps1
+      - blfs-qtdeclarative1

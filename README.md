@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds QtBase 6.9.2 and the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full Qt, or KDE build.
+The current verified checkpoint adds QtBase, QtShaderTools, and QtSvg 6.9.2 plus the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full Qt, or KDE build.
 
 ## Safety and scope
 
@@ -121,6 +121,12 @@ CircleCI pipeline **#26**, at commit `ebb1e95c4e4f80168e3013525da57697cc695108`,
 
 The verified rootfs is saved as the `blfs-12.4-qtbase1-aarch64-v1` CircleCI cache checkpoint. Further Qt modules, Frameworks, and Plasma remain later stages; the system is not bootable and no KDE is installed.
 
-## Active BLFS qtquickdeps1 stage
+## Completed BLFS qtquickdeps1 — 2026-11-02
 
-This stage restores qtbase1 and builds the official QtShaderTools and QtSvg **6.9.2** submodule archives in dependency order. Both sources are SHA-256-verified. Acceptance requires a native `qsb` shader bake plus a compiled offscreen QtSvg render smoke test on AArch64. QtDeclarative/QML, Frameworks, and Plasma remain later stages.
+CircleCI pipeline **#27**, at commit `39e8de257a6ee1f096d5a91b2cbba80ffa8ab436`, restored qtbase1 and built the official QtShaderTools and QtSvg **6.9.2** submodule archives. All job steps succeeded, and nine artifacts were downloaded for separate inspection. The report verifies a native `qsb` shader bake, a compiled offscreen QtSvg render test, both SVG plugins, and the AArch64 dynamic linker.
+
+The verified rootfs is saved as the `blfs-12.4-qtquickdeps1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun.
+
+## Active BLFS qtdeclarative1 stage
+
+This stage restores qtquickdeps1 and builds the official QtDeclarative **6.9.2** archive, providing QML, Qt Quick, and Quick Controls. The source is SHA-256-verified. Acceptance requires a compiled native AArch64 smoke test that imports QtQuick and QtQuick.Controls and instantiates a QML control with the offscreen platform. Frameworks and Plasma remain later stages; no KDE is installed.
