@@ -490,7 +490,41 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-qttools1:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-kf6-ecm1-aarch64-v1-{{ checksum "scripts/build-blfs-kf6-ecm1-chroot.sh" }}-{{ checksum "scripts/run-blfs-kf6-ecm1.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-qttools1-sources-v1-{{ checksum "manifests/blfs-qttools1.sha256" }}-{{ checksum "manifests/wget-list-blfs-qttools1" }}-{{ checksum "scripts/fetch-blfs-qttools1-sources.sh" }}
+      - run:
+          name: Download and verify official QtTools source
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-qttools1-sources bash scripts/fetch-blfs-qttools1-sources.sh 2>&1 | tee artifacts/blfs-qttools1-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-qttools1-sources-v1-{{ checksum "manifests/blfs-qttools1.sha256" }}-{{ checksum "manifests/wget-list-blfs-qttools1" }}-{{ checksum "scripts/fetch-blfs-qttools1-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-qttools1-sources
+      - run:
+          name: Build Qt Linguist tools and run native translation smoke test
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-qttools1.sh 2>&1 | tee artifacts/blfs-qttools1-host.log
+      - save_cache:
+          key: blfs-12.4-qttools1-aarch64-v1-{{ checksum "scripts/build-blfs-qttools1-chroot.sh" }}-{{ checksum "scripts/run-blfs-qttools1.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-kf6-ecm1
+      - blfs-qttools1

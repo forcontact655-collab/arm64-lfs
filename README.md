@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds QtBase, QtShaderTools, QtSvg, QtDeclarative, and Qt5Compat 6.9.2 plus the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full Qt, or KDE build.
+The current verified checkpoint adds QtBase, QtShaderTools, QtSvg, QtDeclarative, and Qt5Compat 6.9.2, plus Extra CMake Modules 6.17.0 and the XCB Utilities/double-conversion dependency layer, to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full Qt, or KDE build.
 
 ## Safety and scope
 
@@ -139,6 +139,12 @@ CircleCI pipeline **#30**, at commit `92c3da83dadcb752d040c331897bd310003082b5`,
 
 The verified rootfs is saved as the `blfs-12.4-qt5compat1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. Further Qt modules, Frameworks, and Plasma remain later stages; no KDE is installed and the system is not bootable.
 
-## Active BLFS kf6-ecm1 stage
+## Completed BLFS kf6-ecm1 — 2026-11-02
 
-This stage restores qt5compat1 and builds Extra CMake Modules **6.17.0**, the first build-system component required by KDE Frameworks 6. It follows BLFS 12.4: the upstream-fix patch is applied, `lib64` installation is disabled, `PACKAGE_PREFIX_DIR` preservation is enabled, and ECM installs into `/usr` for use by non-KF6 packages. Because upstream provides no accepted test suite for this stage, acceptance uses a compiled native AArch64 integration smoke test covering ECM discovery, `KDEInstallDirs`, `ECMSetupVersion`, and Qt 6.9.2. Frameworks and Plasma are not installed yet.
+CircleCI pipeline **#31**, at commit `d37d1366b3c859378651fd2ee5f114fe55762e5c`, restored qt5compat1 and built Extra CMake Modules **6.17.0** with the required BLFS patch and installation fixes. All ten job steps succeeded, and seven artifacts were downloaded for separate inspection.
+
+A compiled native AArch64 integration smoke test verified ECM discovery, preservation of `PACKAGE_PREFIX_DIR`, `KDE_INSTALL_LIBDIR=lib`, `ECMSetupVersion`, and Qt 6.9.2. The verified rootfs is saved as the `blfs-12.4-kf6-ecm1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. Only ECM is installed: KDE Frameworks and Plasma remain absent, and the system is not bootable.
+
+## Active BLFS qttools1 stage
+
+This stage restores kf6-ecm1 and builds the Linguist tools from the official QtTools **6.9.2** archive. KCoreAddons 6.17.0 needs `Qt6LinguistTools`, `lrelease`, and `lconvert` for its 109 translation catalogs. QDoc, Designer, Assistant, and unrelated tools are disabled so this stage does not require LLVM or claim a full QtTools build. Acceptance requires `lrelease`/`lconvert` round-trip checks and a compiled native AArch64 `QTranslator` smoke test using the generated Russian catalog. Only ECM is installed from KDE; Frameworks and Plasma remain absent.
