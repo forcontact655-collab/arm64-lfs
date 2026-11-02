@@ -717,7 +717,7 @@ jobs:
           paths:
             - /home/circleci/blfs-xfce-color-deps1-sources
       - run:
-          name: Build lcms2 JSON-GLib libgusb and colord with tests and native smoke
+          name: Build SQLite lcms2 JSON-GLib libgusb and colord with tests and native smoke
           command: |
             set -o pipefail
             bash scripts/run-blfs-xfce-color-deps1.sh 2>&1 | tee artifacts/blfs-xfce-color-deps1-host.log

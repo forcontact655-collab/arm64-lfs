@@ -14,7 +14,7 @@ ARTIFACTS="$REPO/artifacts"
 [[ -x "$LFS/usr/bin/umockdev-run" ]]
 [[ -f "$LFS/usr/share/hwdata/usb.ids" ]]
 [[ ! -e "$LFS/usr/lib/libcolord.so" ]]
-for archive in lcms2-2.17.tar.gz json-glib-1.10.6.tar.xz libgusb-0.4.9.tar.xz colord-1.4.8.tar.xz; do
+for archive in sqlite-autoconf-3500400.tar.gz lcms2-2.17.tar.gz json-glib-1.10.6.tar.xz libgusb-0.4.9.tar.xz colord-1.4.8.tar.xz; do
   [[ -f "$HOST_SOURCES/$archive" ]]
 done
 mkdir -p "$ARTIFACTS"
@@ -62,8 +62,11 @@ sudo -n rm -f "$LFS/root/build-blfs-xfce-color-deps1-chroot.sh" \
   "$LFS/root/blfs-xfce-color-deps1-smoke.c" \
   "$LFS/root/blfs-xfce-color-deps1-canon.umockdev"
 grep -q '^BLFS_XFCE_COLOR_DEPS1_RESULT=ok$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
-grep -q '^PACKAGE_COUNT=4$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
+grep -q '^PACKAGE_COUNT=5$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^NATIVE_BINARY_EXEC=compiled-color-stack-smoke$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
+grep -q '^SQLITE=3.50.4$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
+grep -q '^SQLITE_TEST_SUITE=not-provided-by-upstream$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
+grep -q '^SQLITE_NATIVE_QUERY=3.50.4|4$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^LCMS2=2.17$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^LCMS2_TEST_SUITE=make-check-passed$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^JSON_GLIB=1.10.6$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
@@ -83,6 +86,6 @@ grep -q '^NATIVE_SMOKE=lcms-2170+json-true+gusb-GUsbContext+colord-CdProfile$' "
 grep -q '^XFCE=through-usb-test-deps+color-deps$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^KDE=attica-only$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^PLASMA=absent$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
-[[ "$(grep -c '^BLFS_XFCE_COLOR_DEPS1_BUILT=' "$ARTIFACTS/blfs-xfce-color-deps1-progress.txt")" -eq 4 ]]
+[[ "$(grep -c '^BLFS_XFCE_COLOR_DEPS1_BUILT=' "$ARTIFACTS/blfs-xfce-color-deps1-progress.txt")" -eq 5 ]]
 cat "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 trap - EXIT

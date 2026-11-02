@@ -29,6 +29,7 @@ SMOKE_SOURCE=/root/blfs-xfce-color-deps1-smoke.c
 [[ -x /usr/bin/umockdev-run ]]
 [[ "$(valac --version)" == 'Vala 0.56.18' ]]
 [[ "$(pkg-config --modversion umockdev-1.0)" == 0.19.3 ]]
+[[ ! -e /usr/lib/libsqlite3.so ]]
 [[ ! -e /usr/lib/liblcms2.so ]]
 [[ ! -e /usr/lib/libjson-glib-1.0.so ]]
 [[ ! -e /usr/lib/libgusb.so ]]
@@ -58,6 +59,25 @@ build_package() {
 }
 
 cd /sources
+build_package sqlite-autoconf-3500400.tar.gz sqlite-autoconf-3500400
+./configure --prefix=/usr \
+            --disable-static \
+            --enable-fts4 \
+            --enable-fts5 \
+            CPPFLAGS="-D SQLITE_ENABLE_COLUMN_METADATA=1 \
+                      -D SQLITE_ENABLE_UNLOCK_NOTIFY=1 \
+                      -D SQLITE_ENABLE_DBSTAT_VTAB=1 \
+                      -D SQLITE_SECURE_DELETE=1"
+make
+make install
+cd /sources
+rm -rf sqlite-autoconf-3500400
+printf 'BLFS_XFCE_COLOR_DEPS1_BUILT=sqlite-autoconf-3500400\n' >>"$PROGRESS"
+/sbin/ldconfig
+SQLITE_QUERY="$(/usr/bin/sqlite3 :memory: "SELECT sqlite_version() || '|' || (2+2);")"
+[[ "$SQLITE_QUERY" == '3.50.4|4' ]]
+printf 'SQLITE_NATIVE_QUERY=%s\n' "$SQLITE_QUERY"
+
 build_package lcms2-2.17.tar.gz lcms2-2.17
 ./configure --prefix=/usr
 make
@@ -263,12 +283,13 @@ printf 'BLFS_XFCE_COLOR_DEPS1_BUILT=colord-1.4.8\n' >>"$PROGRESS"
 /sbin/ldconfig
 set -x
 
-[[ "$(grep -c '^BLFS_XFCE_COLOR_DEPS1_BUILT=' "$PROGRESS")" -eq 4 ]]
+[[ "$(grep -c '^BLFS_XFCE_COLOR_DEPS1_BUILT=' "$PROGRESS")" -eq 5 ]]
+[[ "$(pkg-config --modversion sqlite3)" == 3.50.4 ]]
 [[ "$(pkg-config --modversion lcms2)" == 2.17 ]]
 [[ "$(pkg-config --modversion json-glib-1.0)" == 1.10.6 ]]
 [[ "$(pkg-config --modversion gusb)" == 0.4.9 ]]
 [[ "$(pkg-config --modversion colord)" == 1.4.8 ]]
-for library in liblcms2.so libjson-glib-1.0.so libgusb.so libcolord.so libcolordprivate.so libcolorhug.so libcolordcompat.so; do
+for library in libsqlite3.so liblcms2.so libjson-glib-1.0.so libgusb.so libcolord.so libcolordprivate.so libcolorhug.so libcolordcompat.so; do
   [[ -e "/usr/lib/$library" ]]
 done
 for gir in Json-1.0 GUsb-1.0 Colord-1.0 Colorhug-1.0; do
@@ -279,6 +300,7 @@ for vapi in gusb colord; do
   [[ -f "/usr/share/vala/vapi/$vapi.vapi" ]]
 done
 programs=(
+  /usr/bin/sqlite3
   /usr/bin/transicc
   /usr/bin/linkicc
   /usr/bin/psicc
@@ -293,7 +315,7 @@ programs=(
   /usr/bin/cd-create-profile
   /usr/libexec/colord
 )
-[[ "${#programs[@]}" -eq 13 ]]
+[[ "${#programs[@]}" -eq 14 ]]
 for program in "${programs[@]}"; do
   [[ -x "$program" ]]
   readelf -h "$program" | grep -q 'Machine:.*AArch64'
@@ -348,10 +370,14 @@ rm -f /root/blfs-xfce-color-deps1-smoke
 set +x
 {
   printf 'BLFS_XFCE_COLOR_DEPS1_RESULT=ok\n'
-  printf 'PACKAGE_COUNT=4\n'
+  printf 'PACKAGE_COUNT=5\n'
   printf 'ARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=compiled-color-stack-smoke\n'
   printf 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1\n'
+  printf 'SQLITE=3.50.4\n'
+  printf 'SQLITE_TEST_SUITE=not-provided-by-upstream\n'
+  printf 'SQLITE_NATIVE_QUERY=%s\n' "$SQLITE_QUERY"
+  printf 'SQLITE_PROGRAM=sqlite3-present\n'
   printf 'LCMS2=2.17\n'
   printf 'LCMS2_TEST_SUITE=make-check-passed\n'
   printf 'LCMS2_PROGRAMS=4-present\n'
