@@ -44,13 +44,13 @@ printf 'BUILD_BLFS_QTBASE1=qtbase\n'
              -sysconfdir /etc/xdg \
              -dbus-linked \
              -openssl-linked \
-             -sqlite qt \
-             -doubleconversion system \
-             -pcre system \
-             -zlib system \
-             -harfbuzz system \
-             -freetype system \
-             -libpng system \
+             -qt-sqlite \
+             -system-doubleconversion \
+             -system-pcre \
+             -system-zlib \
+             -system-harfbuzz \
+             -system-freetype \
+             -system-libpng \
              -icu \
              -fontconfig \
              -xcb \
