@@ -127,9 +127,17 @@ printf 'BUILD_BLFS_CORE1=make-ca\n'
 extract make-ca-1.16.1.tar.gz
 make install
 install -vdm755 /etc/ssl/local
-/usr/sbin/make-ca -C /sources/certdata.txt
-[[ -s /etc/ssl/certs/ca-certificates.crt ]]
-[[ "$(grep -c 'BEGIN CERTIFICATE' /etc/ssl/certs/ca-certificates.crt)" -ge 100 ]]
+[[ "$(grep -c '^# Certificate' /sources/certdata.txt)" -ge 100 ]]
+grep -n '^# Certificate' /sources/certdata.txt | sed -n '1,3p'
+MAKE_CA_STATUS=0
+bash -x /usr/sbin/make-ca -C /sources/certdata.txt \
+  2>/root/make-ca-trace.log || MAKE_CA_STATUS=$?
+CA_COUNT="$(grep -c 'BEGIN CERTIFICATE' /etc/ssl/certs/ca-certificates.crt 2>/dev/null || true)"
+if [[ "$MAKE_CA_STATUS" -ne 0 || "$CA_COUNT" -lt 100 ]]; then
+  tail -n 220 /root/make-ca-trace.log
+  exit 1
+fi
+rm -f /root/make-ca-trace.log
 finish_package
 
 printf 'BUILD_BLFS_CORE1=curl\n'
