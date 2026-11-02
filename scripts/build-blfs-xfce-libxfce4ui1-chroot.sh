@@ -42,7 +42,9 @@ build_package() {
 
 cd /sources
 build_package startup-notification-0.12.tar.gz startup-notification-0.12 startup-notification
-./configure --prefix=/usr --disable-static
+./configure --prefix=/usr \
+  --build=aarch64-unknown-linux-gnu \
+  --disable-static
 make
 make install
 cd /sources
