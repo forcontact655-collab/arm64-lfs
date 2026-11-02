@@ -1,0 +1,46 @@
+name: lfs-toolchain
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chapter5:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 240
+    env:
+      LFS: /home/runner/lfs
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore verified LFS sources
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/lfs/sources
+          key: lfs-12.4-sources-for-toolchain-${{ hashFiles('manifests/md5sums') }}
+          restore-keys: |
+            lfs-12.4-sources-v1-${{ hashFiles('manifests/md5sums') }}-
+      - name: Build and verify chapter 5 cross-toolchain
+        shell: bash
+        run: bash scripts/build-lfs-toolchain.sh
+      - name: Save verified chapter 5 toolchain
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            /home/runner/lfs/tools
+            /home/runner/lfs/usr
+            /home/runner/lfs/bin
+            /home/runner/lfs/lib
+            /home/runner/lfs/sbin
+            /home/runner/lfs/etc
+            /home/runner/lfs/var
+          key: lfs-12.4-ch5-aarch64-v1-${{ hashFiles('scripts/build-lfs-toolchain.sh', 'manifests/md5sums') }}
+      - name: Upload toolchain verification report
+        uses: actions/upload-artifact@v4
+        with:
+          name: lfs-toolchain-report
+          path: |
+            artifacts/toolchain-report.txt
+            artifacts/toolchain-dummy.log
+          retention-days: 14
