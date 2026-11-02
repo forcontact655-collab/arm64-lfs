@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds FriBidi 1.0.16, pixman 0.46.4, Cairo 1.18.4, libepoxy 1.5.10, libxfce4util 4.20.1, and Xfconf 4.20.0, QtBase, QtShaderTools, QtSvg, QtDeclarative, and Qt5Compat 6.9.2, the QtTools Linguist utilities, Extra CMake Modules and Attica 6.17.0, and the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
+The current verified checkpoint adds libjpeg-turbo 3.0.1, GDK-Pixbuf 2.42.12, DejaVu fonts 2.37, Pango 1.56.4, gsettings-desktop-schemas 48.0, at-spi2-core 2.56.4, FriBidi 1.0.16, pixman 0.46.4, Cairo 1.18.4, libepoxy 1.5.10, libxfce4util 4.20.1, and Xfconf 4.20.0, plus the earlier Qt/KDE dependency checkpoints, to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
 
 ## Safety and scope
 
@@ -175,6 +175,12 @@ CircleCI pipeline **#38**, at commit `359f6673adaa24afbc0a93b05895597c4eeabd13`,
 
 Acceptance verified **8 passed / 0 failed** FriBidi tests, **35 / 0** pixman tests, and **4 / 0** libepoxy tests with **13 display-dependent skips**. A compiled native AArch64 smoke executable exercised all four libraries and wrote a verified 32×32 Cairo PNG. The source SHA-256 manifest matched the independently downloaded sources. The verified rootfs is saved as the `blfs-12.4-xfce-gtkdeps1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. GTK3, Pango, GDK-Pixbuf, at-spi2-core, and libxfce4ui remain separate later stages; the system is not bootable.
 
-## Active BLFS xfce-gtkdeps2 stage
+## Completed BLFS xfce-gtkdeps2 — 2026-11-02
 
-The next unverified stage restores gtkdeps1 and builds libjpeg-turbo **3.0.1**, GDK-Pixbuf **2.42.12**, DejaVu fonts **2.37**, Pango **1.56.4**, gsettings-desktop-schemas **48.0**, and at-spi2-core **2.56.4**. Pipeline #39 exposed the previously absent font data: libjpeg and all 23 GDK-Pixbuf tests passed, but five additional Pango tests failed with missing-font symptoms. DejaVu is therefore installed and verified through Fontconfig before Pango rather than hiding those failures. The stage runs Pango tests except the three font-data tests explicitly documented by BLFS, and compiles a native AArch64 smoke test for JPEG/PNG loading, a Pango layout with nonzero text extents, Cairo PNG output, AT-SPI versioning, and the installed GSettings schema. The AT-SPI graphical test suite is not claimed. GTK3 and libxfce4ui are not built by this stage.
+CircleCI pipeline **#40**, at commit `9a47524c1a11196eca67a29eea34f0fbc1519de6`, restored gtkdeps1 and built libjpeg-turbo **3.0.1**, GDK-Pixbuf **2.42.12**, DejaVu fonts **2.37**, Pango **1.56.4**, gsettings-desktop-schemas **48.0**, and at-spi2-core **2.56.4**. Pipeline #39 had exposed missing usable fonts through five additional Pango failures; the corrected stage installs 22 DejaVu TTFs and verifies Fontconfig before Pango. All ten job steps succeeded, and thirteen artifacts were downloaded for separate inspection.
+
+Acceptance verified **295/295** libjpeg-turbo tests, **23/23** GDK-Pixbuf tests, and **23/23** Pango tests with only the three font-data exclusions documented by BLFS. A compiled native AArch64 smoke test exercised JPEG/PNG loading, a Pango layout with nonzero text extents, Cairo PNG output, AT-SPI versioning, and the installed GSettings schema. The AT-SPI graphical test suite is not claimed. The verified rootfs is saved as the `blfs-12.4-xfce-gtkdeps2-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun; the system is not bootable.
+
+## Active BLFS xfce-gtk3 stage
+
+The next unverified stage restores gtkdeps2 and builds GTK **3.24.50** with X11, Wayland, Broadway, and GObject Introspection support. It installs no libxfce4ui yet. Acceptance will require every job step and artifact, the installed GIR/typelib files, and a compiled native AArch64 GTK window/label smoke test through a private Broadway display; the full graphical GTK test suite is not claimed.

@@ -660,7 +660,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-xfce-gtkdeps2:
+  blfs-xfce-gtk3:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -668,27 +668,27 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-xfce-gtkdeps1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-gtkdeps1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-gtkdeps1.sh" }}
+            - blfs-12.4-xfce-gtkdeps2-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-gtkdeps2-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-gtkdeps2.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-xfce-gtkdeps2-sources-v1-{{ checksum "manifests/blfs-xfce-gtkdeps2.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-gtkdeps2" }}-{{ checksum "scripts/fetch-blfs-xfce-gtkdeps2-sources.sh" }}
+            - blfs-12.4-xfce-gtk3-sources-v1-{{ checksum "manifests/blfs-xfce-gtk3.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-gtk3" }}-{{ checksum "scripts/fetch-blfs-xfce-gtk3-sources.sh" }}
       - run:
-          name: Download and verify official GTK dependency sources
+          name: Download and verify official GTK3 source
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-xfce-gtkdeps2-sources bash scripts/fetch-blfs-xfce-gtkdeps2-sources.sh 2>&1 | tee artifacts/blfs-xfce-gtkdeps2-sources-circleci.log
+            LFS=/home/circleci/blfs-xfce-gtk3-sources bash scripts/fetch-blfs-xfce-gtk3-sources.sh 2>&1 | tee artifacts/blfs-xfce-gtk3-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-xfce-gtkdeps2-sources-v1-{{ checksum "manifests/blfs-xfce-gtkdeps2.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-gtkdeps2" }}-{{ checksum "scripts/fetch-blfs-xfce-gtkdeps2-sources.sh" }}
+          key: blfs-12.4-xfce-gtk3-sources-v1-{{ checksum "manifests/blfs-xfce-gtk3.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-gtk3" }}-{{ checksum "scripts/fetch-blfs-xfce-gtk3-sources.sh" }}
           paths:
-            - /home/circleci/blfs-xfce-gtkdeps2-sources
+            - /home/circleci/blfs-xfce-gtk3-sources
       - run:
-          name: Build image Pango schema and accessibility dependencies with native smoke tests
+          name: Build GTK3 and run a native Broadway smoke test
           command: |
             set -o pipefail
-            bash scripts/run-blfs-xfce-gtkdeps2.sh 2>&1 | tee artifacts/blfs-xfce-gtkdeps2-host.log
+            bash scripts/run-blfs-xfce-gtk3.sh 2>&1 | tee artifacts/blfs-xfce-gtk3-host.log
       - save_cache:
-          key: blfs-12.4-xfce-gtkdeps2-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-gtkdeps2-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-gtkdeps2.sh" }}
+          key: blfs-12.4-xfce-gtk3-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-gtk3-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-gtk3.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -697,4 +697,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-xfce-gtkdeps2
+      - blfs-xfce-gtk3
