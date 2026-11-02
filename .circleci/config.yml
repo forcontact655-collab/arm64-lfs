@@ -221,7 +221,7 @@ jobs:
   blfs-graphics1:
     machine:
       image: ubuntu-2404:current
-    resource_class: arm.medium
+    resource_class: arm.large
     steps:
       - checkout
       - restore_cache:
