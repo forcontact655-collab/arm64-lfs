@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds libxfce4util 4.20.1 and Xfconf 4.20.0, QtBase, QtShaderTools, QtSvg, QtDeclarative, and Qt5Compat 6.9.2, the QtTools Linguist utilities, Extra CMake Modules and Attica 6.17.0, and the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
+The current verified checkpoint adds FriBidi 1.0.16, pixman 0.46.4, Cairo 1.18.4, libepoxy 1.5.10, libxfce4util 4.20.1, and Xfconf 4.20.0, QtBase, QtShaderTools, QtSvg, QtDeclarative, and Qt5Compat 6.9.2, the QtTools Linguist utilities, Extra CMake Modules and Attica 6.17.0, and the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
 
 ## Safety and scope
 
@@ -169,6 +169,12 @@ CircleCI pipeline **#36**, at commit `bb1dff51de569067f85541ec60f1e73032984032`,
 
 The verified rootfs is saved as the `blfs-12.4-xfce-xfconf1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. libxfce4util and Xfconf are installed, but a full XFCE desktop and a bootable system are not claimed.
 
-## Active BLFS xfce-gtkdeps1 stage
+## Completed BLFS xfce-gtkdeps1 — 2026-11-02
 
-The next unverified stage restores the accepted Xfconf checkpoint and builds four prerequisites for the GTK3 dependency chain: FriBidi **1.0.16**, pixman **0.46.4**, Cairo **1.18.4**, and libepoxy **1.5.10**. Cairo is deliberately built after the existing HarfBuzz 11.4.1 installation. The stage runs the available FriBidi, pixman, and libepoxy test suites and compiles a native AArch64 smoke executable that exercises all four new libraries and writes a Cairo PNG. GTK3, Pango, GDK-Pixbuf, at-spi2-core, and libxfce4ui are not built by this stage.
+CircleCI pipeline **#38**, at commit `359f6673adaa24afbc0a93b05895597c4eeabd13`, restored the accepted Xfconf checkpoint and built FriBidi **1.0.16**, pixman **0.46.4**, Cairo **1.18.4**, and libepoxy **1.5.10**. Pipeline #37 had stopped before Cairo compilation because Meson defaulted to `lib64`; the corrected stage explicitly uses `--libdir=lib`. All ten job steps succeeded, and twelve artifacts were downloaded for separate inspection.
+
+Acceptance verified **8 passed / 0 failed** FriBidi tests, **35 / 0** pixman tests, and **4 / 0** libepoxy tests with **13 display-dependent skips**. A compiled native AArch64 smoke executable exercised all four libraries and wrote a verified 32×32 Cairo PNG. The source SHA-256 manifest matched the independently downloaded sources. The verified rootfs is saved as the `blfs-12.4-xfce-gtkdeps1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. GTK3, Pango, GDK-Pixbuf, at-spi2-core, and libxfce4ui remain separate later stages; the system is not bootable.
+
+## Active BLFS xfce-gtkdeps2 stage
+
+The next unverified stage restores gtkdeps1 and builds libjpeg-turbo **3.0.1**, GDK-Pixbuf **2.42.12**, Pango **1.56.4**, gsettings-desktop-schemas **48.0**, and at-spi2-core **2.56.4**. It runs the libjpeg and GDK-Pixbuf suites, runs Pango tests except the three font-data tests explicitly documented by BLFS as failing without font data, and compiles a native AArch64 smoke test for JPEG/PNG loading, a Pango layout, Cairo PNG output, AT-SPI versioning, and the installed GSettings schema. The AT-SPI graphical test suite is not claimed. GTK3 and libxfce4ui are not built by this stage.
