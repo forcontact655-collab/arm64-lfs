@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds QtBase, QtShaderTools, QtSvg, QtDeclarative, and Qt5Compat 6.9.2, the QtTools Linguist utilities, Extra CMake Modules and Attica 6.17.0, and the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full Qt, full KDE Frameworks, or Plasma build.
+The current verified checkpoint adds libxfce4util 4.20.1, QtBase, QtShaderTools, QtSvg, QtDeclarative, and Qt5Compat 6.9.2, the QtTools Linguist utilities, Extra CMake Modules and Attica 6.17.0, and the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full XFCE, full Qt, full KDE Frameworks, or Plasma build.
 
 ## Safety and scope
 
@@ -157,6 +157,12 @@ CircleCI pipeline **#33**, at commit `b284363397942f53a6ec2df5594b5431ddf69b4c`,
 
 The verified rootfs is saved as the `blfs-12.4-kf6-attica1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. Only Attica is installed from KF6; the remaining Frameworks and Plasma are absent. The owner then directed an XFCE-first route for a faster initial desktop, so further KF6 stages are paused at this verified checkpoint. The system is not bootable.
 
-## Active BLFS xfce-libxfce4util1 stage
+## Completed BLFS xfce-libxfce4util1 — 2026-11-02
 
-Following the owner's XFCE-first decision, this stage starts the shorter initial-desktop route while preserving the accepted Attica checkpoint. It builds libxfce4util **4.20.1**, the first package in the BLFS XFCE order, against the existing GLib/GObject Introspection stack. Vala and GTK-Doc remain optional and are disabled. Acceptance checks the installed GIR/typelib files and runs a compiled native AArch64 smoke test through `libxfce4util-1.0`. Only this XFCE utility library is being installed; a full XFCE desktop and a bootable system are not claimed.
+CircleCI pipeline **#35**, at commit `1e4ebdf9eadec109d3db47ace54b43296413e7e3`, restored the accepted Attica checkpoint and built libxfce4util **4.20.1** with GObject Introspection. All ten job steps succeeded, and seven artifacts were downloaded for separate inspection. Pipeline #34 had failed only because the acceptance script looked for `xfce4-kiosk-query` in `/usr/bin` instead of its actual `/usr/sbin` location; the corrected stage was then verified end to end.
+
+Acceptance checked the GIR/typelib installation and ran a compiled native AArch64 smoke test through `libxfce4util-1.0`. The verified rootfs is saved as the `blfs-12.4-xfce-libxfce4util1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. Only this XFCE utility library is installed; a full XFCE desktop and a bootable system are not claimed.
+
+## Active BLFS xfce-xfconf1 stage
+
+This second XFCE stage restores libxfce4util1 and builds Xfconf **4.20.0**, the Xfce configuration storage system. Optional Vala and GTK-Doc support are disabled; GObject Introspection remains enabled. Acceptance checks `xfconf-query`, `xfconfd`, the D-Bus activation service and GIR/typelib files, then creates and reads back an integer property through a private `dbus-run-session`. Test configuration is isolated under `/tmp` and removed. This is not yet a full XFCE desktop or a bootable system.

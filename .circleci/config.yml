@@ -592,7 +592,41 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-xfce-xfconf1:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-xfce-libxfce4util1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-libxfce4util1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-libxfce4util1.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-xfce-xfconf1-sources-v1-{{ checksum "manifests/blfs-xfce-xfconf1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-xfconf1" }}-{{ checksum "scripts/fetch-blfs-xfce-xfconf1-sources.sh" }}
+      - run:
+          name: Download and verify official Xfconf source
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-xfce-xfconf1-sources bash scripts/fetch-blfs-xfce-xfconf1-sources.sh 2>&1 | tee artifacts/blfs-xfce-xfconf1-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-xfce-xfconf1-sources-v1-{{ checksum "manifests/blfs-xfce-xfconf1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-xfconf1" }}-{{ checksum "scripts/fetch-blfs-xfce-xfconf1-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-xfce-xfconf1-sources
+      - run:
+          name: Build Xfconf and run isolated D-Bus configuration smoke test
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-xfce-xfconf1.sh 2>&1 | tee artifacts/blfs-xfce-xfconf1-host.log
+      - save_cache:
+          key: blfs-12.4-xfce-xfconf1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-xfconf1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-xfconf1.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-xfce-libxfce4util1
+      - blfs-xfce-xfconf1
