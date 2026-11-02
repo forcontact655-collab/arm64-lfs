@@ -52,7 +52,7 @@ else
   mv "$SOURCES/certdata.txt.part" "$SOURCES/certdata.txt"
 fi
 
-[[ "$count" -eq 16 ]]
+[[ "$count" -eq 19 ]]
 (cd "$SOURCES" && md5sum -c "$MD5_MANIFEST")
 : >"$ARTIFACTS/blfs-core1-source-sha256sums.txt"
 while read -r _ name; do

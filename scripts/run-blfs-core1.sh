@@ -46,9 +46,9 @@ sudo -n cat "$LFS/root/blfs-core1-report.txt" >"$ARTIFACTS/blfs-core1-report.txt
 sudo -n cat "$LFS/root/blfs-core1-progress.txt" >"$ARTIFACTS/blfs-core1-progress.txt"
 sudo -n rm -f "$LFS/root/build-blfs-core1-chroot.sh" "$LFS/root/blfs-core1-report.txt" "$LFS/root/blfs-core1-progress.txt"
 grep -q '^BLFS_CORE1_RESULT=ok$' "$ARTIFACTS/blfs-core1-report.txt"
-grep -q '^PACKAGE_COUNT=15$' "$ARTIFACTS/blfs-core1-report.txt"
+grep -q '^PACKAGE_COUNT=18$' "$ARTIFACTS/blfs-core1-report.txt"
 grep -q '^NATIVE_BINARY_EXEC=BLFS_CORE1_EXEC_OK$' "$ARTIFACTS/blfs-core1-report.txt"
 grep -q '^KDE=absent$' "$ARTIFACTS/blfs-core1-report.txt"
-[[ "$(grep -c '^BLFS_CORE1_BUILT=' "$ARTIFACTS/blfs-core1-progress.txt")" -eq 15 ]]
+[[ "$(grep -c '^BLFS_CORE1_BUILT=' "$ARTIFACTS/blfs-core1-progress.txt")" -eq 18 ]]
 cat "$ARTIFACTS/blfs-core1-report.txt"
 trap - EXIT

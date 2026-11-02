@@ -138,6 +138,35 @@ install -vdm755 /etc/ssl/local
 [[ "$(find /etc/ssl/certs -mindepth 1 -maxdepth 1 | wc -l)" -ge 100 ]]
 finish_package
 
+printf 'BUILD_BLFS_CORE1=libunistring\n'
+extract libunistring-1.3.tar.xz
+./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/libunistring-1.3
+make
+make install
+finish_package
+
+printf 'BUILD_BLFS_CORE1=libidn2\n'
+extract libidn2-2.3.8.tar.gz
+./configure --prefix=/usr --disable-static
+make
+make install
+finish_package
+
+printf 'BUILD_BLFS_CORE1=libpsl\n'
+extract libpsl-0.21.5.tar.gz
+mkdir build
+cd build
+meson setup --prefix=/usr       \
+            --libdir=lib        \
+            --buildtype=release \
+            ..
+ninja
+ninja install
+finish_package
+pkg-config --exists libpsl
+
 printf 'BUILD_BLFS_CORE1=curl\n'
 extract curl-8.15.0.tar.xz
 ./configure --prefix=/usr    \
@@ -249,8 +278,9 @@ make
 make install
 finish_package
 
-[[ "$(grep -c '^BLFS_CORE1_BUILT=' "$PROGRESS")" -eq 15 ]]
-pkg-config --exists glib-2.0 libxml-2.0 dbus-1
+[[ "$(grep -c '^BLFS_CORE1_BUILT=' "$PROGRESS")" -eq 18 ]]
+pkg-config --exists glib-2.0 libxml-2.0 dbus-1 libpsl
+curl --version | grep -q ' PSL'
 cat >/tmp/blfs-core1-smoke.c <<'EOF'
 #include <glib.h>
 #include <libxml/parser.h>
@@ -271,12 +301,13 @@ INTERPRETER="$(readelf -l /tmp/blfs-core1-smoke | sed -n 's/.*Requesting program
 [[ -s /etc/pki/tls/certs/ca-bundle.crt ]]
 {
   printf 'BLFS_CORE1_RESULT=ok\n'
-  printf 'PACKAGE_COUNT=15\n'
+  printf 'PACKAGE_COUNT=18\n'
   printf 'ARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=%s\n' "$OUTPUT"
   printf 'DYNAMIC_LINKER=%s\n' "$INTERPRETER"
   printf 'CMAKE=%s\n' "$(cmake --version | sed -n '1p')"
   printf 'CURL=%s\n' "$(curl --version | sed -n '1p')"
+  printf 'LIBPSL=%s\n' "$(pkg-config --modversion libpsl)"
   printf 'DBUS=%s\n' "$(pkg-config --modversion dbus-1)"
   printf 'GLIB=%s\n' "$(pkg-config --modversion glib-2.0)"
   printf 'DOCUTILS=%s\n' "$(python3 -c 'import docutils; print(docutils.__version__)')"
