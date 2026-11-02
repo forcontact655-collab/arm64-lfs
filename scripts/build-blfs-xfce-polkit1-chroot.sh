@@ -129,10 +129,14 @@ meson setup .. \
   -D authfw=shadow \
   -D os_type=lfs
 ninja
+POLKIT_TEST_ETC=/tmp/blfs-xfce-polkit1-test-etc
+rm -rf "$POLKIT_TEST_ETC"
+cp -a /sources/polkit-126/test/data/etc "$POLKIT_TEST_ETC"
+cp /etc/ld.so.cache "$POLKIT_TEST_ETC/ld.so.cache"
 set +e
 unshare --mount --propagation private /bin/bash -c '
   set -euo pipefail
-  mount --bind /sources/polkit-126/test/data/etc /etc
+  mount --bind /tmp/blfs-xfce-polkit1-test-etc /etc
   export POLKIT_TEST_DATA=/sources/polkit-126/test/data
   cd /sources/polkit-126/build
   for name in polkitunixusertest polkitunixgrouptest polkitunixnetgrouptest polkitidentitytest; do
@@ -144,6 +148,7 @@ unshare --mount --propagation private /bin/bash -c '
 POLKIT_TEST_STATUS=$?
 set -e
 cat "$POLKIT_TESTLOG"
+rm -rf "$POLKIT_TEST_ETC"
 [[ "$POLKIT_TEST_STATUS" -eq 0 ]]
 for name in polkitunixusertest polkitunixgrouptest polkitunixnetgrouptest polkitidentitytest; do
   grep -q "^POLKIT_UNIT_PASS=$name$" "$POLKIT_TESTLOG"
