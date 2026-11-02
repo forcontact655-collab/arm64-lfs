@@ -194,7 +194,7 @@ int main(void) {
   int value;
   if (context == NULL)
     return 1;
-  if (duk_eval_string(context, "1 + 1") != 0)
+  if (duk_peval_string(context, "1 + 1") != 0)
     return 1;
   value = duk_get_int(context, -1);
   duk_destroy_heap(context);
