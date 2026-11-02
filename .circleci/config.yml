@@ -762,7 +762,41 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-xfce-core-final1:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-xfce-xfce4-settings1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-xfce4-settings1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-xfce4-settings1.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-xfce-core-final1-sources-v1-{{ checksum "manifests/blfs-xfce-core-final1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-core-final1" }}-{{ checksum "scripts/fetch-blfs-xfce-core-final1-sources.sh" }}
+      - run:
+          name: Download and verify official final XFCE core sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-xfce-core-final1-sources bash scripts/fetch-blfs-xfce-core-final1-sources.sh 2>&1 | tee artifacts/blfs-xfce-core-final1-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-xfce-core-final1-sources-v1-{{ checksum "manifests/blfs-xfce-core-final1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-core-final1" }}-{{ checksum "scripts/fetch-blfs-xfce-core-final1-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-xfce-core-final1-sources
+      - run:
+          name: Build Xfdesktop Xfwm4 and xfce4-session with native version smokes
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-xfce-core-final1.sh 2>&1 | tee artifacts/blfs-xfce-core-final1-host.log
+      - save_cache:
+          key: blfs-12.4-xfce-core-final1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-core-final1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-core-final1.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-xfce-xfce4-settings1
+      - blfs-xfce-core-final1

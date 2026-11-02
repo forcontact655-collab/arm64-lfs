@@ -281,8 +281,14 @@ CircleCI pipeline **#74**, at commit `87c2e33617538e01107e9be66d52b7003ebe6d7b`,
 
 Acceptance verified the native SQLite `3.50.4|4` query because upstream provides no test suite, the lcms2 `make check` testcms run, JSON-GLib **17/17**, both selected libgusb Meson tests, all seven wrapped `gusb-self-test` subtests with the virtual Canon `04a9:31c0`, and four colord suites with three passes plus the expected `colord-test-daemon` skip. The udev hwdb was generated and used for the EDID vendor tests. GUsb/Colord VAPIs and the native four-library AArch64 smoke were also verified. Optional libtiff and Bash Completion remain absent/disabled; no real USB device, color daemon, or color-management operation is claimed. Pipelines #71, #72, and #73 remain failed and unaccepted and will not be rerun.
 
-## Active BLFS xfce-xfce4-settings1 correction stage — 2026-11-03
+## Completed BLFS xfce-xfce4-settings1 — 2026-11-03
 
-The active stage restores accepted color-deps1 and builds LXDE Icon Theme **0.5.1** plus xfce4-settings **4.20.2** from official verified sources. It requires `--enable-colord`, preserves `config.h` with `HAVE_COLORD=1`, checks the dynamic libcolord link, refreshes the nuoveXT2 icon cache, and requires all twelve settings programs including `xfce4-color-settings`.
+CircleCI pipeline **#75**, at commit `7584173b7665cab87cedf9be6d6caf15d3b31f80`, restored accepted color-deps1 and built LXDE Icon Theme **0.5.1** plus xfce4-settings **4.20.2**. All ten job steps succeeded; eight artifacts were independently inspected. Acceptance verified all twelve settings programs, `HAVE_COLORD=1` in the saved `config.h`, the libcolord link, the nuoveXT2 icon cache, and native Broadway version execution of both `xfce4-settings-manager` and `xfce4-color-settings`.
 
-The native Broadway smoke executes both `xfce4-settings-manager --version` and `xfce4-color-settings --version`; it does not start the settings GUI, xfsettingsd, a D-Bus session, or change color/display settings. Pipeline #67 remains failed and unaccepted and will not be rerun. After this checkpoint is independently accepted, Xfdesktop, Xfwm4, and xfce4-session remain. KDE is paused at Attica, Plasma is absent, and the system is not bootable.
+The verified rootfs is saved as the `blfs-12.4-xfce-xfce4-settings1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. XFCE core is now **15/18**; no settings GUI, xfsettingsd, D-Bus session, or color/display operation is claimed. Pipeline #67 remains failed and unaccepted and will not be rerun.
+
+## Active BLFS xfce-core-final1 stage — 2026-11-03
+
+The active stage restores accepted settings1 and builds the remaining three official XFCE core packages in book order: Xfdesktop **4.20.1**, Xfwm4 **4.20.0**, and xfce4-session **4.20.3** with legacy session management disabled. All required dependencies are already present. None of the three packages provides an upstream test suite.
+
+Acceptance requires nine AArch64 ELF programs plus the `startxfce4` and `xflock4` scripts, refreshed desktop and MIME databases, and three native Broadway version smokes: `xfdesktop-settings`, `xfwm4-workspace-settings`, and `xfce4-session-settings`. These version paths were selected from source because they return before window-manager or session operations. The stage does not start Xfdesktop, Xfwm4, xfce4-session, xfsettingsd, or a D-Bus session. `DESKTOP_LAUNCH=not-tested` and `BOOTABLE=no` remain explicit even after all **18/18** core packages are built. KDE remains paused at Attica and Plasma is absent.
