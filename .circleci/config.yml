@@ -660,6 +660,40 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-xfce-color-deps1:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-xfce-xfce4-power-manager1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-xfce4-power-manager1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-xfce4-power-manager1.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-xfce-color-deps1-sources-v1-{{ checksum "manifests/blfs-xfce-color-deps1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-color-deps1" }}-{{ checksum "scripts/fetch-blfs-xfce-color-deps1-sources.sh" }}
+      - run:
+          name: Download and verify official color dependency sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-xfce-color-deps1-sources bash scripts/fetch-blfs-xfce-color-deps1-sources.sh 2>&1 | tee artifacts/blfs-xfce-color-deps1-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-xfce-color-deps1-sources-v1-{{ checksum "manifests/blfs-xfce-color-deps1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-color-deps1" }}-{{ checksum "scripts/fetch-blfs-xfce-color-deps1-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-xfce-color-deps1-sources
+      - run:
+          name: Build lcms2 JSON-GLib libgusb and colord with tests and native smoke
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-xfce-color-deps1.sh 2>&1 | tee artifacts/blfs-xfce-color-deps1-host.log
+      - save_cache:
+          key: blfs-12.4-xfce-color-deps1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-color-deps1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-color-deps1.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
   blfs-xfce-xfce4-settings1:
     machine:
       image: ubuntu-2404:current
@@ -697,4 +731,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-xfce-xfce4-settings1
+      - blfs-xfce-color-deps1
