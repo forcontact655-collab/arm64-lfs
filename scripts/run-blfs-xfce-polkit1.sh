@@ -23,7 +23,7 @@ sudo -n true
 cleanup() {
   set +e
   local path
-  for path in "$LFS/sources" "$LFS/dev/pts" "$LFS/sys" "$LFS/proc" "$LFS/run" "$LFS/dev"; do
+  for path in "$LFS/sources" "$LFS/dev/pts" "$LFS/sys" "$LFS/proc" "$LFS/run" "$LFS/dev" "$LFS"; do
     if mountpoint -q "$path"; then sudo -n umount "$path"; fi
   done
   if [[ -d "$HOST_SOURCES" ]]; then sudo -n chown -R "$(id -u):$(id -g)" "$HOST_SOURCES"; fi
@@ -31,6 +31,8 @@ cleanup() {
 }
 trap cleanup EXIT
 sudo -n chown -R root:root "$LFS"
+sudo -n mount --bind "$LFS" "$LFS"
+sudo -n mount --make-rprivate "$LFS"
 sudo -n mkdir -p "$LFS"/{dev,proc,sys,run,sources}
 sudo -n install -m 0755 "$REPO/scripts/build-blfs-xfce-polkit1-chroot.sh" "$LFS/root/build-blfs-xfce-polkit1-chroot.sh"
 sudo -n mount --bind "$HOST_SOURCES" "$LFS/sources"
@@ -69,7 +71,7 @@ for line in open(sys.argv[1], encoding='utf-8'):
         records.append(current)
         current = None
 assert len(records) >= 10, len(records)
-unexpected = [r for r in records if r['result'] != 'exit status 0' and r['result'] != 'exit status 77' and r['name'] not in known]
+unexpected = [r for r in records if r['result'] != 'exit status 0' and r['result'] != 'exit status 77' and r['name'].rsplit(' / ', 1)[-1] not in known]
 assert not unexpected, unexpected
 PY
 for name in polkitunixusertest polkitunixgrouptest polkitunixnetgrouptest polkitidentitytest; do
@@ -82,6 +84,7 @@ grep -q '^NATIVE_BINARY_EXEC=duktape-polkit-c-and-version-tools$' "$ARTIFACTS/bl
 grep -q '^DUKTAPE=2.7.0$' "$ARTIFACTS/blfs-xfce-polkit1-report.txt"
 grep -q '^DUKTAPE_TEST_SUITE=not-provided-by-blfs$' "$ARTIFACTS/blfs-xfce-polkit1-report.txt"
 grep -q '^ELOGIND=255.17$' "$ARTIFACTS/blfs-xfce-polkit1-report.txt"
+grep -q '^OS_RELEASE=etc-os-release-lfs-12.4$' "$ARTIFACTS/blfs-xfce-polkit1-report.txt"
 grep -q '^ELOGIND_TESTS=no-unexpected-failures$' "$ARTIFACTS/blfs-xfce-polkit1-report.txt"
 grep -q '^ELOGIND_KNOWN_FAILURE_POLICY=only-test-login+dbus-docs-fresh+check-version-history-allowed$' "$ARTIFACTS/blfs-xfce-polkit1-report.txt"
 grep -q '^ELOGIND_PAM=disabled-recommended-deferred$' "$ARTIFACTS/blfs-xfce-polkit1-report.txt"

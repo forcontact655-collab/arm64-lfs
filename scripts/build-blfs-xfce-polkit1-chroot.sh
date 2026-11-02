@@ -66,7 +66,16 @@ meson setup .. \
   -D dev-kvm-mode=0660 \
   -D dbuspolicydir=/etc/dbus-1/system.d
 ninja
-export LC_ALL=C
+if [[ ! -e /etc/os-release && ! -e /usr/lib/os-release ]]; then
+  cat >/etc/os-release <<'EOF'
+NAME="Linux From Scratch"
+ID=lfs
+VERSION_ID="12.4"
+VERSION="12.4"
+PRETTY_NAME="Linux From Scratch 12.4"
+EOF
+fi
+export LC_ALL=C.UTF-8
 set +e
 meson test --print-errorlogs
 ELOGIND_TEST_STATUS=$?
@@ -86,7 +95,7 @@ for line in open(sys.argv[1], encoding='utf-8'):
         records.append(current)
         current = None
 assert len(records) >= 10, len(records)
-unexpected = [r for r in records if r['result'] != 'exit status 0' and r['result'] != 'exit status 77' and r['name'] not in known]
+unexpected = [r for r in records if r['result'] != 'exit status 0' and r['result'] != 'exit status 77' and r['name'].rsplit(' / ', 1)[-1] not in known]
 assert not unexpected, unexpected
 print('ELOGIND_TEST_RECORDS=%d' % len(records))
 print('ELOGIND_UNEXPECTED_FAILURES=0')
@@ -215,6 +224,7 @@ set +x
   printf 'DUKTAPE=2.7.0\n'
   printf 'DUKTAPE_TEST_SUITE=not-provided-by-blfs\n'
   printf 'ELOGIND=255.17\n'
+  printf 'OS_RELEASE=etc-os-release-lfs-12.4\n'
   printf 'ELOGIND_TESTS=no-unexpected-failures\n'
   printf 'ELOGIND_KNOWN_FAILURE_POLICY=only-test-login+dbus-docs-fresh+check-version-history-allowed\n'
   printf 'ELOGIND_PAM=disabled-recommended-deferred\n'
