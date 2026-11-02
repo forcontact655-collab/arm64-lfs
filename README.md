@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds the XCB Utilities and double-conversion Qt dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, Qt, or KDE build.
+The current verified checkpoint adds QtBase 6.9.2 and the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full Qt, or KDE build.
 
 ## Safety and scope
 
@@ -115,6 +115,8 @@ CircleCI pipeline **#19**, at commit `6434abf624dabe70bc14170a5f8530f1e86550e4`,
 
 CircleCI pipeline **#20**, at commit `a4176c6bb7f490a96a36b2babd7129044baf4748`, restored Mesa1 and built seven packages: xcb-util, the five official XCB Utilities packages, and double-conversion 3.3.1. All nine double-conversion tests passed, and a native AArch64 executable loaded every new shared library. ICU 77.1 from display1 was reused rather than rebuilt. The rootfs is saved as the `blfs-12.4-qtdeps1-aarch64-v1` CircleCI cache checkpoint; Qt and KDE remain absent.
 
-## Active BLFS qtbase1 stage
+## Completed BLFS qtbase1 — 2026-11-02
 
-The next stage restores qtdeps1 and builds the official QtBase 6.9.2 submodule archive rather than the full 47 GB Qt source build. The source is SHA-256-verified. The checkpoint requires the system double-conversion, PCRE2, ICU, XCB, Fontconfig, FreeType, HarfBuzz, Mesa/EGL, D-Bus, and OpenSSL dependencies, then runs a native offscreen Qt GUI smoke test. Qt's bundled SQLite is selected because system SQLite has not been built. Further Qt modules, Frameworks, and Plasma remain later stages.
+CircleCI pipeline **#26**, at commit `ebb1e95c4e4f80168e3013525da57697cc695108`, restored qtdeps1 and built the official QtBase **6.9.2** submodule archive rather than the full 47 GB Qt source build. Five authenticated artifacts were inspected separately from the green job status. The report verifies a native AArch64 offscreen Qt GUI smoke test, the XCB and offscreen platform plugins, bundled SQLite, and the `/lib/ld-linux-aarch64.so.1` interpreter.
+
+The verified rootfs is saved as the `blfs-12.4-qtbase1-aarch64-v1` CircleCI cache checkpoint. Further Qt modules, Frameworks, and Plasma remain later stages; the system is not bootable and no KDE is installed.
