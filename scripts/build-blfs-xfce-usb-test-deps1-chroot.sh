@@ -121,14 +121,15 @@ set -x
 for library in libpcap.so libvala-0.56.so libumockdev.so libumockdev-preload.so; do
   [[ -e "/usr/lib/$library" ]]
 done
-for program in /usr/bin/valac-0.56 /usr/bin/vapigen-0.56 /usr/bin/vala-gen-introspect-0.56 /usr/bin/umockdev-run /usr/bin/umockdev-record; do
+for program in /usr/bin/valac-0.56 /usr/bin/vapigen-0.56 /usr/bin/umockdev-run /usr/bin/umockdev-record; do
   [[ -x "$program" ]]
   readelf -h "$program" | grep -q 'Machine:.*AArch64'
   readelf -l "$program" | grep -q '/lib/ld-linux-aarch64.so.1'
 done
-for program in /usr/bin/pcap-config /usr/bin/umockdev-wrapper /usr/bin/vala /usr/bin/valac /usr/bin/vapigen; do
+for program in /usr/bin/pcap-config /usr/bin/umockdev-wrapper /usr/bin/vala /usr/bin/valac /usr/bin/vapigen /usr/bin/vala-gen-introspect-0.56; do
   [[ -x "$program" ]]
 done
+[[ "$(head -n1 /usr/bin/vala-gen-introspect-0.56)" == '#!/bin/sh' ]]
 [[ -f /usr/share/gir-1.0/UMockdev-1.0.gir ]]
 [[ -f /usr/lib/girepository-1.0/UMockdev-1.0.typelib ]]
 [[ -f /usr/share/vala/vapi/umockdev-1.0.vapi ]]
@@ -182,6 +183,7 @@ set +x
   printf 'VALA=0.56.18\n'
   printf 'VALA_TEST_SUITE=make-check-passed\n'
   printf 'VALADOC=disabled-graphviz-absent\n'
+  printf 'VALA_GEN_INTROSPECT=shell-script-present\n'
   printf 'DBUS_SESSION=vala-tests-only-stopped\n'
   printf 'UMOCKDEV=0.19.3\n'
   printf 'UMOCKDEV_TEST_SUITE=meson-selected-passed\n'
