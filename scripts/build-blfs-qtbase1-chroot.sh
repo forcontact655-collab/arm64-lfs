@@ -18,9 +18,17 @@ QT6PREFIX=/opt/qt6
 [[ -x /usr/bin/ninja ]]
 [[ -d /sources ]]
 [[ -f /usr/lib/cmake/double-conversion/double-conversionConfig.cmake ]]
-pkg-config --exists xcb xcb-util xcb-image xcb-keysyms xcb-renderutil \
-  xcb-ewmh xcb-icccm xcb-cursor xkbcommon fontconfig freetype2 \
-  harfbuzz icu-uc egl gl sqlite3 dbus-1 openssl
+REQUIRED_PKG_MODULES=(
+  xcb xcb-util xcb-image xcb-keysyms xcb-renderutil xcb-ewmh xcb-icccm
+  xcb-cursor xkbcommon fontconfig freetype2 harfbuzz icu-uc egl gl
+  libpng16 zlib libpcre2-8 dbus-1 openssl
+)
+for module in "${REQUIRED_PKG_MODULES[@]}"; do
+  if ! pkg-config --exists "$module"; then
+    printf 'MISSING_PKG_CONFIG=%s\n' "$module"
+    exit 1
+  fi
+done
 : >"$PROGRESS"
 
 first="$(tar -tf "$SOURCES/qtbase-everywhere-src-6.9.2.tar.xz" | head -n1)" || true
@@ -36,7 +44,7 @@ printf 'BUILD_BLFS_QTBASE1=qtbase\n'
              -sysconfdir /etc/xdg \
              -dbus-linked \
              -openssl-linked \
-             -sqlite system \
+             -sqlite qt \
              -doubleconversion system \
              -pcre system \
              -zlib system \
@@ -124,6 +132,7 @@ INTERPRETER="$(readelf -l /tmp/blfs-qtbase1-smoke-build/blfs-qtbase1-smoke | sed
   printf 'NATIVE_BINARY_EXEC=BLFS_QTBASE1_EXEC_OK\n'
   printf 'DYNAMIC_LINKER=%s\n' "$INTERPRETER"
   printf 'QTBASE=%s\n' "$QT_VERSION"
+  printf 'SQLITE=bundled\n'
   printf 'QT_SMOKE=%s\n' "$OUTPUT"
   printf 'XCB_PLUGIN=present\n'
   printf 'OFFSCREEN_PLUGIN=present\n'

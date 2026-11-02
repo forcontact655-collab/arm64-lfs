@@ -117,4 +117,4 @@ CircleCI pipeline **#20**, at commit `a4176c6bb7f490a96a36b2babd7129044baf4748`,
 
 ## Active BLFS qtbase1 stage
 
-The next stage restores qtdeps1 and builds the official QtBase 6.9.2 submodule archive rather than the full 47 GB Qt source build. The source is SHA-256-verified. The checkpoint requires the system double-conversion, SQLite, ICU, XCB, Fontconfig, FreeType, HarfBuzz, Mesa/EGL, D-Bus, and OpenSSL dependencies, then runs a native offscreen Qt GUI smoke test. Further Qt modules, Frameworks, and Plasma remain later stages.
+The next stage restores qtdeps1 and builds the official QtBase 6.9.2 submodule archive rather than the full 47 GB Qt source build. The source is SHA-256-verified. The checkpoint requires the system double-conversion, PCRE2, ICU, XCB, Fontconfig, FreeType, HarfBuzz, Mesa/EGL, D-Bus, and OpenSSL dependencies, then runs a native offscreen Qt GUI smoke test. Qt's bundled SQLite is selected because system SQLite has not been built. Further Qt modules, Frameworks, and Plasma remain later stages.
