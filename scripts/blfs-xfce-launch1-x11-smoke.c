@@ -56,6 +56,8 @@ int main(int argc, char **argv) {
   int height = DisplayHeight(display, screen);
   printf("X11_CONNECTION=ok\nDISPLAY=%s\nSCREEN=%dx%d\n",
          DisplayString(display), width, height);
+  printf("SERVER_VENDOR=%s\nVENDOR_RELEASE=%d\n",
+         XServerVendor(display), XVendorRelease(display));
   if (width != 1280 || height != 800) {
     fprintf(stderr, "unexpected screen size\n");
     XCloseDisplay(display);

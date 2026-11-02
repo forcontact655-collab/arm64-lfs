@@ -198,6 +198,8 @@ DISPLAY=":$DISPLAY_NUMBER"
 DISPLAY="$DISPLAY" "$PROBE" server >"$X11_LOG"
 grep -q '^X11_CONNECTION=ok$' "$X11_LOG"
 grep -q '^SCREEN=1280x800$' "$X11_LOG"
+grep -q '^SERVER_VENDOR=The X.Org Foundation$' "$X11_LOG"
+grep -q '^VENDOR_RELEASE=12101018$' "$X11_LOG"
 
 setsid /usr/bin/env -i \
   PATH=/usr/bin:/usr/sbin \
@@ -228,7 +230,6 @@ grep -q '^X11_WM_CHECK=present$' "$X11_LOG"
 grep -qE '^X11_CLIENT_COUNT=[1-9][0-9]*$' "$X11_LOG"
 grep -qE '^SCREENSHOT_NON_BACKGROUND_PIXELS=[1-9][0-9]{3,}$' "$X11_LOG"
 grep -qE '^SCREENSHOT_DISTINCT_COLORS_CAPPED=([2-9]|[1-9][0-9]+)$' "$X11_LOG"
-grep -q 'X.Org X Server 1.21.1.18' "$XVFB_LOG"
 ! grep -q 'Could not invoke xkbcomp' "$XVFB_LOG"
 [[ -s "$SCREENSHOT" ]]
 dump_logs
@@ -248,6 +249,7 @@ set +x
   printf 'XKBCOMP=1.4.7\n'
   printf 'XKBCOMP_TEST_SUITE=not-provided\n'
   printf 'XORG_SERVER=21.1.18\n'
+  printf 'XORG_VENDOR_RELEASE=12101018\n'
   printf 'XORG_TEST_SUITE=ninja-test-passed\n'
   printf 'XORG_TESTS=5-ok+1-xts-skip+0-failed\n'
   printf 'XRDB=1.2.2\n'

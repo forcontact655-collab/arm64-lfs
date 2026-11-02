@@ -60,6 +60,7 @@ for expected in \
   'FONT_UTIL=1.4.1' \
   'XKBCOMP=1.4.7' \
   'XORG_SERVER=21.1.18' \
+  'XORG_VENDOR_RELEASE=12101018' \
   'XORG_TEST_SUITE=ninja-test-passed' \
   'XORG_TESTS=5-ok+1-xts-skip+0-failed' \
   'XRDB=1.2.2' \
@@ -101,7 +102,8 @@ grep -qE '^SCREENSHOT_DISTINCT_COLORS_CAPPED=([2-9]|[1-9][0-9]+)$' "$ARTIFACTS/b
 for name in xfce4-session xfwm4 xfdesktop xfce4-panel xfsettingsd; do
   awk -v n="$name" '$4 == n && $3 !~ /^Z/ { found=1 } END { exit !found }' "$ARTIFACTS/blfs-xfce-launch1-processes.txt"
 done
-grep -q 'X.Org X Server 1.21.1.18' "$ARTIFACTS/blfs-xfce-launch1-xvfb.log"
+grep -q '^SERVER_VENDOR=The X.Org Foundation$' "$ARTIFACTS/blfs-xfce-launch1-x11.txt"
+grep -q '^VENDOR_RELEASE=12101018$' "$ARTIFACTS/blfs-xfce-launch1-x11.txt"
 ! grep -q 'Could not invoke xkbcomp' "$ARTIFACTS/blfs-xfce-launch1-xvfb.log"
 python3 - "$ARTIFACTS/blfs-xfce-launch1-screen.png" <<'PY'
 from pathlib import Path
