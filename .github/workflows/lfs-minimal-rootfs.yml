@@ -1,0 +1,78 @@
+name: lfs-minimal-rootfs
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lfs-minimal-rootfs
+  cancel-in-progress: false
+
+jobs:
+  chapter6-7:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 360
+    env:
+      LFS: /home/runner/lfs
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore verified LFS sources
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/lfs/sources
+          key: lfs-12.4-sources-for-minimal-${{ hashFiles('manifests/md5sums') }}
+          restore-keys: |
+            lfs-12.4-sources-v1-${{ hashFiles('manifests/md5sums') }}-
+      - name: Restore verified chapter 5 toolchain
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            /home/runner/lfs/tools
+            /home/runner/lfs/usr
+            /home/runner/lfs/bin
+            /home/runner/lfs/lib
+            /home/runner/lfs/sbin
+            /home/runner/lfs/etc
+            /home/runner/lfs/var
+          key: lfs-12.4-ch5-aarch64-v1-${{ hashFiles('scripts/build-lfs-toolchain.sh', 'manifests/md5sums') }}
+          fail-on-cache-miss: true
+      - name: Build chapter 6 cross-compiled temporary tools
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts
+          bash scripts/build-lfs-chapter6.sh 2>&1 | tee artifacts/chapter6.log
+      - name: Build and verify chapter 7 minimal rootfs
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts
+          bash scripts/build-lfs-minimal-rootfs.sh 2>&1 | tee artifacts/chapter7.log
+      - name: Save verified minimal rootfs archive
+        uses: actions/cache/save@v4
+        with:
+          path: artifacts/lfs-12.4-ch7-aarch64-rootfs.tar.xz
+          key: lfs-12.4-ch7-aarch64-v1-${{ hashFiles('scripts/build-lfs-chapter6.sh', 'scripts/build-lfs-minimal-rootfs.sh', 'scripts/build-lfs-chapter7-chroot.sh', 'manifests/md5sums') }}
+      - name: Upload minimal rootfs verification logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lfs-minimal-rootfs-report
+          path: |
+            artifacts/chapter6.log
+            artifacts/chapter7.log
+            artifacts/minimal-rootfs-report.txt
+            artifacts/minimal-rootfs-dummy.log
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload verified ARM64 minimal rootfs
+        uses: actions/upload-artifact@v4
+        with:
+          name: lfs-minimal-rootfs-arm64
+          path: |
+            artifacts/lfs-12.4-ch7-aarch64-rootfs.tar.xz
+            artifacts/lfs-12.4-ch7-aarch64-rootfs.tar.xz.sha256
+          compression-level: 0
+          retention-days: 14

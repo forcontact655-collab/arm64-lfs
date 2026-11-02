@@ -1,8 +1,8 @@
 # ARM64 Linux From Scratch
 
-Experimental, staged **native AArch64 LFS** build for CircleCI Arm runners.
+Experimental, staged **native AArch64 LFS 12.4** build on standard public GitHub Actions ARM64 runners. CircleCI integration is postponed.
 
-The immediate goal is deliberately small: verify a native ARM64 runner and record the available build tools. This repository does **not** yet contain a complete LFS or KDE build.
+The current goal is a verified minimal rootfs that can later be tested separately under Termux/proot. This repository does **not** yet contain a complete bootable LFS or KDE build.
 
 ## Safety and scope
 
