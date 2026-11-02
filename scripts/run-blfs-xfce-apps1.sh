@@ -131,7 +131,7 @@ with tarfile.open(p,'r:xz') as t:
   q=PurePosixPath(m.name)
   assert not q.is_absolute() and '..' not in q.parts,m.name
   assert m.name=='.' or m.name.startswith('./'),m.name
-  assert not m.isdev() and not m.issock(),m.name
+  assert not m.isdev(),m.name
   assert not m.islnk(),('hardlink',m.name)
   hardlinks+=m.islnk();regular_bytes+=m.size if m.isreg() else 0
  terminal=t.extractfile('./usr/bin/xfce4-terminal').read()
