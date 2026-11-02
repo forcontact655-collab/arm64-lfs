@@ -81,14 +81,18 @@ export PKG_CONFIG_PATH="$QT6DIR/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
 export CMAKE_PREFIX_PATH="$QT6DIR:${CMAKE_PREFIX_PATH:-}"
 EOF
 /sbin/ldconfig
+export LC_ALL=C.UTF-8
+set -x
 
 [[ "$(grep -c '^BLFS_QTBASE1_BUILT=' "$PROGRESS")" -eq 1 ]]
 [[ -x /opt/qt6/bin/qmake6 ]]
 [[ -x /opt/qt6/bin/qtpaths6 ]]
 [[ -f /opt/qt6/lib/cmake/Qt6/Qt6Config.cmake ]]
 QT_VERSION="$(/opt/qt6/bin/qmake6 -query QT_VERSION)"
+printf 'QT_VERSION_QUERY=%s\n' "$QT_VERSION"
 [[ "$QT_VERSION" == 6.9.2 ]]
-PLUGIN_DIR="$(/opt/qt6/bin/qtpaths6 --plugin-dir)"
+PLUGIN_DIR="$QT6PREFIX/plugins"
+printf 'PLUGIN_DIR=%s\n' "$PLUGIN_DIR"
 [[ -f "$PLUGIN_DIR/libqxcb.so" ]]
 [[ -f "$PLUGIN_DIR/libqoffscreen.so" ]]
 
@@ -126,6 +130,7 @@ OUTPUT="$(QT_QPA_PLATFORM=offscreen XDG_RUNTIME_DIR=/tmp/blfs-qtbase1-runtime LI
 readelf -h /tmp/blfs-qtbase1-smoke-build/blfs-qtbase1-smoke | grep -q 'Machine:.*AArch64'
 INTERPRETER="$(readelf -l /tmp/blfs-qtbase1-smoke-build/blfs-qtbase1-smoke | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
 [[ "$INTERPRETER" == /lib/ld-linux-aarch64.so.1 ]]
+set +x
 {
   printf 'BLFS_QTBASE1_RESULT=ok\n'
   printf 'PACKAGE_COUNT=1\n'
@@ -133,6 +138,7 @@ INTERPRETER="$(readelf -l /tmp/blfs-qtbase1-smoke-build/blfs-qtbase1-smoke | sed
   printf 'NATIVE_BINARY_EXEC=BLFS_QTBASE1_EXEC_OK\n'
   printf 'DYNAMIC_LINKER=%s\n' "$INTERPRETER"
   printf 'QTBASE=%s\n' "$QT_VERSION"
+  printf 'QT_PLUGIN_DIR=%s\n' "$PLUGIN_DIR"
   printf 'SQLITE=bundled\n'
   printf 'QT_SMOKE=%s\n' "$OUTPUT"
   printf 'XCB_PLUGIN=present\n'
