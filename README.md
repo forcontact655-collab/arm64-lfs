@@ -68,3 +68,9 @@ The verified artifact was downloaded to an isolated directory on the owner-contr
 With the Termux `LD_PRELOAD` compatibility hook unset for the raw `proot` process, the launch test compiled and ran a new AArch64 executable inside the LFS rootfs. It printed `TERMUX_PROOT_EXEC_OK` and used `/lib/ld-linux-aarch64.so.1`. Bash 5.3, GCC 15.2, and Python 3.13.7 passed the smoke checks.
 
 The existing Arch installation was not modified. The downloaded archive was removed after success; the isolated LFS rootfs remains available for the next stage. KDE has not been built or started.
+
+## Verified KDE Frameworks and Plasma sources — 2026-11-02
+
+[GitHub Actions run 41424336962](https://github.com/forcontact655-collab/arm64-lfs/actions/runs/41424336962) downloaded and MD5-verified the active BLFS 12.4 package lists for KDE Frameworks 6.17.0 and Plasma 6.4.4. It saved 70 KF6 archives (111,180,268 bytes) and 56 Plasma archives (297,975,140 bytes) in a source cache and generated SHA-256 manifests for later checkpoints.
+
+This is only a source checkpoint. KDE dependencies, Qt, Frameworks, and Plasma have not been compiled yet. The CircleCI configuration now starts by restoring and smoke-testing the existing LFS rootfs rather than rebuilding it.
