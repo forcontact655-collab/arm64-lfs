@@ -120,3 +120,7 @@ CircleCI pipeline **#20**, at commit `a4176c6bb7f490a96a36b2babd7129044baf4748`,
 CircleCI pipeline **#26**, at commit `ebb1e95c4e4f80168e3013525da57697cc695108`, restored qtdeps1 and built the official QtBase **6.9.2** submodule archive rather than the full 47 GB Qt source build. Five authenticated artifacts were inspected separately from the green job status. The report verifies a native AArch64 offscreen Qt GUI smoke test, the XCB and offscreen platform plugins, bundled SQLite, and the `/lib/ld-linux-aarch64.so.1` interpreter.
 
 The verified rootfs is saved as the `blfs-12.4-qtbase1-aarch64-v1` CircleCI cache checkpoint. Further Qt modules, Frameworks, and Plasma remain later stages; the system is not bootable and no KDE is installed.
+
+## Active BLFS qtquickdeps1 stage
+
+This stage restores qtbase1 and builds the official QtShaderTools and QtSvg **6.9.2** submodule archives in dependency order. Both sources are SHA-256-verified. Acceptance requires a native `qsb` shader bake plus a compiled offscreen QtSvg render smoke test on AArch64. QtDeclarative/QML, Frameworks, and Plasma remain later stages.

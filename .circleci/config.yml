@@ -354,7 +354,41 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-qtquickdeps1:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-qtbase1-aarch64-v1-{{ checksum "scripts/build-blfs-qtbase1-chroot.sh" }}-{{ checksum "scripts/run-blfs-qtbase1.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-qtquickdeps1-sources-v1-{{ checksum "manifests/blfs-qtquickdeps1.sha256" }}-{{ checksum "manifests/wget-list-blfs-qtquickdeps1" }}-{{ checksum "scripts/fetch-blfs-qtquickdeps1-sources.sh" }}
+      - run:
+          name: Download and verify official QtShaderTools and QtSvg sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-qtquickdeps1-sources bash scripts/fetch-blfs-qtquickdeps1-sources.sh 2>&1 | tee artifacts/blfs-qtquickdeps1-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-qtquickdeps1-sources-v1-{{ checksum "manifests/blfs-qtquickdeps1.sha256" }}-{{ checksum "manifests/wget-list-blfs-qtquickdeps1" }}-{{ checksum "scripts/fetch-blfs-qtquickdeps1-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-qtquickdeps1-sources
+      - run:
+          name: Build QtShaderTools and QtSvg then run native smoke tests
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-qtquickdeps1.sh 2>&1 | tee artifacts/blfs-qtquickdeps1-host.log
+      - save_cache:
+          key: blfs-12.4-qtquickdeps1-aarch64-v1-{{ checksum "scripts/build-blfs-qtquickdeps1-chroot.sh" }}-{{ checksum "scripts/run-blfs-qtquickdeps1.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-qtbase1
+      - blfs-qtquickdeps1
