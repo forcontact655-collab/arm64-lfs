@@ -38,6 +38,7 @@ SMOKE_SOURCE=/root/blfs-xfce-color-deps1-smoke.c
 [[ ! -f /usr/include/tiffio.h ]]
 [[ -f /usr/share/hwdata/usb.ids ]]
 [[ -f /usr/share/hwdata/pnp.ids ]]
+grep -q '^GSM[[:space:]]' /usr/share/hwdata/pnp.ids
 [[ "$(pkg-config --modversion libjpeg)" == 3.0.1 ]]
 [[ "$(pkg-config --modversion libusb-1.0)" == 1.0.29 ]]
 [[ "$(pkg-config --modversion polkit-gobject-1)" == 126 ]]
@@ -218,7 +219,8 @@ meson setup .. \
   -D tests=true \
   -D man=false \
   -D docs=false \
-  -D daemon_user=colord
+  -D daemon_user=colord \
+  -D pnp_ids=/usr/share/hwdata/pnp.ids
 ninja
 mkdir -p /run/dbus
 dbus-uuidgen --ensure=/etc/machine-id
@@ -407,6 +409,7 @@ set +x
   printf 'COLORD_LIBCOLORDCOMPAT=present\n'
   printf 'COLORD_ARGYLL_SENSOR=disabled\n'
   printf 'COLORD_BASH_COMPLETION=disabled-optional-absent\n'
+  printf 'PNP_IDS=/usr/share/hwdata/pnp.ids\n'
   printf 'DBUS_SYSTEM=started-for-tests-stopped\n'
   printf 'COLORD_DAEMON=not-started\n'
   printf 'VALA=0.56.18-vapi-enabled\n'

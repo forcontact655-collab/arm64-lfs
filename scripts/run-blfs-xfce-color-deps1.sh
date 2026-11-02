@@ -79,6 +79,7 @@ grep -q '^USB_DEVICE_ACCESS=virtual-canon-only$' "$ARTIFACTS/blfs-xfce-color-dep
 grep -q '^COLORD=1.4.8$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^COLORD_TEST_SUITE=meson-passed$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^COLORD_BASH_COMPLETION=disabled-optional-absent$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
+grep -q '^PNP_IDS=/usr/share/hwdata/pnp.ids$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^DBUS_SYSTEM=started-for-tests-stopped$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^INTROSPECTION=Json+GUsb+Colord+Colorhug$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
 grep -q '^VAPI=GUsb+Colord$' "$ARTIFACTS/blfs-xfce-color-deps1-report.txt"
