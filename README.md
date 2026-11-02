@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds Mesa 25.1.8 with software llvmpipe rendering to graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, Qt, or KDE build.
+The current verified checkpoint adds the XCB Utilities and double-conversion Qt dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, Qt, or KDE build.
 
 ## Safety and scope
 
@@ -111,6 +111,10 @@ CircleCI pipeline **#16**, at commit `d351a947490615d0b2abf1f9b9963e12823d07f8`,
 
 CircleCI pipeline **#19**, at commit `6434abf624dabe70bc14170a5f8530f1e86550e4`, restored graphics1 and built Mesa **25.1.8** with `gallium-drivers=llvmpipe` and OpenCL/Vulkan disabled. The verified artifact report records three DRI entries and a native AArch64 EGL/OpenGL smoke test returning `llvmpipe (LLVM 20.1.8, 128 bits)`. The rootfs is saved as the `blfs-12.4-mesa1-aarch64-v1` CircleCI cache checkpoint. Qt and KDE remain absent; the system is not bootable.
 
-## Active BLFS qtdeps1 stage
+## Completed BLFS qtdeps1 — 2026-11-02
 
-The next stage restores Mesa1 and builds seven small Qt prerequisites: xcb-util, the five official XCB Utilities packages, and double-conversion 3.3.1 with its tests. ICU 77.1 is already present from display1 and is not rebuilt. QtBase and further Qt modules are deliberately split into later checkpoints rather than starting the full 47 GB Qt build in one job.
+CircleCI pipeline **#20**, at commit `a4176c6bb7f490a96a36b2babd7129044baf4748`, restored Mesa1 and built seven packages: xcb-util, the five official XCB Utilities packages, and double-conversion 3.3.1. All nine double-conversion tests passed, and a native AArch64 executable loaded every new shared library. ICU 77.1 from display1 was reused rather than rebuilt. The rootfs is saved as the `blfs-12.4-qtdeps1-aarch64-v1` CircleCI cache checkpoint; Qt and KDE remain absent.
+
+## Active BLFS qtbase1 stage
+
+The next stage restores qtdeps1 and builds the official QtBase 6.9.2 submodule archive rather than the full 47 GB Qt source build. The source is SHA-256-verified. The checkpoint requires the system double-conversion, SQLite, ICU, XCB, Fontconfig, FreeType, HarfBuzz, Mesa/EGL, D-Bus, and OpenSSL dependencies, then runs a native offscreen Qt GUI smoke test. Further Qt modules, Frameworks, and Plasma remain later stages.

@@ -320,7 +320,41 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-qtbase1:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-qtdeps1-aarch64-v1-{{ checksum "scripts/build-blfs-qtdeps1-chroot.sh" }}-{{ checksum "scripts/run-blfs-qtdeps1.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-qtbase1-sources-v1-{{ checksum "manifests/blfs-qtbase1.sha256" }}-{{ checksum "manifests/wget-list-blfs-qtbase1" }}-{{ checksum "scripts/fetch-blfs-qtbase1-sources.sh" }}
+      - run:
+          name: Download and verify official QtBase source
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-qtbase1-sources bash scripts/fetch-blfs-qtbase1-sources.sh 2>&1 | tee artifacts/blfs-qtbase1-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-qtbase1-sources-v1-{{ checksum "manifests/blfs-qtbase1.sha256" }}-{{ checksum "manifests/wget-list-blfs-qtbase1" }}-{{ checksum "scripts/fetch-blfs-qtbase1-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-qtbase1-sources
+      - run:
+          name: Build QtBase and run offscreen GUI smoke test
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-qtbase1.sh 2>&1 | tee artifacts/blfs-qtbase1-host.log
+      - save_cache:
+          key: blfs-12.4-qtbase1-aarch64-v1-{{ checksum "scripts/build-blfs-qtbase1-chroot.sh" }}-{{ checksum "scripts/run-blfs-qtbase1.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-qtdeps1
+      - blfs-qtbase1
