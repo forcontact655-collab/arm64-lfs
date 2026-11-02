@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds QtBase, QtShaderTools, QtSvg, and QtDeclarative 6.9.2 plus the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full Qt, or KDE build.
+The current verified checkpoint adds QtBase, QtShaderTools, QtSvg, QtDeclarative, and Qt5Compat 6.9.2 plus the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full Qt, or KDE build.
 
 ## Safety and scope
 
@@ -133,6 +133,12 @@ CircleCI pipeline **#28**, at commit `16a1b3221babf8318ec6d94c5339cea91b204389`,
 
 The verified rootfs is saved as the `blfs-12.4-qtdeclarative1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. Further Qt modules, Frameworks, and Plasma remain later stages; no KDE is installed and the system is not bootable.
 
-## Active BLFS qt5compat1 stage
+## Completed BLFS qt5compat1 — 2026-11-02
 
-This stage restores qtdeclarative1 and builds the official Qt5Compat **6.9.2** archive. It provides the Core5Compat library and Qt5Compat.GraphicalEffects QML module used by KDE software that still needs Qt 5 compatibility APIs. Acceptance requires a compiled native AArch64 Core5Compat smoke test and the installed GraphicalEffects module. Frameworks and Plasma remain later stages; no KDE is installed.
+CircleCI pipeline **#30**, at commit `92c3da83dadcb752d040c331897bd310003082b5`, restored qtdeclarative1 and built the official Qt5Compat **6.9.2** archive. All ten job steps succeeded, and eight artifacts were downloaded for separate inspection. The report verifies a compiled native AArch64 Core5Compat smoke test and the installed Qt5Compat.GraphicalEffects QML module.
+
+The verified rootfs is saved as the `blfs-12.4-qt5compat1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. Further Qt modules, Frameworks, and Plasma remain later stages; no KDE is installed and the system is not bootable.
+
+## Active BLFS kf6-ecm1 stage
+
+This stage restores qt5compat1 and builds Extra CMake Modules **6.17.0**, the first build-system component required by KDE Frameworks 6. It follows BLFS 12.4: the upstream-fix patch is applied, `lib64` installation is disabled, `PACKAGE_PREFIX_DIR` preservation is enabled, and ECM installs into `/usr` for use by non-KF6 packages. Because upstream provides no accepted test suite for this stage, acceptance uses a compiled native AArch64 integration smoke test covering ECM discovery, `KDEInstallDirs`, `ECMSetupVersion`, and Qt 6.9.2. Frameworks and Plasma are not installed yet.
