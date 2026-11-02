@@ -114,6 +114,7 @@ mkdir p11-build
 cd p11-build
 meson setup ..            \
       --prefix=/usr       \
+      --libdir=lib        \
       --buildtype=release \
       -D trust_paths=/etc/pki/anchors
 ninja
@@ -126,8 +127,9 @@ printf 'BUILD_BLFS_CORE1=make-ca\n'
 extract make-ca-1.16.1.tar.gz
 make install
 install -vdm755 /etc/ssl/local
-/usr/sbin/make-ca -g
+/usr/sbin/make-ca -C /sources/certdata.txt
 [[ -s /etc/ssl/certs/ca-certificates.crt ]]
+[[ "$(grep -c 'BEGIN CERTIFICATE' /etc/ssl/certs/ca-certificates.crt)" -ge 100 ]]
 finish_package
 
 printf 'BUILD_BLFS_CORE1=curl\n'
@@ -168,6 +170,7 @@ extract dbus-1.16.2.tar.xz
 mkdir build
 cd build
 meson setup --prefix=/usr          \
+            --libdir=lib           \
             --buildtype=release    \
             --wrap-mode=nofallback \
             -D systemd=disabled    \
@@ -194,6 +197,7 @@ mkdir build
 cd build
 meson setup ..                  \
       --prefix=/usr             \
+      --libdir=lib              \
       --buildtype=release       \
       -D introspection=disabled \
       -D glib_debug=disabled    \
@@ -203,7 +207,7 @@ ninja
 ninja install
 tar xf ../../gobject-introspection-1.84.0.tar.xz
 meson setup gobject-introspection-1.84.0 gi-build \
-            --prefix=/usr --buildtype=release
+            --prefix=/usr --libdir=lib --buildtype=release
 ninja -C gi-build
 ninja -C gi-build install
 meson configure -D introspection=enabled
@@ -215,7 +219,7 @@ printf 'BUILD_BLFS_CORE1=shared-mime-info\n'
 extract shared-mime-info-2.4.tar.gz
 mkdir build
 cd build
-meson setup --prefix=/usr --buildtype=release -D update-mimedb=true ..
+meson setup --prefix=/usr --libdir=lib --buildtype=release -D update-mimedb=true ..
 ninja
 ninja install
 finish_package
@@ -225,7 +229,7 @@ extract desktop-file-utils-0.28.tar.xz
 rm -fv /usr/bin/desktop-file-edit
 mkdir build
 cd build
-meson setup --prefix=/usr --buildtype=release ..
+meson setup --prefix=/usr --libdir=lib --buildtype=release ..
 ninja
 ninja install
 finish_package

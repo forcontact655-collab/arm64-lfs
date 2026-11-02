@@ -127,7 +127,7 @@ jobs:
             - lfs-12.4-ch8b-aarch64-v1-{{ checksum "scripts/build-lfs-chapter8b-chroot.sh" }}-{{ checksum "scripts/run-lfs-chapter8b.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-core1-sources-v1-{{ checksum "manifests/blfs-core1.md5" }}-{{ checksum "manifests/wget-list-blfs-core1" }}
+            - blfs-12.4-core1-sources-v1-{{ checksum "manifests/blfs-core1.md5" }}-{{ checksum "manifests/wget-list-blfs-core1" }}-{{ checksum "scripts/fetch-blfs-core1-sources.sh" }}
       - run:
           name: Download and verify official BLFS core1 sources
           command: |
@@ -135,7 +135,7 @@ jobs:
             mkdir -p artifacts
             LFS=/home/circleci/blfs-sources bash scripts/fetch-blfs-core1-sources.sh 2>&1 | tee artifacts/blfs-core1-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-core1-sources-v1-{{ checksum "manifests/blfs-core1.md5" }}-{{ checksum "manifests/wget-list-blfs-core1" }}
+          key: blfs-12.4-core1-sources-v1-{{ checksum "manifests/blfs-core1.md5" }}-{{ checksum "manifests/wget-list-blfs-core1" }}-{{ checksum "scripts/fetch-blfs-core1-sources.sh" }}
           paths:
             - /home/circleci/blfs-sources
       - run:

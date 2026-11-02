@@ -12,13 +12,14 @@ ARTIFACTS="$REPO/artifacts"
 [[ -x "$LFS/usr/bin/meson" ]]
 [[ -f "$HOST_SOURCES/glib-2.84.4.tar.xz" ]]
 [[ -f "$HOST_SOURCES/cmake-4.1.0.tar.gz" ]]
+[[ -f "$HOST_SOURCES/certdata.txt" ]]
 mkdir -p "$ARTIFACTS"
 sudo -n true
 
 cleanup() {
   set +e
   local path
-  for path in "$LFS/sources" "$LFS/etc/resolv.conf" "$LFS/dev/pts" "$LFS/sys" "$LFS/proc" "$LFS/run" "$LFS/dev"; do
+  for path in "$LFS/sources" "$LFS/dev/pts" "$LFS/sys" "$LFS/proc" "$LFS/run" "$LFS/dev"; do
     if mountpoint -q "$path"; then sudo -n umount "$path"; fi
   done
   if [[ -d "$HOST_SOURCES" ]]; then sudo -n chown -R "$(id -u):$(id -g)" "$HOST_SOURCES"; fi
@@ -34,9 +35,6 @@ sudo -n mount -t devpts devpts -o gid=5,mode=0620 "$LFS/dev/pts"
 sudo -n mount -t proc proc "$LFS/proc"
 sudo -n mount -t sysfs sysfs "$LFS/sys"
 sudo -n mount -t tmpfs tmpfs "$LFS/run"
-sudo -n rm -f "$LFS/etc/resolv.conf"
-sudo -n touch "$LFS/etc/resolv.conf"
-sudo -n mount --bind /etc/resolv.conf "$LFS/etc/resolv.conf"
 
 sudo -n chroot "$LFS" /usr/bin/env -i \
   HOME=/root TERM=xterm TMPDIR=/tmp PATH=/usr/bin:/usr/sbin \
