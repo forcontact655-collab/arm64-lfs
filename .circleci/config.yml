@@ -819,7 +819,7 @@ jobs:
           paths:
             - /home/circleci/blfs-xfce-launch1-sources
       - run:
-          name: Build Xvfb dependencies and validate headless XFCE launch
+          name: Build libepoxy and Xvfb dependencies and validate XFCE launch
           command: |
             set -o pipefail
             bash scripts/run-blfs-xfce-launch1.sh 2>&1 | tee artifacts/blfs-xfce-launch1-host.log

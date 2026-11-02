@@ -13,8 +13,9 @@ done
 for program in cvt xkbcomp Xvfb xrdb; do
   [[ ! -x "$LFS/usr/bin/$program" ]]
 done
+[[ ! -e "$LFS/usr/lib/libepoxy.so" ]]
 [[ ! -e "$LFS/usr/lib/libxcvt.so" ]]
-for archive in libxcvt-0.1.3.tar.xz font-util-1.4.1.tar.xz xkbcomp-1.4.7.tar.xz xorg-server-21.1.18.tar.xz xrdb-1.2.2.tar.xz; do
+for archive in libepoxy-1.5.10.tar.xz libxcvt-0.1.3.tar.xz font-util-1.4.1.tar.xz xkbcomp-1.4.7.tar.xz xorg-server-21.1.18.tar.xz xrdb-1.2.2.tar.xz; do
   [[ -f "$HOST_SOURCES/$archive" ]]
 done
 mkdir -p "$ARTIFACTS"
@@ -44,15 +45,17 @@ sudo -n chroot "$LFS" /usr/bin/env -i \
   MAKEFLAGS="-j$(nproc)" \
   /bin/bash --login /root/build-blfs-xfce-launch1-chroot.sh
 cleanup
-for name in report.txt progress.txt xorg-testlog.txt native.txt xvfb.log session.log processes.txt x11.txt screen.png; do
+for name in report.txt progress.txt libepoxy-testlog.txt xorg-testlog.txt native.txt xvfb.log session.log processes.txt x11.txt screen.png; do
   sudo -n cat "$LFS/root/blfs-xfce-launch1-$name" >"$ARTIFACTS/blfs-xfce-launch1-$name"
 done
 sudo -n rm -f "$LFS/root/build-blfs-xfce-launch1-chroot.sh" "$LFS/root/blfs-xfce-launch1-x11-smoke.c" \
-  "$LFS"/root/blfs-xfce-launch1-{report.txt,progress.txt,xorg-testlog.txt,native.txt,xvfb.log,session.log,processes.txt,x11.txt,screen.png}
+  "$LFS"/root/blfs-xfce-launch1-{report.txt,progress.txt,libepoxy-testlog.txt,xorg-testlog.txt,native.txt,xvfb.log,session.log,processes.txt,x11.txt,screen.png}
 REPORT="$ARTIFACTS/blfs-xfce-launch1-report.txt"
 for expected in \
   'BLFS_XFCE_LAUNCH1_RESULT=ok' \
-  'PACKAGE_COUNT=5' \
+  'PACKAGE_COUNT=6' \
+  'LIBEPOXY=1.5.10' \
+  'LIBEPOXY_TEST_SUITE=ninja-test-passed' \
   'ARCH=aarch64' \
   'NATIVE_BINARY_EXEC=cvt+xkbcomp+xrdb+xvfb+xfce-session' \
   'LIBXCVT=0.1.3' \
@@ -82,10 +85,12 @@ for expected in \
   'BOOTABLE=no'; do
   grep -qxF "$expected" "$REPORT"
 done
-[[ "$(grep -c '^BLFS_XFCE_LAUNCH1_BUILT=' "$ARTIFACTS/blfs-xfce-launch1-progress.txt")" -eq 5 ]]
+[[ "$(grep -c '^BLFS_XFCE_LAUNCH1_BUILT=' "$ARTIFACTS/blfs-xfce-launch1-progress.txt")" -eq 6 ]]
 grep -q 'Modeline.*1280x800' "$ARTIFACTS/blfs-xfce-launch1-native.txt"
 grep -q '^xkbcomp 1.4.7$' "$ARTIFACTS/blfs-xfce-launch1-native.txt"
 grep -q '^xrdb 1.2.2$' "$ARTIFACTS/blfs-xfce-launch1-native.txt"
+grep -qE 'Ok: *[1-9]' "$ARTIFACTS/blfs-xfce-launch1-libepoxy-testlog.txt"
+grep -qE 'Fail: *0' "$ARTIFACTS/blfs-xfce-launch1-libepoxy-testlog.txt"
 grep -qE 'Ok: *[1-9]' "$ARTIFACTS/blfs-xfce-launch1-xorg-testlog.txt"
 grep -qE 'Fail: *0' "$ARTIFACTS/blfs-xfce-launch1-xorg-testlog.txt"
 grep -q '^X11_CONNECTION=ok$' "$ARTIFACTS/blfs-xfce-launch1-x11.txt"
