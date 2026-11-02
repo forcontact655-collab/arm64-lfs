@@ -48,7 +48,7 @@ meson setup ..                 \
       --buildtype=release      \
       -D platforms=x11,wayland \
       -D gallium-drivers=llvmpipe \
-      -D opencl=disabled       \
+      -D gallium-opencl=disabled \
       -D vulkan-drivers=       \
       -D valgrind=disabled     \
       -D video-codecs=         \
