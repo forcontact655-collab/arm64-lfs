@@ -71,6 +71,11 @@ case "$(uname -m)" in
   x86_64)
     sed -e '/m64=/s/lib64/lib/' -i.orig gcc/config/i386/t-linux64
     ;;
+  aarch64)
+    # ARM64 equivalent of the book's x86_64 library-directory adjustment.
+    sed -e 's@mabi\.lp64=\.\./lib64@mabi.lp64=../lib@' \
+        -i.orig gcc/config/aarch64/t-aarch64-linux
+    ;;
 esac
 mkdir -v build
 cd build
@@ -99,6 +104,9 @@ make install
 cd ..
 cat gcc/limitx.h gcc/glimits.h gcc/limity.h > \
   "$(dirname "$($LFS_TGT-gcc -print-libgcc-file-name)")/include/limits.h"
+MULTI_OS_DIRECTORY="$("$LFS_TGT-gcc" -print-multi-os-directory)"
+printf 'MULTI_OS_DIRECTORY=%s\n' "$MULTI_OS_DIRECTORY"
+[[ "$MULTI_OS_DIRECTORY" == ../lib ]]
 
 printf 'BUILD linux-6.16.1-headers\n'
 extract linux-6.16.1.tar.xz linux-6.16.1
@@ -164,6 +172,8 @@ cd build
 make
 make DESTDIR="$LFS" install
 rm -v "$LFS"/usr/lib/lib{stdc++{,exp,fs},supc++}.la
+[[ ! -e "$LFS/usr/lib64" ]]
+[[ ! -e "$LFS/lib64" ]]
 
 [[ -x "$LFS/tools/bin/$LFS_TGT-gcc" ]]
 [[ -x "$LFS/tools/bin/$LFS_TGT-g++" ]]
@@ -177,6 +187,7 @@ ELAPSED=$(( $(date +%s) - START_TS ))
   printf 'CHAPTER=5\n'
   printf 'ARCH=%s\n' "$(uname -m)"
   printf 'LFS_TGT=%s\n' "$LFS_TGT"
+  printf 'MULTI_OS_DIRECTORY=%s\n' "$MULTI_OS_DIRECTORY"
   printf 'DYNAMIC_LINKER=%s\n' "$INTERPRETER"
   printf 'BINUTILS=%s\n' "$("$LFS_TGT-ld" --version | head -n1)"
   printf 'GCC=%s\n' "$("$LFS_TGT-gcc" --version | head -n1)"
