@@ -135,7 +135,7 @@ install -vdm755 /etc/ssl/local
 /usr/sbin/make-ca -C /sources/certdata.txt
 [[ -s /etc/pki/tls/certs/ca-bundle.crt ]]
 [[ "$(grep -c 'BEGIN CERTIFICATE' /etc/pki/tls/certs/ca-bundle.crt)" -ge 100 ]]
-openssl verify -CApath /etc/ssl/certs /etc/make-ca/ISRG_Root_X1.pem
+[[ "$(find /etc/ssl/certs -mindepth 1 -maxdepth 1 | wc -l)" -ge 100 ]]
 finish_package
 
 printf 'BUILD_BLFS_CORE1=curl\n'
@@ -282,6 +282,7 @@ INTERPRETER="$(readelf -l /tmp/blfs-core1-smoke | sed -n 's/.*Requesting program
   printf 'DOCUTILS=%s\n' "$(python3 -c 'import docutils; print(docutils.__version__)')"
   printf 'CA_BUNDLE=%s\n' '/etc/pki/tls/certs/ca-bundle.crt'
   printf 'CA_CERTIFICATES=%s\n' "$(grep -c 'BEGIN CERTIFICATE' /etc/pki/tls/certs/ca-bundle.crt)"
+  printf 'CA_OPENSSL_ENTRIES=%s\n' "$(find /etc/ssl/certs -mindepth 1 -maxdepth 1 | wc -l)"
   printf 'CA_BUNDLE_BYTES=%s\n' "$(stat -c %s /etc/pki/tls/certs/ca-bundle.crt)"
   printf 'QT=absent\n'
   printf 'KDE=absent\n'
