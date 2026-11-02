@@ -35,3 +35,11 @@ A report listing missing host tools is not a failed architecture probe; it is in
 - All 19 checked build tools found; `MISSING_TOOLS=none`.
 
 The report was downloaded from the run artifact and verified locally. This completes only the environment probe; no LFS packages have been built yet.
+
+## Stage 1: verified LFS 12.4 sources
+
+The manually dispatched `lfs-sources` workflow downloads the official SysV source set into an isolated `$LFS/sources` directory and verifies every downloaded file against the official LFS 12.4 `md5sums`. It also generates SHA-256 sums for later checkpoints and stores the source directory in the GitHub Actions cache.
+
+The upstream `wget-list-sysv` currently lists `dbus-1.16.2.tar.xz`, but that file is absent from both the LFS 12.4 book's package list and the official `md5sums`. The verified base-source stage skips it and records the skip; it is not needed for the base LFS book.
+
+No packages are compiled in this stage, and no existing Termux/Arch installation is accessed.

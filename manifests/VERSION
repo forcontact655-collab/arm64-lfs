@@ -1,0 +1,6 @@
+LFS_VERSION=12.4
+INIT=sysv
+BOOK=https://www.linuxfromscratch.org/lfs/downloads/stable/LFS-BOOK-12.4-NOCHUNKS.html
+WGET_LIST=https://www.linuxfromscratch.org/lfs/downloads/stable/wget-list-sysv
+MD5SUMS=https://www.linuxfromscratch.org/lfs/downloads/stable/md5sums
+NOTE=The upstream wget list includes dbus-1.16.2.tar.xz, but the LFS 12.4 book package list and official md5sums do not. The verified base-source stage skips it.
