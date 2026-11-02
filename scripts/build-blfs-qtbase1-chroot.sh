@@ -72,7 +72,7 @@ rm -rf "$PACKAGE_DIR"
 printf 'BLFS_QTBASE1_BUILT=qtbase-everywhere-src-6.9.2\n' >>"$PROGRESS"
 unset PACKAGE_DIR
 
-mkdir -p /etc/ld.so.conf.d
+mkdir -p /etc/ld.so.conf.d /etc/profile.d
 printf '/opt/qt6/lib\n' >/etc/ld.so.conf.d/qt6.conf
 cat >/etc/profile.d/qt6.sh <<'EOF'
 export QT6DIR=/opt/qt6
@@ -119,7 +119,8 @@ EOF
 cmake -S /tmp/blfs-qtbase1-smoke -B /tmp/blfs-qtbase1-smoke-build \
   -G Ninja -D CMAKE_BUILD_TYPE=Release -D CMAKE_PREFIX_PATH=/opt/qt6
 ninja -C /tmp/blfs-qtbase1-smoke-build
-OUTPUT="$(QT_QPA_PLATFORM=offscreen XDG_RUNTIME_DIR=/tmp LIBGL_ALWAYS_SOFTWARE=1 \
+install -d -m 0700 /tmp/blfs-qtbase1-runtime
+OUTPUT="$(QT_QPA_PLATFORM=offscreen XDG_RUNTIME_DIR=/tmp/blfs-qtbase1-runtime LIBGL_ALWAYS_SOFTWARE=1 \
   /tmp/blfs-qtbase1-smoke-build/blfs-qtbase1-smoke)"
 [[ "$OUTPUT" == BLFS_QTBASE1_EXEC_OK=6.9.2 ]]
 readelf -h /tmp/blfs-qtbase1-smoke-build/blfs-qtbase1-smoke | grep -q 'Machine:.*AArch64'
@@ -140,4 +141,4 @@ INTERPRETER="$(readelf -l /tmp/blfs-qtbase1-smoke-build/blfs-qtbase1-smoke | sed
   printf 'KDE=absent\n'
 } >"$REPORT"
 cat "$REPORT"
-rm -rf /tmp/blfs-qtbase1-smoke /tmp/blfs-qtbase1-smoke-build
+rm -rf /tmp/blfs-qtbase1-smoke /tmp/blfs-qtbase1-smoke-build /tmp/blfs-qtbase1-runtime
