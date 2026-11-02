@@ -133,8 +133,9 @@ make install
 install -vdm755 /etc/ssl/local
 [[ "$(grep -c '^# Certificate' /sources/certdata.txt)" -ge 100 ]]
 /usr/sbin/make-ca -C /sources/certdata.txt
-[[ -s /etc/ssl/certs/ca-certificates.crt ]]
-[[ "$(grep -c 'BEGIN CERTIFICATE' /etc/ssl/certs/ca-certificates.crt)" -ge 100 ]]
+[[ -s /etc/pki/tls/certs/ca-bundle.crt ]]
+[[ "$(grep -c 'BEGIN CERTIFICATE' /etc/pki/tls/certs/ca-bundle.crt)" -ge 100 ]]
+openssl verify -CApath /etc/ssl/certs /etc/make-ca/ISRG_Root_X1.pem
 finish_package
 
 printf 'BUILD_BLFS_CORE1=curl\n'
@@ -267,7 +268,7 @@ OUTPUT="$(/tmp/blfs-core1-smoke)"
 readelf -h /tmp/blfs-core1-smoke | grep -q 'Machine:.*AArch64'
 INTERPRETER="$(readelf -l /tmp/blfs-core1-smoke | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
 [[ "$INTERPRETER" == /lib/ld-linux-aarch64.so.1 ]]
-[[ -s /etc/ssl/certs/ca-certificates.crt ]]
+[[ -s /etc/pki/tls/certs/ca-bundle.crt ]]
 {
   printf 'BLFS_CORE1_RESULT=ok\n'
   printf 'PACKAGE_COUNT=15\n'
@@ -279,7 +280,9 @@ INTERPRETER="$(readelf -l /tmp/blfs-core1-smoke | sed -n 's/.*Requesting program
   printf 'DBUS=%s\n' "$(pkg-config --modversion dbus-1)"
   printf 'GLIB=%s\n' "$(pkg-config --modversion glib-2.0)"
   printf 'DOCUTILS=%s\n' "$(python3 -c 'import docutils; print(docutils.__version__)')"
-  printf 'CA_BUNDLE_BYTES=%s\n' "$(stat -c %s /etc/ssl/certs/ca-certificates.crt)"
+  printf 'CA_BUNDLE=%s\n' '/etc/pki/tls/certs/ca-bundle.crt'
+  printf 'CA_CERTIFICATES=%s\n' "$(grep -c 'BEGIN CERTIFICATE' /etc/pki/tls/certs/ca-bundle.crt)"
+  printf 'CA_BUNDLE_BYTES=%s\n' "$(stat -c %s /etc/pki/tls/certs/ca-bundle.crt)"
   printf 'QT=absent\n'
   printf 'KDE=absent\n'
 } >"$REPORT"
