@@ -73,6 +73,7 @@ for expected in \
   'VTE_TEST_SUITE=ninja-test-passed' \
   'XFCE4_TERMINAL=1.1.5' \
   'XFCE4_TERMINAL_TEST_SUITE=not-provided' \
+  'XFCE4_TERMINAL_MAN_PAGE=not-built-docbook-xml-xsl-unavailable' \
   'NATIVE_BINARY_EXEC=xfce4-terminal+xvfb+xfce-session' \
   'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' \
   'TERMINAL_EXEC=APPS1_TERMINAL_EXEC_OK' \

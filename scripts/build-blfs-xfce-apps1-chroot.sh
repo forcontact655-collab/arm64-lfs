@@ -64,6 +64,11 @@ printf 'BLFS_XFCE_APPS1_BUILT=vte-0.80.3\n' >>"$PROGRESS"
 
 printf 'BUILD_BLFS_XFCE_APPS1=xfce4-terminal-1.1.5\n'
 extract xfce4-terminal-1.1.5.tar.xz xfce4-terminal-1.1.5
+# The accepted base has xsltproc but no DocBook XML/XSL catalog. Upstream's
+# manpage target hardcodes an HTTP stylesheet with --nonet; skip only that
+# documentation target rather than enabling a network fallback.
+sed -i "s/^subdir('doc')$/# DocBook manpage unavailable in this minimal base/" meson.build
+! grep -q "^subdir('doc')$" meson.build
 mkdir build
 cd build
 meson setup .. --prefix=/usr --libdir=lib --buildtype=release --wrap-mode=nofallback \
@@ -248,6 +253,8 @@ set +x
   printf 'XFCE4_TERMINAL=1.1.5
 '
   printf 'XFCE4_TERMINAL_TEST_SUITE=not-provided
+'
+  printf 'XFCE4_TERMINAL_MAN_PAGE=not-built-docbook-xml-xsl-unavailable
 '
   printf 'NATIVE_BINARY_EXEC=xfce4-terminal+xvfb+xfce-session
 '
