@@ -660,7 +660,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-xfce-power-deps1:
+  blfs-xfce-polkit1:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -668,27 +668,27 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-xfce-xfce4-appfinder1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-xfce4-appfinder1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-xfce4-appfinder1.sh" }}
+            - blfs-12.4-xfce-power-deps1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-power-deps1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-power-deps1.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-xfce-power-deps1-sources-v1-{{ checksum "manifests/blfs-xfce-power-deps1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-power-deps1" }}-{{ checksum "scripts/fetch-blfs-xfce-power-deps1-sources.sh" }}
+            - blfs-12.4-xfce-polkit1-sources-v1-{{ checksum "manifests/blfs-xfce-polkit1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-polkit1" }}-{{ checksum "scripts/fetch-blfs-xfce-polkit1-sources.sh" }}
       - run:
-          name: Download and verify official libusb and UPower sources
+          name: Download and verify official duktape, elogind and Polkit sources
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-xfce-power-deps1-sources bash scripts/fetch-blfs-xfce-power-deps1-sources.sh 2>&1 | tee artifacts/blfs-xfce-power-deps1-sources-circleci.log
+            LFS=/home/circleci/blfs-xfce-polkit1-sources bash scripts/fetch-blfs-xfce-polkit1-sources.sh 2>&1 | tee artifacts/blfs-xfce-polkit1-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-xfce-power-deps1-sources-v1-{{ checksum "manifests/blfs-xfce-power-deps1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-power-deps1" }}-{{ checksum "scripts/fetch-blfs-xfce-power-deps1-sources.sh" }}
+          key: blfs-12.4-xfce-polkit1-sources-v1-{{ checksum "manifests/blfs-xfce-polkit1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-polkit1" }}-{{ checksum "scripts/fetch-blfs-xfce-polkit1-sources.sh" }}
           paths:
-            - /home/circleci/blfs-xfce-power-deps1-sources
+            - /home/circleci/blfs-xfce-polkit1-sources
       - run:
-          name: Build libusb and UPower, run UPower self-test and native smoke
+          name: Build duktape, elogind and Polkit with tests and native smoke
           command: |
             set -o pipefail
-            bash scripts/run-blfs-xfce-power-deps1.sh 2>&1 | tee artifacts/blfs-xfce-power-deps1-host.log
+            bash scripts/run-blfs-xfce-polkit1.sh 2>&1 | tee artifacts/blfs-xfce-polkit1-host.log
       - save_cache:
-          key: blfs-12.4-xfce-power-deps1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-power-deps1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-power-deps1.sh" }}
+          key: blfs-12.4-xfce-polkit1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-polkit1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-polkit1.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -697,4 +697,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-xfce-power-deps1
+      - blfs-xfce-polkit1
