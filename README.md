@@ -302,3 +302,7 @@ Acceptance required the exact Xorg result **5 OK / 1 expected XTS SKIP / 0 Fail*
 Pipelines **#78–#82** remain failed, unaccepted, and must not be rerun. Their respective failures were the wrong libepoxy pkg-config module, an incorrect existing-library absence precondition, the wrong font-map post-check path, a fixed-display conflict with CircleCI's host Xvfb, and an incorrect assumption that Xvfb would emit a version banner. Pipeline #82 did produce a live desktop, but only #83 passed every build, launch, artifact, and independent acceptance check.
 
 This is a headless launch test only. Real displays, hardware acceleration, rootless Xorg, installation on a phone, and bootability remain untested; `BOOTABLE=no` stays explicit. KDE remains paused at Attica and Plasma is absent.
+
+## Active XFCE Termux export — 2026-11-03
+
+The owner authorized preparing the verified XFCE system for Termux beside the existing Arch installation. This export-only stage restores the accepted launch1 cache from pipeline **#83** and does not rebuild XFCE or repeat its desktop-launch pipeline. It creates a SHA-256-verified rootfs archive, dereferences hardlinks for Android filesystem compatibility, excludes build-only tools/sources and virtual runtime contents, and independently rechecks the archive. The existing Arch system is not accessed or modified. This is a migration checkpoint, not the final customized and fully equipped desktop. Packaging in CI is not phone installation; `BOOTABLE=no` remains unchanged.

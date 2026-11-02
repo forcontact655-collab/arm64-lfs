@@ -830,7 +830,26 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-xfce-termux-export1:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-xfce-launch1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-launch1-chroot.sh" }}-{{ checksum "scripts/blfs-xfce-launch1-x11-smoke.c" }}-{{ checksum "scripts/run-blfs-xfce-launch1.sh" }}
+      - run:
+          name: Export accepted XFCE rootfs for a separate Termux proot
+          no_output_timeout: 60m
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            bash scripts/export-xfce-termux-rootfs.sh 2>&1 | tee artifacts/blfs-xfce-termux-export1-host.log
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-xfce-launch1
+      - blfs-xfce-termux-export1
