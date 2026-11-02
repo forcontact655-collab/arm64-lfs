@@ -49,6 +49,8 @@ grep -q '^NATIVE_BINARY_EXEC=BLFS_MESA1_EXEC_OK$' "$ARTIFACTS/blfs-mesa1-report.
 grep -q '^GL_RENDERER=.' "$ARTIFACTS/blfs-mesa1-report.txt"
 grep -q '^VULKAN=absent$' "$ARTIFACTS/blfs-mesa1-report.txt"
 grep -q '^VULKAN_ICD_ENTRIES=0$' "$ARTIFACTS/blfs-mesa1-report.txt"
+grep -q '^OPENCL=absent$' "$ARTIFACTS/blfs-mesa1-report.txt"
+grep -q '^GALLIUM_DRIVERS=llvmpipe$' "$ARTIFACTS/blfs-mesa1-report.txt"
 [[ "$(grep -c '^BLFS_MESA1_BUILT=' "$ARTIFACTS/blfs-mesa1-progress.txt")" -eq 1 ]]
 cat "$ARTIFACTS/blfs-mesa1-report.txt"
 trap - EXIT
