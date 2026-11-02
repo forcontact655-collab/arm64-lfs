@@ -24,6 +24,7 @@ SMOKE_SOURCE=/root/blfs-xfce-color-deps1-smoke.c
 [[ -x /usr/bin/pkg-config ]]
 [[ -x /usr/bin/python3 ]]
 [[ -x /usr/bin/dbus-daemon ]]
+[[ -x /usr/bin/udev-hwdb ]]
 [[ -x /usr/bin/xfce4-power-manager ]]
 [[ -x /usr/bin/valac ]]
 [[ -x /usr/bin/umockdev-run ]]
@@ -38,7 +39,8 @@ SMOKE_SOURCE=/root/blfs-xfce-color-deps1-smoke.c
 [[ ! -f /usr/include/tiffio.h ]]
 [[ -f /usr/share/hwdata/usb.ids ]]
 [[ -f /usr/share/hwdata/pnp.ids ]]
-grep -q '^GSM[[:space:]]' /usr/share/hwdata/pnp.ids
+[[ -f /usr/lib/udev/hwdb.d/20-acpi-vendor.hwdb ]]
+grep -q '^acpi:GSM\*:' /usr/lib/udev/hwdb.d/20-acpi-vendor.hwdb
 [[ "$(pkg-config --modversion libjpeg)" == 3.0.1 ]]
 [[ "$(pkg-config --modversion libusb-1.0)" == 1.0.29 ]]
 [[ "$(pkg-config --modversion polkit-gobject-1)" == 126 ]]
@@ -219,8 +221,7 @@ meson setup .. \
   -D tests=true \
   -D man=false \
   -D docs=false \
-  -D daemon_user=colord \
-  -D pnp_ids=/usr/share/hwdata/pnp.ids
+  -D daemon_user=colord
 ninja
 mkdir -p /run/dbus
 dbus-uuidgen --ensure=/etc/machine-id
@@ -244,6 +245,11 @@ for _ in {1..50}; do
 done
 [[ -S /run/dbus/system_bus_socket ]]
 export DBUS_SYSTEM_BUS_ADDRESS=unix:path=/run/dbus/system_bus_socket
+udev-hwdb update
+[[ -s /etc/udev/hwdb.bin ]]
+udev-hwdb query 'acpi:GSM:' | grep -q '^ID_VENDOR_FROM_DATABASE=LG Electronics$'
+udev-hwdb query 'acpi:IBM:' | grep -q '^ID_VENDOR_FROM_DATABASE=IBM Brasil$'
+udev-hwdb query 'acpi:DEL:' | grep -q '^ID_VENDOR_FROM_DATABASE=Dell Inc.$'
 set +e
 meson test --print-errorlogs
 COLORD_TEST_STATUS=$?
@@ -409,7 +415,8 @@ set +x
   printf 'COLORD_LIBCOLORDCOMPAT=present\n'
   printf 'COLORD_ARGYLL_SENSOR=disabled\n'
   printf 'COLORD_BASH_COMPLETION=disabled-optional-absent\n'
-  printf 'PNP_IDS=/usr/share/hwdata/pnp.ids\n'
+  printf 'UDEV_HWDB=/etc/udev/hwdb.bin-generated\n'
+  printf 'EDID_VENDOR_LOOKUP=udev-hwdb-with-colord-quirks\n'
   printf 'DBUS_SYSTEM=started-for-tests-stopped\n'
   printf 'COLORD_DAEMON=not-started\n'
   printf 'VALA=0.56.18-vapi-enabled\n'
