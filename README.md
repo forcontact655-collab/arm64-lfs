@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds QtBase, QtShaderTools, QtSvg, QtDeclarative, and Qt5Compat 6.9.2, plus Extra CMake Modules 6.17.0 and the XCB Utilities/double-conversion dependency layer, to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full Qt, or KDE build.
+The current verified checkpoint adds QtBase, QtShaderTools, QtSvg, QtDeclarative, and Qt5Compat 6.9.2, the QtTools Linguist utilities, Extra CMake Modules 6.17.0, and the XCB Utilities/double-conversion dependency layer to Mesa1, graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, full Qt, or KDE build.
 
 ## Safety and scope
 
@@ -145,6 +145,12 @@ CircleCI pipeline **#31**, at commit `d37d1366b3c859378651fd2ee5f114fe55762e5c`,
 
 A compiled native AArch64 integration smoke test verified ECM discovery, preservation of `PACKAGE_PREFIX_DIR`, `KDE_INSTALL_LIBDIR=lib`, `ECMSetupVersion`, and Qt 6.9.2. The verified rootfs is saved as the `blfs-12.4-kf6-ecm1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. Only ECM is installed: KDE Frameworks and Plasma remain absent, and the system is not bootable.
 
-## Active BLFS qttools1 stage
+## Completed BLFS qttools1 — 2026-11-02
 
-This stage restores kf6-ecm1 and builds the Linguist tools from the official QtTools **6.9.2** archive. KCoreAddons 6.17.0 needs `Qt6LinguistTools`, `lrelease`, and `lconvert` for its 109 translation catalogs. QDoc, Designer, Assistant, and unrelated tools are disabled so this stage does not require LLVM or claim a full QtTools build. Acceptance requires `lrelease`/`lconvert` round-trip checks and a compiled native AArch64 `QTranslator` smoke test using the generated Russian catalog. Only ECM is installed from KDE; Frameworks and Plasma remain absent.
+CircleCI pipeline **#32**, at commit `71804edcc51fbb1c7947ed9feac54a8136867384`, restored kf6-ecm1 and built the Linguist tools from the official QtTools **6.9.2** archive. All ten job steps succeeded, and eight artifacts were downloaded for separate inspection. QDoc, Designer, Assistant, and unrelated tools were disabled; this is not a full QtTools build and does not include Clang-based lupdate parsing.
+
+Acceptance verified `Qt6LinguistTools`, `lrelease`, `lconvert`, and `lupdate`; a TS/QM/TS round trip; and a compiled native AArch64 `QTranslator` smoke test using the generated Russian catalog. The verified rootfs is saved as the `blfs-12.4-qttools1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. Only ECM is installed from KDE; Frameworks and Plasma remain absent, and the system is not bootable.
+
+## Active BLFS kf6-attica1 stage
+
+This is the first actual KDE Frameworks module, following the BLFS 6.17.0 order. It restores qttools1, initializes `/opt/kf6` and its profile/linker configuration once, then builds Attica **6.17.0** against ECM and Qt Core/Network. Acceptance uses an offline compiled native AArch64 `Attica::Category` smoke test, so it does not contact an Open Collaboration Services provider. This stage installs only Attica: the remaining Frameworks and Plasma are still absent, and the system is not bootable.
