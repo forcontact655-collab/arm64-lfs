@@ -660,7 +660,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-xfce-garcon1:
+  blfs-xfce-libwnck1:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -668,27 +668,27 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-xfce-exo1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-exo1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-exo1.sh" }}
+            - blfs-12.4-xfce-garcon1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-garcon1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-garcon1.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-xfce-garcon1-sources-v1-{{ checksum "manifests/blfs-xfce-garcon1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-garcon1" }}-{{ checksum "scripts/fetch-blfs-xfce-garcon1-sources.sh" }}
+            - blfs-12.4-xfce-libwnck1-sources-v1-{{ checksum "manifests/blfs-xfce-libwnck1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-libwnck1" }}-{{ checksum "scripts/fetch-blfs-xfce-libwnck1-sources.sh" }}
       - run:
-          name: Download and verify official Garcon source
+          name: Download and verify official libwnck source
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-xfce-garcon1-sources bash scripts/fetch-blfs-xfce-garcon1-sources.sh 2>&1 | tee artifacts/blfs-xfce-garcon1-sources-circleci.log
+            LFS=/home/circleci/blfs-xfce-libwnck1-sources bash scripts/fetch-blfs-xfce-libwnck1-sources.sh 2>&1 | tee artifacts/blfs-xfce-libwnck1-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-xfce-garcon1-sources-v1-{{ checksum "manifests/blfs-xfce-garcon1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-garcon1" }}-{{ checksum "scripts/fetch-blfs-xfce-garcon1-sources.sh" }}
+          key: blfs-12.4-xfce-libwnck1-sources-v1-{{ checksum "manifests/blfs-xfce-libwnck1.sha256" }}-{{ checksum "manifests/wget-list-blfs-xfce-libwnck1" }}-{{ checksum "scripts/fetch-blfs-xfce-libwnck1-sources.sh" }}
           paths:
-            - /home/circleci/blfs-xfce-garcon1-sources
+            - /home/circleci/blfs-xfce-libwnck1-sources
       - run:
-          name: Build Garcon and run a native library smoke test
+          name: Build libwnck and run a native type smoke test
           command: |
             set -o pipefail
-            bash scripts/run-blfs-xfce-garcon1.sh 2>&1 | tee artifacts/blfs-xfce-garcon1-host.log
+            bash scripts/run-blfs-xfce-libwnck1.sh 2>&1 | tee artifacts/blfs-xfce-libwnck1-host.log
       - save_cache:
-          key: blfs-12.4-xfce-garcon1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-garcon1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-garcon1.sh" }}
+          key: blfs-12.4-xfce-libwnck1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-libwnck1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-libwnck1.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -697,4 +697,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-xfce-garcon1
+      - blfs-xfce-libwnck1
