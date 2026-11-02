@@ -19,6 +19,7 @@ ARTIFACTS="$REPO/artifacts"
 for name in \
   libjpeg-turbo-3.0.1.tar.gz \
   gdk-pixbuf-2.42.12.tar.xz \
+  dejavu-fonts-ttf-2.37.tar.bz2 \
   pango-1.56.4.tar.xz \
   gsettings-desktop-schemas-48.0.tar.xz \
   at-spi2-core-2.56.4.tar.xz; do
@@ -69,11 +70,13 @@ sudo -n rm -f "$LFS/root/build-blfs-xfce-gtkdeps2-chroot.sh" \
   "$LFS/root/blfs-xfce-gtkdeps2-gdk-pixbuf-testlog.txt" \
   "$LFS/root/blfs-xfce-gtkdeps2-pango-testlog.txt"
 grep -q '^BLFS_XFCE_GTKDEPS2_RESULT=ok$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
-grep -q '^PACKAGE_COUNT=5$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
+grep -q '^PACKAGE_COUNT=6$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
 grep -q '^NATIVE_BINARY_EXEC=BLFS_XFCE_GTKDEPS2_EXEC_OK$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
 grep -q '^LIBJPEG_TURBO=3.0.1$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
 grep -q '^GDK_PIXBUF=2.42.12$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
 grep -q '^PANGO=1.56.4$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
+grep -q '^DEJAVU_FONTS=2.37$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
+grep -q '^DEJAVU_TTF_COUNT=22$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
 grep -q '^GSETTINGS_DESKTOP_SCHEMAS=48.0$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
 grep -q '^AT_SPI2_CORE=2.56.4$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
 grep -q '^LIBJPEG_TEST_SUITE=exit-0$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
@@ -82,13 +85,14 @@ grep -q '^PANGO_TEST_SUITE=exit-0-excluding-3-known-font-data-tests$' "$ARTIFACT
 grep -q '^ATSPI_TEST_SUITE=not-run-graphical-required$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
 grep -q '^NATIVE_SMOKE=BLFS_XFCE_GTKDEPS2_EXEC_OK=1.56.4$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
 grep -q '^GDK_PIXBUF_SMOKE=jpeg+png$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
-grep -q '^PANGO_LAYOUT_SMOKE=6-chars$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
+grep -q '^PANGO_LAYOUT_SMOKE=6-chars+nonzero-extents$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
+grep -q '^FONTCONFIG_SMOKE=DejaVu Sans$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
 grep -q '^SCHEMA_SMOKE=org.gnome.desktop.interface$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
 grep -q '^GTK3=absent$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
 grep -q '^XFCE=libxfce4util+xfconf$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
 grep -q '^KDE=attica-only$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
 grep -q '^PLASMA=absent$' "$ARTIFACTS/blfs-xfce-gtkdeps2-report.txt"
-[[ "$(grep -c '^BLFS_XFCE_GTKDEPS2_BUILT=' "$ARTIFACTS/blfs-xfce-gtkdeps2-progress.txt")" -eq 5 ]]
+[[ "$(grep -c '^BLFS_XFCE_GTKDEPS2_BUILT=' "$ARTIFACTS/blfs-xfce-gtkdeps2-progress.txt")" -eq 6 ]]
 [[ "$(od -An -tx1 -N8 "$ARTIFACTS/blfs-xfce-gtkdeps2-smoke.png" | tr -d ' \n')" == 89504e470d0a1a0a ]]
 [[ "$(od -An -tx1 -N2 "$ARTIFACTS/blfs-xfce-gtkdeps2-smoke.jpg" | tr -d ' \n')" == ffd8 ]]
 for format in png jpg; do
