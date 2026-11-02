@@ -2,7 +2,7 @@
 
 Experimental, staged **native AArch64 LFS/BLFS 12.4** build. Earlier source, toolchain, rootfs, and KDE-source checkpoints used public GitHub Actions ARM64 runners; the current incremental build stages run on CircleCI ARM64.
 
-The current verified checkpoint adds the BLFS display2 Xorg/libxkbcommon layer to display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, Qt, or KDE build.
+The current verified checkpoint adds Mesa 25.1.8 with software llvmpipe rendering to graphics1, display2, display1, core1, and the completed LFS chapter-8 rootfs. This repository does **not** yet contain a complete bootable LFS, Qt, or KDE build.
 
 ## Safety and scope
 
@@ -103,6 +103,14 @@ CircleCI pipeline **#13**, at commit `b6d88516900c0880e2abfaaec3e5153315c1cead`,
 
 The verified rootfs is saved as the `blfs-12.4-display2-aarch64-v1` CircleCI cache checkpoint. Mesa, Qt, and KDE remain absent.
 
-## Active BLFS graphics1 stage
+## Completed BLFS graphics1 — 2026-11-02
 
-The next stage restores display2 and installs libyaml, Cython, PyYAML with libyaml acceleration, Mako, libdrm 2.4.125, and host-only LLVM 20.1.8 for Mesa. The initial full LLVM/Clang attempt reached the one-hour CircleCI limit; the revised stage omits Clang, non-host backends, tests, examples, documentation, and unrelated tools while retaining the required `llvm-config`. Vulkan, VA-API, Mesa, Qt, Frameworks, and Plasma remain later stages.
+CircleCI pipeline **#16**, at commit `d351a947490615d0b2abf1f9b9963e12823d07f8`, completed **6 packages** from **8 MD5-verified sources**: libyaml, Cython, PyYAML with libyaml acceleration, Mako, libdrm 2.4.125, and host-only LLVM 20.1.8. Clang, non-host backends, tests, examples, documentation, and unrelated LLVM tools were deliberately omitted so the stage fits the one-hour job limit.
+
+## Completed BLFS Mesa1 — 2026-11-02
+
+CircleCI pipeline **#19**, at commit `6434abf624dabe70bc14170a5f8530f1e86550e4`, restored graphics1 and built Mesa **25.1.8** with `gallium-drivers=llvmpipe` and OpenCL/Vulkan disabled. The verified artifact report records three DRI entries and a native AArch64 EGL/OpenGL smoke test returning `llvmpipe (LLVM 20.1.8, 128 bits)`. The rootfs is saved as the `blfs-12.4-mesa1-aarch64-v1` CircleCI cache checkpoint. Qt and KDE remain absent; the system is not bootable.
+
+## Active BLFS qtdeps1 stage
+
+The next stage restores Mesa1 and builds seven small Qt prerequisites: xcb-util, the five official XCB Utilities packages, and double-conversion 3.3.1 with its tests. ICU 77.1 is already present from display1 and is not rebuilt. QtBase and further Qt modules are deliberately split into later checkpoints rather than starting the full 47 GB Qt build in one job.
