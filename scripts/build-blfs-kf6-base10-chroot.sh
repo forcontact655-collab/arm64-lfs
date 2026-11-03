@@ -61,7 +61,7 @@ for path in \
   /opt/kf6/lib/libKF6Style.so \
   /opt/kf6/lib/qml/org/kde/newstuff/qmldir; do [[ -e "$path" ]]; done
 find /opt/kf6 -type f -name knshandler -print -quit | grep -q .
-find /opt/kf6 -type f -name 'libFrameworkIntegrationPlugin.so' -print -quit | grep -q .
+find /opt/kf6 -type f -name 'FrameworkIntegrationPlugin.so' -print -quit | grep -q .
 rm -rf /tmp/blfs-kf6-base10-smoke /tmp/blfs-kf6-base10-smoke-build /tmp/blfs-kf6-base10-runtime /tmp/blfs-kf6-base10-config
 mkdir -p /tmp/blfs-kf6-base10-smoke /tmp/blfs-kf6-base10-config
 cat >/tmp/blfs-kf6-base10-smoke/CMakeLists.txt <<'EOF'
