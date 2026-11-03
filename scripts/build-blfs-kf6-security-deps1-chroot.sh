@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-export LC_ALL=POSIX
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
 export PATH=/opt/kf6/bin:/opt/qt6/bin:/usr/bin:/usr/sbin
 export PKG_CONFIG_PATH=/opt/kf6/lib/pkgconfig:/opt/qt6/lib/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig
 export MAKEFLAGS="-j$(nproc)"
@@ -58,6 +59,13 @@ sed -i 's@cert.pem@certs/ca-bundle.crt@' CMakeLists.txt
 mkdir build; cd build
 cmake -G Ninja -D CMAKE_INSTALL_PREFIX=/opt/qt6 -D CMAKE_BUILD_TYPE=Release \
   -D "CMAKE_PREFIX_PATH=/opt/qt6" -D QT6=ON -D QCA_INSTALL_IN_QT_PREFIX=ON \
+  -D QCA_PREFIX_INSTALL_DIR:PATH=/opt/qt6 -D QCA_PLUGINS_INSTALL_DIR:PATH=/opt/qt6/plugins \
+  -D QCA_BINARY_INSTALL_DIR:PATH=/opt/qt6/bin -D QCA_LIBRARY_INSTALL_DIR:PATH=/opt/qt6/lib \
+  -D QCA_INCLUDE_INSTALL_DIR:PATH=/opt/qt6/include/Qca-qt6 \
+  -D QCA_PRIVATE_INCLUDE_INSTALL_DIR:PATH=/opt/qt6/include/Qca-qt6 \
+  -D QCA_FEATURE_INSTALL_DIR:PATH=/opt/qt6/mkspecs/features \
+  -D QCA_DOC_INSTALL_DIR:PATH=/opt/qt6/doc/html/qca \
+  -D PKGCONFIG_INSTALL_PREFIX:PATH=/opt/qt6/lib/pkgconfig \
   -D QCA_MAN_INSTALL_DIR:PATH=/usr/share/man -D BUILD_TESTS=ON -W no-dev ..
 ninja
 ninja test
@@ -69,7 +77,7 @@ cd /sources; rm -rf libgpg-error-1.55 libgcrypt-1.11.2 qca-2.3.10
 [[ "$(pkg-config --modversion gpg-error)" == 1.55 ]]
 [[ "$(pkg-config --modversion gcrypt)" == 1.11.2 ]]
 [[ -f /opt/qt6/lib/cmake/Qca-qt6/Qca-qt6Config.cmake && -x /opt/qt6/bin/qcatool-qt6 ]]
-QT_PLUGIN_DIR="$(/opt/qt6/bin/qmake6 -query QT_INSTALL_PLUGINS)"
+QT_PLUGIN_DIR=/opt/qt6/plugins
 [[ -e "$QT_PLUGIN_DIR/crypto/libqca-ossl.so" ]]
 rm -rf /tmp/blfs-kf6-security-deps1-smoke /tmp/blfs-kf6-security-deps1-smoke-build
 mkdir -p /tmp/blfs-kf6-security-deps1-smoke
