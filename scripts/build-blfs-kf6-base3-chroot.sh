@@ -69,8 +69,8 @@ for path in \
   /opt/kf6/lib/libKF6Plotting.so \
   /opt/kf6/lib/libKF6WidgetsAddons.so \
   /opt/kf6/lib/libKF6WindowSystem.so \
-  /opt/kf6/qml/org/kde/kitemmodels/qmldir \
-  /opt/kf6/qml/org/kde/kwindowsystem/qmldir; do [[ -e "$path" ]]; done
+  /opt/kf6/lib/qml/org/kde/kitemmodels/qmldir \
+  /opt/kf6/lib/qml/org/kde/kwindowsystem/qmldir; do [[ -e "$path" ]]; done
 for name in kitemviews6widgets kplotting6widgets kwidgetsaddons6widgets; do
   find /opt/kf6/lib/plugins/designer -type f -name "$name.so" -print -quit | grep -q .
 done
@@ -127,8 +127,8 @@ cmake -S /tmp/blfs-kf6-base3-smoke -B /tmp/blfs-kf6-base3-smoke-build \
 ninja -C /tmp/blfs-kf6-base3-smoke-build
 install -d -m 0700 /tmp/blfs-kf6-base3-runtime
 OUTPUT="$(QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software LIBGL_ALWAYS_SOFTWARE=1 \
-  XDG_RUNTIME_DIR=/tmp/blfs-kf6-base3-runtime QML2_IMPORT_PATH=/opt/kf6/qml:/opt/qt6/qml \
-  QML_IMPORT_PATH=/opt/kf6/qml:/opt/qt6/qml QT_PLUGIN_PATH=/opt/kf6/lib/plugins:/opt/qt6/plugins \
+  XDG_RUNTIME_DIR=/tmp/blfs-kf6-base3-runtime QML2_IMPORT_PATH=/opt/kf6/lib/qml:/opt/qt6/qml \
+  QML_IMPORT_PATH=/opt/kf6/lib/qml:/opt/qt6/qml QT_PLUGIN_PATH=/opt/kf6/lib/plugins:/opt/qt6/plugins \
   QML_DISABLE_DISK_CACHE=1 LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib \
   /tmp/blfs-kf6-base3-smoke-build/blfs-kf6-base3-smoke)"
 [[ "$OUTPUT" == BLFS_KF6_BASE3_EXEC_OK=6.9.2=24 ]]
