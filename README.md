@@ -340,3 +340,9 @@ CircleCI pipeline **#98**, at commit `f5c2946dc96f7da0ad67a8d9462b833f7699cc24`,
 The native AArch64 smoke checked KCompletion, a KAuth action object, PTY open/close, and conversion of 1 km to 1000 m; KCrash was linked without triggering crash handling. The system DocBook catalog passed direct `xmllint` validation, and `meinproc6` validated a KDE DocBook document and generated HTML. MIME-Base32's tests passed. URI's full test suite was not run because its recommended test-only dependencies are absent; KF6 tests were disabled as in BLFS. KAuth authorization runtime was not tested.
 
 Pipeline **#97** built the packages but failed the initial DocBook smoke because `meinproc6` replaces `XML_CATALOG_FILES` with KDocTools' own catalogs. It saved no rootfs cache, was not accepted, and was not rerun. Base5 is accepted through the corrected pipeline's dedicated CircleCI cache checkpoint and must not be rerun. Plasma remains absent and `BOOTABLE=no` is unchanged.
+
+## Completed BLFS kf6-base6 — 2026-11-03
+
+CircleCI pipeline **#100**, at commit `9d01dc2e369ffe0236fa2fc46411c211a222ce60`, restored accepted base5 and built KF6 **kcolorscheme, kconfigwidgets, kservice, kglobalaccel, kpackage, and kdesu 6.17.0**. All six source hashes and seven artifacts were independently verified. The native AArch64 smoke passed offscreen color lookup, `KStandardAction`, a KService object, a default shortcut-info object, generic-package data-file lookup, and KDESu PTY execution of `/bin/true`.
+
+No global-shortcut daemon/registration or privilege-elevation runtime was tested. KF6 test suites remained disabled. Pipeline **#99** built all six libraries but failed the first KPackage smoke because the synthetic package placed `data/` outside KPackage's default `contents/` prefix; it saved no rootfs cache, was not accepted, and was not rerun. Base6 is accepted only through corrected pipeline #100 and must not be rerun. Plasma remains absent and `BOOTABLE=no` is unchanged.
