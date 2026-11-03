@@ -62,7 +62,7 @@ for path in \
   /opt/kf6/lib/qml/org/kde/purpose/qmldir \
   /opt/kf6/lib/qml/org/kde/quickcharts/qmldir; do [[ -e "$path" ]]; done
 rm -rf /tmp/blfs-kf6-base17-smoke /tmp/blfs-kf6-base17-smoke-build /tmp/blfs-kf6-base17-runtime /tmp/blfs-kf6-base17-config /tmp/blfs-kf6-base17-smoke-stderr.log
-mkdir -p /tmp/blfs-kf6-base17-smoke /tmp/blfs-kf6-base17-config /tmp/blfs-kf6-base17-smoke-stderr.log
+mkdir -p /tmp/blfs-kf6-base17-smoke /tmp/blfs-kf6-base17-config
 cat >/tmp/blfs-kf6-base17-smoke/CMakeLists.txt <<'EOF'
 cmake_minimum_required(VERSION 3.22)
 project(blfs_kf6_base17_smoke LANGUAGES CXX)
@@ -139,7 +139,7 @@ ninja -C /tmp/blfs-kf6-base17-smoke-build
 install -d -m 0700 /tmp/blfs-kf6-base17-runtime
 set +e
 OUTPUT="$(QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software LIBGL_ALWAYS_SOFTWARE=1 \
-  XDG_CONFIG_HOME=/tmp/blfs-kf6-base17-config /tmp/blfs-kf6-base17-smoke-stderr.log XDG_DATA_DIRS=/opt/kf6/share:/usr/share \
+  XDG_CONFIG_HOME=/tmp/blfs-kf6-base17-config XDG_DATA_DIRS=/opt/kf6/share:/usr/share \
   XDG_RUNTIME_DIR=/tmp/blfs-kf6-base17-runtime QML2_IMPORT_PATH=/opt/kf6/lib/qml:/opt/qt6/qml \
   QML_IMPORT_PATH=/opt/kf6/lib/qml:/opt/qt6/qml QT_PLUGIN_PATH=/opt/kf6/lib/plugins:/opt/qt6/plugins \
   QML_DISABLE_DISK_CACHE=1 LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib \
