@@ -2,11 +2,11 @@
 set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MANIFESTS="$REPO/manifests"
-LFS="${LFS:-$HOME/blfs-qt-declarative1-sources}"
+LFS="${LFS:-$HOME/blfs-kf6-base3-sources}"
 SOURCES="$LFS/sources"
 ARTIFACTS="$REPO/artifacts"
-SHA256_MANIFEST="$MANIFESTS/blfs-qt-declarative1.sha256"
-URL_MANIFEST="$MANIFESTS/wget-list-blfs-qt-declarative1"
+SHA256_MANIFEST="$MANIFESTS/blfs-kf6-base3.sha256"
+URL_MANIFEST="$MANIFESTS/wget-list-blfs-kf6-base3"
 mkdir -p "$SOURCES" "$ARTIFACTS"
 mapfile -t SHA256_ROWS <"$SHA256_MANIFEST"
 declare -A EXPECTED=()
@@ -30,11 +30,11 @@ while IFS= read -r url; do
   fi
   count=$((count + 1))
 done <"$URL_MANIFEST"
-[[ "$count" -eq 2 ]]
+[[ "$count" -eq 5 ]]
 (cd "$SOURCES" && sha256sum -c "$SHA256_MANIFEST")
-while read -r _ name; do (cd "$SOURCES" && sha256sum "$name"); done <"$SHA256_MANIFEST" >"$ARTIFACTS/blfs-qt-declarative1-source-sha256sums.txt"
+while read -r _ name; do (cd "$SOURCES" && sha256sum "$name"); done <"$SHA256_MANIFEST" >"$ARTIFACTS/blfs-kf6-base3-source-sha256sums.txt"
 bytes="$(du -sb "$SOURCES" | awk '{print $1}')"
 {
-  printf 'SOURCE_RESULT=ok\nSTAGE=blfs-qt-declarative1\nARCH=%s\nVERIFIED_FILES=%s\nSOURCE_BYTES=%s\n' "$(uname -m)" "$count" "$bytes"
-} >"$ARTIFACTS/blfs-qt-declarative1-source-report.txt"
-cat "$ARTIFACTS/blfs-qt-declarative1-source-report.txt"
+  printf 'SOURCE_RESULT=ok\nSTAGE=blfs-kf6-base3\nARCH=%s\nVERIFIED_FILES=%s\nSOURCE_BYTES=%s\n' "$(uname -m)" "$count" "$bytes"
+} >"$ARTIFACTS/blfs-kf6-base3-source-report.txt"
+cat "$ARTIFACTS/blfs-kf6-base3-source-report.txt"
