@@ -138,8 +138,8 @@ int main(int argc, char **argv) {
   if (KWallet::Wallet::isEnabled()) return 1;
   const QUrl url = QUrl::fromLocalFile(QStringLiteral("/tmp/blfs-kf6-base8"));
   KFileItem item(url, QStringLiteral("application/octet-stream"), 0100644);
-  if (item.url() != url || item.mimeType() != QStringLiteral("application/octet-stream") || !item.isFile()) return 2;
-  std::printf("BLFS_KF6_BASE8_EXEC_OK=%s=%s=%d\n", qVersion(), item.mimeType().toUtf8().constData(), KWallet::Wallet::isEnabled() ? 1 : 0);
+  if (item.url() != url || item.mimetype() != QStringLiteral("application/octet-stream") || !item.isFile()) return 2;
+  std::printf("BLFS_KF6_BASE8_EXEC_OK=%s=%s=%d\n", qVersion(), item.mimetype().toUtf8().constData(), KWallet::Wallet::isEnabled() ? 1 : 0);
   return 0;
 }
 EOF
