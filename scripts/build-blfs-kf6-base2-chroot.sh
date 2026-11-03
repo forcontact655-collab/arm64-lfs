@@ -17,8 +17,32 @@ for path in KF6Attica KF6Archive KF6Codecs KF6Config KF6CoreAddons KF6DBusAddons
 done
 for path in KF6GuiAddons KF6I18n KF6IdleTime; do [[ ! -e "/opt/kf6/lib/cmake/$path" ]]; done
 [[ ! -e /usr/lib/cmake/PlasmaWaylandProtocols ]]
+[[ ! -e /opt/qt6/lib/cmake/Qt6WaylandClient ]]
 [[ -x /usr/bin/xfce4-terminal ]]
 : >"$PROGRESS"
+archive=qtwayland-everywhere-src-6.9.2.tar.xz
+[[ -f "$SOURCES/$archive" ]]
+first="$(tar -tf "$SOURCES/$archive" | head -n1)" || true
+package_dir="${first%%/*}"; package_dir="${package_dir#./}"
+[[ "$package_dir" == qtwayland-everywhere-src-6.9.2 ]]
+rm -rf "$SOURCES/$package_dir"
+tar -xf "$SOURCES/$archive" -C "$SOURCES"
+mkdir "$SOURCES/$package_dir/build"; cd "$SOURCES/$package_dir/build"
+printf 'BUILD_BLFS_KF6_BASE2_DEPENDENCY=qtwayland\n'
+cmake -G Ninja \
+  -D CMAKE_INSTALL_PREFIX=/opt/qt6 \
+  -D CMAKE_PREFIX_PATH=/opt/qt6 \
+  -D CMAKE_BUILD_TYPE=Release \
+  -D BUILD_TESTING=OFF \
+  -D QT_FEATURE_wayland_client=ON \
+  -W no-dev ..
+ninja
+ninja install
+cd /sources; rm -rf "$package_dir"
+[[ -f /opt/qt6/lib/cmake/Qt6WaylandClient/Qt6WaylandClientConfig.cmake ]]
+[[ -e /opt/qt6/lib/libQt6WaylandClient.so ]]
+printf 'BLFS_KF6_BASE2_DEPENDENCY_BUILT=qtwayland-6.9.2\n' >>"$PROGRESS"
+/sbin/ldconfig
 archive=plasma-wayland-protocols-1.18.0.tar.xz
 [[ -f "$SOURCES/$archive" ]]
 first="$(tar -tf "$SOURCES/$archive" | head -n1)" || true
@@ -70,18 +94,20 @@ for path in \
 for header in KLocalizedString KIdleTime; do
   find /opt/kf6/include/KF6 -type f -name "$header" -print -quit | grep -q .
 done
+find /opt/kf6/lib/plugins -type f -name "*KF6IdleTimeWaylandPlugin.so" -print -quit | grep -q .
+find /opt/qt6/plugins/platforms -type f -name "libqwayland*.so" -print -quit | grep -q .
 rm -rf /tmp/blfs-kf6-base2-smoke /tmp/blfs-kf6-base2-smoke-build
 mkdir -p /tmp/blfs-kf6-base2-smoke
 cat >/tmp/blfs-kf6-base2-smoke/CMakeLists.txt <<'EOF'
 cmake_minimum_required(VERSION 3.22)
 project(blfs_kf6_base2_smoke LANGUAGES CXX)
-find_package(Qt6 6.9.2 REQUIRED COMPONENTS Core)
+find_package(Qt6 6.9.2 REQUIRED COMPONENTS Core WaylandClient)
 find_package(PlasmaWaylandProtocols 1.18.0 REQUIRED CONFIG)
 find_package(KF6GuiAddons 6.17.0 REQUIRED CONFIG)
 find_package(KF6I18n 6.17.0 REQUIRED CONFIG)
 find_package(KF6IdleTime 6.17.0 REQUIRED CONFIG)
 add_executable(blfs-kf6-base2-smoke main.cpp)
-target_link_libraries(blfs-kf6-base2-smoke PRIVATE Qt6::Core KF6::GuiAddons KF6::I18n KF6::IdleTime)
+target_link_libraries(blfs-kf6-base2-smoke PRIVATE Qt6::Core Qt6::WaylandClient KF6::GuiAddons KF6::I18n KF6::IdleTime)
 EOF
 cat >/tmp/blfs-kf6-base2-smoke/main.cpp <<'EOF'
 #include <KLocalizedString>
@@ -108,11 +134,12 @@ INTERPRETER="$(readelf -l /tmp/blfs-kf6-base2-smoke-build/blfs-kf6-base2-smoke |
 {
   printf 'BLFS_KF6_BASE2_RESULT=ok\nPACKAGE_COUNT=3\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=BLFS_KF6_BASE2_EXEC_OK\nDYNAMIC_LINKER=%s\n' "$INTERPRETER"
-  printf 'DEPENDENCY=plasma-wayland-protocols-1.18.0\nDEPENDENCY_COUNT=1\n'
+  printf 'DEPENDENCY_COUNT=2\nQT_WAYLAND=6.9.2\nPLASMA_WAYLAND_PROTOCOLS=1.18.0\n'
   printf 'QT=6.9.2\nECM=6.17.0\nKF6_VERSION=6.17.0\n'
   printf 'PACKAGES=kguiaddons+ki18n+kidletime\n'
   printf 'SMOKE_SCOPE=KLocalizedString;GuiAddons-and-IdleTime-found-and-linked\n'
   printf 'TEST_SUITES=not-run-BUILD_TESTING_OFF\n'
+  printf 'QT_WAYLAND_RUNTIME=not-tested-no-compositor\n'
   printf 'KDNSSD=deferred-avahi-backend\nATTICA_BASE1=preserved\nXFCE_BASE=preserved\nPLASMA=absent\nBOOTABLE=no\n'
 } >"$REPORT"
 cat "$REPORT"

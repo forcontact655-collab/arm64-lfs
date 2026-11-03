@@ -11,7 +11,9 @@ for path in KF6Attica KF6Archive KF6Codecs KF6Config KF6CoreAddons KF6DBusAddons
 done
 for path in KF6GuiAddons KF6I18n KF6IdleTime; do [[ ! -e "$LFS/opt/kf6/lib/cmake/$path" ]]; done
 [[ ! -e "$LFS/usr/lib/cmake/PlasmaWaylandProtocols" ]]
+[[ ! -e "$LFS/opt/qt6/lib/cmake/Qt6WaylandClient" ]]
 [[ -x "$LFS/usr/bin/xfce4-terminal" ]]
+[[ -f "$HOST_SOURCES/qtwayland-everywhere-src-6.9.2.tar.xz" ]]
 [[ -f "$HOST_SOURCES/plasma-wayland-protocols-1.18.0.tar.xz" ]]
 for name in kguiaddons ki18n kidletime; do [[ -f "$HOST_SOURCES/$name-6.17.0.tar.xz" ]]; done
 mkdir -p "$ARTIFACTS"
@@ -45,10 +47,10 @@ REPORT="$ARTIFACTS/blfs-kf6-base2-report.txt"
 for expected in \
   'BLFS_KF6_BASE2_RESULT=ok' 'PACKAGE_COUNT=3' 'ARCH=aarch64' \
   'NATIVE_BINARY_EXEC=BLFS_KF6_BASE2_EXEC_OK' 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' \
-  'DEPENDENCY=plasma-wayland-protocols-1.18.0' 'QT=6.9.2' 'ECM=6.17.0' 'KF6_VERSION=6.17.0' \
+  'DEPENDENCY_COUNT=2' 'QT_WAYLAND=6.9.2' 'PLASMA_WAYLAND_PROTOCOLS=1.18.0' 'QT=6.9.2' 'ECM=6.17.0' 'KF6_VERSION=6.17.0' \
   'PACKAGES=kguiaddons+ki18n+kidletime' 'TEST_SUITES=not-run-BUILD_TESTING_OFF' \
   'KDNSSD=deferred-avahi-backend' 'ATTICA_BASE1=preserved' 'XFCE_BASE=preserved' \
-  'PLASMA=absent' 'BOOTABLE=no'; do grep -qxF "$expected" "$REPORT"; done
+  'QT_WAYLAND_RUNTIME=not-tested-no-compositor' 'PLASMA=absent' 'BOOTABLE=no'; do grep -qxF "$expected" "$REPORT"; done
 [[ "$(grep -c '^BLFS_KF6_BASE2_BUILT=' "$ARTIFACTS/blfs-kf6-base2-progress.txt")" -eq 3 ]]
 cat "$REPORT"
 trap - EXIT
