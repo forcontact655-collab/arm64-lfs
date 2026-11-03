@@ -135,7 +135,7 @@ private:
 };
 int main(int argc, char **argv) {
   QGuiApplication app(argc, argv);
-  Solid::Device device(QString());
+  Solid::Device device{QString()};
   if (device.isValid()) return 1;
   const QString word = QStringLiteral("hello");
   Sonnet::Speller speller(QStringLiteral("en_US"));
