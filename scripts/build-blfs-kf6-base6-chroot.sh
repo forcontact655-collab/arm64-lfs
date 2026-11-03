@@ -115,8 +115,8 @@ int main(int argc, char **argv) {
   KGlobalShortcutInfo shortcutInfo;
   if (!shortcutInfo.uniqueName().isEmpty() || !shortcutInfo.keys().isEmpty()) return 4;
   QTemporaryDir packageDir;
-  if (!packageDir.isValid() || !QDir().mkpath(packageDir.path() + QStringLiteral("/data"))) return 5;
-  QFile data(packageDir.path() + QStringLiteral("/data/hello.txt"));
+  if (!packageDir.isValid() || !QDir().mkpath(packageDir.path() + QStringLiteral("/contents/data"))) return 5;
+  QFile data(packageDir.path() + QStringLiteral("/contents/data/hello.txt"));
   if (!data.open(QIODevice::WriteOnly) || data.write("hello") != 5) return 6;
   data.close();
   KPackage::Package package = KPackage::PackageLoader::self()->loadPackage(QStringLiteral("KPackage/Generic"), packageDir.path());
