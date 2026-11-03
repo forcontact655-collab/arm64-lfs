@@ -11,10 +11,14 @@ for path in KF6IconThemes KF6Notifications KF6JobWidgets KF6TextWidgets KF6XmlGu
 done
 for path in /usr/lib/libgpg-error.so /usr/lib/libgcrypt.so /opt/qt6/lib/libqca-qt6.so; do [[ -e "$LFS$path" ]]; done
 [[ ! -e "$LFS/usr/lib/libsecret-1.so" ]]
+[[ ! -e "$LFS/usr/lib/python3.13/site-packages/dbus/__init__.py" ]]
+[[ ! -e "$LFS/usr/lib/python3.13/site-packages/gi/__init__.py" ]]
 for path in KF6Wallet KF6KDED KF6KIO; do [[ ! -e "$LFS/opt/kf6/lib/cmake/$path" ]]; done
 [[ -x "$LFS/usr/bin/xfce4-terminal" && -f "$LFS/usr/lib/pkgconfig/libcanberra.pc" ]]
 for name in kwallet kded kio; do [[ -f "$HOST_SOURCES/$name-6.17.0.tar.xz" ]]; done
 [[ -f "$HOST_SOURCES/libsecret-0.21.7.tar.xz" ]]
+[[ -f "$HOST_SOURCES/dbus-python-1.4.0.tar.xz" ]]
+[[ -f "$HOST_SOURCES/pygobject-3.52.3.tar.gz" ]]
 mkdir -p "$ARTIFACTS"
 sudo -n true
 cleanup() {
@@ -47,9 +51,10 @@ sudo -n rm -f "$LFS/root/build-blfs-kf6-base8-chroot.sh" \
   "$LFS/root/blfs-kf6-base8-report.txt" "$LFS/root/blfs-kf6-base8-progress.txt"
 REPORT="$ARTIFACTS/blfs-kf6-base8-report.txt"
 for expected in \
-  'BLFS_KF6_BASE8_RESULT=ok' 'PACKAGE_COUNT=3' 'DEPENDENCY_COUNT=1' 'ARCH=aarch64' \
+  'BLFS_KF6_BASE8_RESULT=ok' 'PACKAGE_COUNT=3' 'DEPENDENCY_COUNT=3' 'ARCH=aarch64' \
   'NATIVE_BINARY_EXEC=BLFS_KF6_BASE8_EXEC_OK' 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' \
-  'QT=6.9.2' 'ECM=6.17.0' 'KF6_VERSION=6.17.0' 'DEPENDENCIES=libsecret' 'PACKAGES=kwallet+kded+kio' \
+  'QT=6.9.2' 'ECM=6.17.0' 'KF6_VERSION=6.17.0' 'DEPENDENCIES=dbus-python+pygobject+libsecret' 'PACKAGES=kwallet+kded+kio' \
+  'DBUS_PYTHON_TEST_SUITE=passed-with-gi-skips' 'PYGOBJECT_TEST_SUITE=not-run-tests-disabled-headless' 'PYGOBJECT_NATIVE_IMPORT=GLib-ok' \
   'LIBSECRET_TEST_SUITE=passed' 'LIBSECRET_RUNTIME=not-tested-no-gnome-keyring' 'LIBSECRET_INTROSPECTION=disabled' \
   'KWALLET=config-disabled-native-api-no-daemon' 'KDED=version-only-no-daemon' 'KIO=native-file-item-ok' \
   'WALLET_RUNTIME=not-tested-no-open' 'KDED_RUNTIME=not-tested-no-start' 'KIO_RUNTIME=not-tested-no-job' \
@@ -59,6 +64,6 @@ for expected in \
   grep -qxF "$expected" "$REPORT"
 done
 [[ "$(grep -c '^BLFS_KF6_BASE8_BUILT=' "$ARTIFACTS/blfs-kf6-base8-progress.txt")" -eq 3 ]]
-[[ "$(grep -c '^BLFS_KF6_BASE8_DEPENDENCY_BUILT=libsecret-0.21.7$' "$ARTIFACTS/blfs-kf6-base8-progress.txt")" -eq 1 ]]
+[[ "$(grep -c '^BLFS_KF6_BASE8_DEPENDENCY_BUILT=' "$ARTIFACTS/blfs-kf6-base8-progress.txt")" -eq 3 ]]
 cat "$REPORT"
 trap - EXIT

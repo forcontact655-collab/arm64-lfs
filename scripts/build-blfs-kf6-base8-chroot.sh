@@ -21,6 +21,8 @@ done
 for path in KF6Wallet KF6KDED KF6KIO; do [[ ! -e "/opt/kf6/lib/cmake/$path" ]]; done
 [[ -e /opt/qt6/lib/libqca-qt6.so && -f /opt/qt6/lib/cmake/Qca-qt6/Qca-qt6Config.cmake ]]
 [[ ! -e /usr/lib/libsecret-1.so ]]
+[[ ! -e /usr/lib/python3.13/site-packages/dbus/__init__.py ]]
+[[ ! -e /usr/lib/python3.13/site-packages/gi/__init__.py ]]
 : >"$PROGRESS"
 extract_package() {
   local archive="$1" expected="$2" first package_dir
@@ -32,6 +34,30 @@ extract_package() {
   tar -xf "$SOURCES/$archive" -C "$SOURCES"
   cd "$SOURCES/$package_dir"
 }
+extract_package dbus-python-1.4.0.tar.xz dbus-python-1.4.0
+printf 'BUILD_BLFS_KF6_BASE8_DEPENDENCY=dbus-python\n'
+mkdir bld; cd bld
+meson setup --prefix=/usr --libdir=lib --buildtype=release \
+  -D doc=disabled -D tests=auto -D python=python3 ..
+ninja
+ninja test
+ninja install
+cd /sources; rm -rf dbus-python-1.4.0
+python3 -c 'import dbus; assert dbus.__version__ == "1.4.0"'
+printf 'BLFS_KF6_BASE8_DEPENDENCY_BUILT=dbus-python-1.4.0\n' >>"$PROGRESS"
+
+extract_package pygobject-3.52.3.tar.gz pygobject-3.52.3
+printf 'BUILD_BLFS_KF6_BASE8_DEPENDENCY=pygobject\n'
+mkdir bld; cd bld
+meson setup --prefix=/usr --libdir=lib --buildtype=release \
+  -D pycairo=disabled -D tests=false -D python=python3 ..
+ninja
+ninja install
+cd /sources; rm -rf pygobject-3.52.3
+/sbin/ldconfig
+python3 -c 'from gi.repository import GLib; assert GLib.MAJOR_VERSION == 2'
+printf 'BLFS_KF6_BASE8_DEPENDENCY_BUILT=pygobject-3.52.3\n' >>"$PROGRESS"
+
 extract_package libsecret-0.21.7.tar.xz libsecret-0.21.7
 printf 'BUILD_BLFS_KF6_BASE8_DEPENDENCY=libsecret\n'
 mkdir bld; cd bld
@@ -71,7 +97,7 @@ done
 rm -rf /opt/kf6/lib/systemd
 /sbin/ldconfig
 [[ "$(grep -c '^BLFS_KF6_BASE8_BUILT=' "$PROGRESS")" -eq 3 ]]
-[[ "$(grep -c '^BLFS_KF6_BASE8_DEPENDENCY_BUILT=libsecret-0.21.7$' "$PROGRESS")" -eq 1 ]]
+[[ "$(grep -c '^BLFS_KF6_BASE8_DEPENDENCY_BUILT=' "$PROGRESS")" -eq 3 ]]
 [[ -e /usr/lib/libsecret-1.so && -f /usr/lib/pkgconfig/libsecret-1.pc ]]
 for path in \
   /opt/kf6/lib/cmake/KF6Wallet/KF6WalletConfig.cmake \
@@ -128,9 +154,10 @@ readelf -h /tmp/blfs-kf6-base8-smoke-build/blfs-kf6-base8-smoke | grep -q 'Machi
 INTERPRETER="$(readelf -l /tmp/blfs-kf6-base8-smoke-build/blfs-kf6-base8-smoke | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
 [[ "$INTERPRETER" == /lib/ld-linux-aarch64.so.1 ]]
 {
-  printf 'BLFS_KF6_BASE8_RESULT=ok\nPACKAGE_COUNT=3\nDEPENDENCY_COUNT=1\nARCH=%s\n' "$(uname -m)"
+  printf 'BLFS_KF6_BASE8_RESULT=ok\nPACKAGE_COUNT=3\nDEPENDENCY_COUNT=3\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=BLFS_KF6_BASE8_EXEC_OK\nDYNAMIC_LINKER=%s\n' "$INTERPRETER"
-  printf 'QT=6.9.2\nECM=6.17.0\nKF6_VERSION=6.17.0\nDEPENDENCIES=libsecret\nPACKAGES=kwallet+kded+kio\n'
+  printf 'QT=6.9.2\nECM=6.17.0\nKF6_VERSION=6.17.0\nDEPENDENCIES=dbus-python+pygobject+libsecret\nPACKAGES=kwallet+kded+kio\n'
+  printf 'DBUS_PYTHON_TEST_SUITE=passed-with-gi-skips\nPYGOBJECT_TEST_SUITE=not-run-tests-disabled-headless\nPYGOBJECT_NATIVE_IMPORT=GLib-ok\n'
   printf 'LIBSECRET_TEST_SUITE=passed\nLIBSECRET_RUNTIME=not-tested-no-gnome-keyring\nLIBSECRET_INTROSPECTION=disabled\n'
   printf 'KWALLET=config-disabled-native-api-no-daemon\nKDED=version-only-no-daemon\nKIO=native-file-item-ok\n'
   printf 'WALLET_RUNTIME=not-tested-no-open\nKDED_RUNTIME=not-tested-no-start\nKIO_RUNTIME=not-tested-no-job\n'
