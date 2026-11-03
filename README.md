@@ -301,8 +301,14 @@ Acceptance required the exact Xorg result **5 OK / 1 expected XTS SKIP / 0 Fail*
 
 Pipelines **#78–#82** remain failed, unaccepted, and must not be rerun. Their respective failures were the wrong libepoxy pkg-config module, an incorrect existing-library absence precondition, the wrong font-map post-check path, a fixed-display conflict with CircleCI's host Xvfb, and an incorrect assumption that Xvfb would emit a version banner. Pipeline #82 did produce a live desktop, but only #83 passed every build, launch, artifact, and independent acceptance check.
 
-This is a headless launch test only. Real displays, hardware acceleration, rootless Xorg, installation on a phone, and bootability remain untested; `BOOTABLE=no` stays explicit. KDE remains paused at Attica and Plasma is absent.
+This is a headless launch test only. Real displays, hardware acceleration, rootless Xorg, installation on a phone, and bootability remain untested; `BOOTABLE=no` stays explicit. KDE has resumed from the accepted Attica checkpoint; see the verified KF6 base1 stage below. Plasma remains absent.
 
 ## Active XFCE Termux export — 2026-11-03
 
 The owner authorized preparing the verified XFCE system for Termux beside the existing Arch installation. This export-only stage restores the accepted launch1 cache from pipeline **#83** and does not rebuild XFCE or repeat its desktop-launch pipeline. It creates a SHA-256-verified rootfs archive, dereferences hardlinks for Android filesystem compatibility, excludes build-only tools/sources and virtual runtime contents, and independently rechecks the archive. The existing Arch system is not accessed or modified. This is a migration checkpoint, not the final customized and fully equipped desktop. Packaging in CI is not phone installation; `BOOTABLE=no` remains unchanged.
+
+## Completed BLFS kf6-base1 — 2026-11-03
+
+CircleCI pipeline **#88**, at commit `24ab10f8c51e36ea695cb157cc571f3ba7935002`, restored the accepted apps1 cache and built KF6 **karchive, kcodecs, kconfig, kcoreaddons, and kdbusaddons 6.17.0** without rerunning Attica or XFCE. The workflow and job succeeded, and seven artifacts were downloaded for independent acceptance. Source SHA-256 values and the five-package build order matched the official KF6 manifest.
+
+A compiled native AArch64 smoke executable verified KAboutData, a KConfig write/read round trip, and KCharsets; KArchive and KDBusAddons were discovered and linked. Package test suites were not run because the BLFS build uses `BUILD_TESTING=OFF`. Kapidox remains a deferred documentation tool. The verified rootfs is saved as the `blfs-12.4-kf6-base1-aarch64-v1` CircleCI cache checkpoint. This stage is accepted and must not be rerun. Plasma remains absent and `BOOTABLE=no` is unchanged.
