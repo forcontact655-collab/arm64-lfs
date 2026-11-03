@@ -52,8 +52,6 @@ rm -rf /opt/kf6/lib/systemd
 for path in \
   /opt/kf6/lib/cmake/KF6Contacts/KF6ContactsConfig.cmake \
   /opt/kf6/lib/cmake/KF6People/KF6PeopleConfig.cmake \
-  /opt/kf6/lib/cmake/KF6PeopleBackend/KF6PeopleBackendConfig.cmake \
-  /opt/kf6/lib/cmake/KF6PeopleWidgets/KF6PeopleWidgetsConfig.cmake \
   /opt/kf6/lib/libKF6Contacts.so \
   /opt/kf6/lib/libKF6People.so \
   /opt/kf6/lib/libKF6PeopleBackend.so \
