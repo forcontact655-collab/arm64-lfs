@@ -1450,7 +1450,43 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+
+  blfs-kf6-base15:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-kf6-base14-aarch64-v1-{{ checksum "scripts/build-blfs-kf6-base14-chroot.sh" }}-{{ checksum "scripts/run-blfs-kf6-base14.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-kf6-base15-sources-v1-{{ checksum "manifests/blfs-kf6-base15.sha256" }}-{{ checksum "manifests/wget-list-blfs-kf6-base15" }}-{{ checksum "scripts/fetch-blfs-kf6-base15-sources.sh" }}
+      - run:
+          name: Download and verify KF6 LMDB and Baloo sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-kf6-base15-sources bash scripts/fetch-blfs-kf6-base15-sources.sh 2>&1 | tee artifacts/blfs-kf6-base15-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-kf6-base15-sources-v1-{{ checksum "manifests/blfs-kf6-base15.sha256" }}-{{ checksum "manifests/wget-list-blfs-kf6-base15" }}-{{ checksum "scripts/fetch-blfs-kf6-base15-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-kf6-base15-sources
+      - run:
+          name: Build LMDB and Baloo
+          no_output_timeout: 60m
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-kf6-base15.sh 2>&1 | tee artifacts/blfs-kf6-base15-host.log
+      - save_cache:
+          key: blfs-12.4-kf6-base15-aarch64-v1-{{ checksum "scripts/build-blfs-kf6-base15-chroot.sh" }}-{{ checksum "scripts/run-blfs-kf6-base15.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-kf6-base14
+      - blfs-kf6-base15
