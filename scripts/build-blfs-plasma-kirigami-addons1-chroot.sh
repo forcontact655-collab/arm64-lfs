@@ -62,7 +62,7 @@ add_executable(blfs-plasma-kirigami-addons1-smoke main.cpp)
 target_link_libraries(blfs-plasma-kirigami-addons1-smoke PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Quick Qt6::QuickControls2)
 EOF
 cat >/tmp/blfs-plasma-kirigami-addons1-smoke/main.cpp <<'EOF'
-#include <QApplication>
+#include <QGuiApplication>
 #include <QQmlComponent>
 #include <QQmlEngine>
 #include <QQmlError>
@@ -73,7 +73,7 @@ cat >/tmp/blfs-plasma-kirigami-addons1-smoke/main.cpp <<'EOF'
 #include <cstdio>
 #include <memory>
 int main(int argc, char **argv) {
-  QApplication app(argc, argv);
+  QGuiApplication app(argc, argv);
   app.setApplicationName(QStringLiteral("blfs-plasma-kirigami-addons1-smoke"));
   QQmlEngine engine;
   QQmlComponent component(&engine);
