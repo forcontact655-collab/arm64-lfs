@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-export LC_ALL=POSIX
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
 export PATH=/opt/kf6/bin:/opt/qt6/bin:/usr/bin:/usr/sbin
 export PKG_CONFIG_PATH=/opt/kf6/lib/pkgconfig:/opt/qt6/lib/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig
 export MAKEFLAGS="-j$(nproc)"
@@ -19,6 +20,7 @@ for path in KF6IconThemes KF6Notifications KF6JobWidgets KF6TextWidgets KF6XmlGu
 done
 for path in KF6Wallet KF6KDED KF6KIO; do [[ ! -e "/opt/kf6/lib/cmake/$path" ]]; done
 [[ -e /opt/qt6/lib/libqca-qt6.so && -f /opt/qt6/lib/cmake/Qca-qt6/Qca-qt6Config.cmake ]]
+[[ ! -e /usr/lib/libsecret-1.so ]]
 : >"$PROGRESS"
 extract_package() {
   local archive="$1" expected="$2" first package_dir
@@ -30,6 +32,18 @@ extract_package() {
   tar -xf "$SOURCES/$archive" -C "$SOURCES"
   cd "$SOURCES/$package_dir"
 }
+extract_package libsecret-0.21.7.tar.xz libsecret-0.21.7
+printf 'BUILD_BLFS_KF6_BASE8_DEPENDENCY=libsecret\n'
+mkdir build; cd build
+meson setup --prefix=/usr --buildtype=release \
+  -D gtk_doc=false -D manpage=false -D introspection=false -D vapi=false \
+  -D crypto=libgcrypt ..
+ninja
+ninja test
+ninja install
+cd /sources; rm -rf libsecret-0.21.7
+printf 'BLFS_KF6_BASE8_DEPENDENCY_BUILT=libsecret-0.21.7\n' >>"$PROGRESS"
+/sbin/ldconfig
 packages=(kwallet kded kio)
 for name in "${packages[@]}"; do
   extract_package "$name-6.17.0.tar.xz" "$name-6.17.0"
@@ -57,6 +71,8 @@ done
 rm -rf /opt/kf6/lib/systemd
 /sbin/ldconfig
 [[ "$(grep -c '^BLFS_KF6_BASE8_BUILT=' "$PROGRESS")" -eq 3 ]]
+[[ "$(grep -c '^BLFS_KF6_BASE8_DEPENDENCY_BUILT=libsecret-0.21.7$' "$PROGRESS")" -eq 1 ]]
+[[ -e /usr/lib/libsecret-1.so && -f /usr/lib/pkgconfig/libsecret-1.pc ]]
 for path in \
   /opt/kf6/lib/cmake/KF6Wallet/KF6WalletConfig.cmake \
   /opt/kf6/lib/cmake/KF6KDED/KF6KDEDConfig.cmake \
@@ -112,9 +128,10 @@ readelf -h /tmp/blfs-kf6-base8-smoke-build/blfs-kf6-base8-smoke | grep -q 'Machi
 INTERPRETER="$(readelf -l /tmp/blfs-kf6-base8-smoke-build/blfs-kf6-base8-smoke | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
 [[ "$INTERPRETER" == /lib/ld-linux-aarch64.so.1 ]]
 {
-  printf 'BLFS_KF6_BASE8_RESULT=ok\nPACKAGE_COUNT=3\nARCH=%s\n' "$(uname -m)"
+  printf 'BLFS_KF6_BASE8_RESULT=ok\nPACKAGE_COUNT=3\nDEPENDENCY_COUNT=1\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=BLFS_KF6_BASE8_EXEC_OK\nDYNAMIC_LINKER=%s\n' "$INTERPRETER"
-  printf 'QT=6.9.2\nECM=6.17.0\nKF6_VERSION=6.17.0\nPACKAGES=kwallet+kded+kio\n'
+  printf 'QT=6.9.2\nECM=6.17.0\nKF6_VERSION=6.17.0\nDEPENDENCIES=libsecret\nPACKAGES=kwallet+kded+kio\n'
+  printf 'LIBSECRET_TEST_SUITE=passed\nLIBSECRET_RUNTIME=not-tested-no-gnome-keyring\nLIBSECRET_INTROSPECTION=disabled\n'
   printf 'KWALLET=config-disabled-native-api-no-daemon\nKDED=version-only-no-daemon\nKIO=native-file-item-ok\n'
   printf 'WALLET_RUNTIME=not-tested-no-open\nKDED_RUNTIME=not-tested-no-start\nKIO_RUNTIME=not-tested-no-job\n'
   printf 'KIO_WAYLAND=disabled\nACL_RUNTIME=not-tested\nGPGMEPP=optional-disabled\n'
