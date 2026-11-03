@@ -75,7 +75,7 @@ cd /sources; rm -rf libgpg-error-1.55 libgcrypt-1.11.2 qca-2.3.10
 /sbin/ldconfig
 [[ "$(grep -c '^BLFS_KF6_SECURITY_DEPS1_BUILT=' "$PROGRESS")" -eq 3 ]]
 [[ "$(pkg-config --modversion gpg-error)" == 1.55 ]]
-[[ "$(pkg-config --modversion gcrypt)" == 1.11.2 ]]
+[[ "$(pkg-config --modversion libgcrypt)" == 1.11.2 ]]
 [[ -f /opt/qt6/lib/cmake/Qca-qt6/Qca-qt6Config.cmake && -x /opt/qt6/bin/qcatool-qt6 ]]
 QT_PLUGIN_DIR=/opt/qt6/plugins
 [[ -e "$QT_PLUGIN_DIR/crypto/libqca-ossl.so" ]]
@@ -87,7 +87,7 @@ project(blfs_kf6_security_deps1_smoke LANGUAGES CXX)
 find_package(Qt6 6.9.2 REQUIRED COMPONENTS Core)
 find_package(Qca-qt6 2.3.10 REQUIRED CONFIG)
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(GCRYPT REQUIRED IMPORTED_TARGET gcrypt)
+pkg_check_modules(GCRYPT REQUIRED IMPORTED_TARGET libgcrypt)
 pkg_check_modules(GPG_ERROR REQUIRED IMPORTED_TARGET gpg-error)
 add_executable(blfs-kf6-security-deps1-smoke main.cpp)
 target_link_libraries(blfs-kf6-security-deps1-smoke PRIVATE Qt6::Core ${Qca_LIBRARY} PkgConfig::GCRYPT PkgConfig::GPG_ERROR)
@@ -110,9 +110,9 @@ int main(int argc, char **argv) {
   const QString expected = QStringLiteral("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
   unsigned char digest[32];
   gcry_md_hash_buffer(GCRY_MD_SHA256, digest, "abc", 3);
-  const QString gcryptHash = QByteArray(reinterpret_cast<const char *>(digest), 32).toHex();
+  const QString gcryptHash = QString::fromLatin1(QByteArray(reinterpret_cast<const char *>(digest), 32).toHex());
   if (gcryptHash != expected) return 3;
-  if (!QCA::isSupported(QStringLiteral("sha256"), QStringLiteral("qca-ossl"))) return 4;
+  if (!QCA::isSupported("sha256", QStringLiteral("qca-ossl"))) return 4;
   QCA::Hash hash(QStringLiteral("sha256"), QStringLiteral("qca-ossl"));
   if (hash.hashToString(QCA::SecureArray("abc")) != expected) return 5;
   std::printf("BLFS_KF6_SECURITY_DEPS1_EXEC_OK=%s=%s=1\n", gpgErrorVersion, gcry_check_version(nullptr));
@@ -122,7 +122,7 @@ EOF
 cmake -S /tmp/blfs-kf6-security-deps1-smoke -B /tmp/blfs-kf6-security-deps1-smoke-build \
   -G Ninja -D CMAKE_BUILD_TYPE=Release -D "CMAKE_PREFIX_PATH=/opt/qt6;/opt/kf6"
 ninja -C /tmp/blfs-kf6-security-deps1-smoke-build
-OUTPUT="$(QCA_PLUGIN_PATH="$QT_PLUGIN_DIR/crypto" LD_LIBRARY_PATH=/opt/qt6/lib:/opt/kf6/lib \
+OUTPUT="$(QCA_PLUGIN_PATH="$QT_PLUGIN_DIR" LD_LIBRARY_PATH=/opt/qt6/lib:/opt/kf6/lib \
   /tmp/blfs-kf6-security-deps1-smoke-build/blfs-kf6-security-deps1-smoke)"
 [[ "$OUTPUT" == BLFS_KF6_SECURITY_DEPS1_EXEC_OK=1.55=1.11.2=1 ]]
 readelf -h /tmp/blfs-kf6-security-deps1-smoke-build/blfs-kf6-security-deps1-smoke | grep -q 'Machine:.*AArch64'
