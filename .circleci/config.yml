@@ -1306,7 +1306,43 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+
+  blfs-qt-media-speech1:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-kf6-base11-aarch64-v1-{{ checksum "scripts/build-blfs-kf6-base11-chroot.sh" }}-{{ checksum "scripts/run-blfs-kf6-base11.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-qt-media-speech1-sources-v1-{{ checksum "manifests/blfs-qt-media-speech1.sha256" }}-{{ checksum "manifests/wget-list-blfs-qt-media-speech1" }}-{{ checksum "scripts/fetch-blfs-qt-media-speech1-sources.sh" }}
+      - run:
+          name: Download and verify Qt Multimedia and Speech sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-qt-media-speech1-sources bash scripts/fetch-blfs-qt-media-speech1-sources.sh 2>&1 | tee artifacts/blfs-qt-media-speech1-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-qt-media-speech1-sources-v1-{{ checksum "manifests/blfs-qt-media-speech1.sha256" }}-{{ checksum "manifests/wget-list-blfs-qt-media-speech1" }}-{{ checksum "scripts/fetch-blfs-qt-media-speech1-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-qt-media-speech1-sources
+      - run:
+          name: Build Qt Multimedia and Speech
+          no_output_timeout: 60m
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-qt-media-speech1.sh 2>&1 | tee artifacts/blfs-qt-media-speech1-host.log
+      - save_cache:
+          key: blfs-12.4-qt-media-speech1-aarch64-v1-{{ checksum "scripts/build-blfs-qt-media-speech1-chroot.sh" }}-{{ checksum "scripts/run-blfs-qt-media-speech1.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-kf6-base11
+      - blfs-qt-media-speech1
