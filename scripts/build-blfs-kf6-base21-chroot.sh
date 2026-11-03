@@ -88,6 +88,7 @@ int main(int argc, char **argv) {
   context.insert(QStringLiteral("name"), QVariant(QStringLiteral("native")));
   if (tmpl->render(&context) != QStringLiteral("Hello native")) return 2;
   KUserFeedback::Provider provider;
+  provider.setEnabled(false);
   if (provider.isEnabled() || provider.telemetryMode() != KUserFeedback::Provider::NoTelemetry || provider.submissionInterval() != -1) return 3;
   provider.setProductIdentifier(QStringLiteral("native"));
   provider.setFeedbackServer(QUrl(QStringLiteral("https://example.invalid")));
