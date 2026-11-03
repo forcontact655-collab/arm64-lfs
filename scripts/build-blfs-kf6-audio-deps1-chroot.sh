@@ -73,7 +73,7 @@ rm -rf libogg-1.3.6 libvorbis-1.3.7 alsa-lib-1.2.14 libcanberra-0.30
 [[ "$(pkg-config --modversion libcanberra)" == 0.30 ]]
 for path in /usr/lib/libogg.so /usr/lib/libvorbis.so /usr/lib/libvorbisfile.so \
   /usr/lib/libasound.so /usr/lib/libcanberra.so /usr/lib/libcanberra-gtk3.so \
-  /usr/share/alsa/ucm.conf /usr/include/canberra.h; do [[ -e "$path" ]]; done
+  /usr/share/alsa/ucm2/ucm.conf /usr/include/canberra.h; do [[ -e "$path" ]]; done
 cat >/tmp/blfs-kf6-audio-deps1-smoke.c <<'EOF'
 #include <ogg/ogg.h>
 #include <vorbis/codec.h>
