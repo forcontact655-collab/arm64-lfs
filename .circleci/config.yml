@@ -1803,7 +1803,42 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-plasma-pulse1:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma-deps2-aarch64-v1-{{ checksum "scripts/build-blfs-plasma-deps2-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma-deps2.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma-pulse1-sources-v1-{{ checksum "manifests/blfs-plasma-pulse1.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma-pulse1" }}-{{ checksum "scripts/fetch-blfs-plasma-pulse1-sources.sh" }}
+      - run:
+          name: Download and verify PulseAudio dependency sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-plasma-pulse1-sources bash scripts/fetch-blfs-plasma-pulse1-sources.sh 2>&1 | tee artifacts/blfs-plasma-pulse1-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-plasma-pulse1-sources-v1-{{ checksum "manifests/blfs-plasma-pulse1.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma-pulse1" }}-{{ checksum "scripts/fetch-blfs-plasma-pulse1-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-plasma-pulse1-sources
+      - run:
+          name: Build libsndfile PulseAudio and PulseAudio Qt
+          no_output_timeout: 60m
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-plasma-pulse1.sh 2>&1 | tee artifacts/blfs-plasma-pulse1-host.log
+      - save_cache:
+          key: blfs-12.4-plasma-pulse1-aarch64-v1-{{ checksum "scripts/build-blfs-plasma-pulse1-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma-pulse1.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma-deps2
+      - blfs-plasma-pulse1
