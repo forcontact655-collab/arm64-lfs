@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
   QApplication app(argc, argv);
   KIconTheme theme(QStringLiteral("breeze"));
   if (!theme.isValid()) return 1;
-  const QString icon = theme.iconPath(QStringLiteral("dialog-ok"), 16, KIconLoader::MatchBest);
+  const QString icon = theme.iconPathByName(QStringLiteral("dialog-ok"), 16, KIconLoader::MatchBest);
   if (icon.isEmpty() || !QFile::exists(icon)) return 2;
   KNotification notification(QStringLiteral("blfs-smoke"));
   notification.setText(QStringLiteral("hello"));
