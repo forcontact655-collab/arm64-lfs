@@ -19,6 +19,7 @@ done
 for path in KF6IconThemes KF6Notifications KF6JobWidgets KF6TextWidgets KF6XmlGui KF6Bookmarks; do
   [[ ! -e "/opt/kf6/lib/cmake/$path" ]]
 done
+[[ ! -e /usr/lib/cmake/KF6BreezeIcons ]]
 : >"$PROGRESS"
 extract_package() {
   local archive="$1" expected="$2" first package_dir
@@ -30,6 +31,16 @@ extract_package() {
   tar -xf "$SOURCES/$archive" -C "$SOURCES"
   cd "$SOURCES/$package_dir"
 }
+extract_package breeze-icons-6.17.0.tar.xz breeze-icons-6.17.0
+printf 'BUILD_BLFS_KF6_BASE7_DEPENDENCY=breeze-icons\n'
+mkdir build; cd build
+cmake -G Ninja -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release \
+  -D "CMAKE_PREFIX_PATH=/opt/kf6;/opt/qt6" -D BUILD_TESTING=OFF -W no-dev ..
+ninja
+ninja install
+cd /sources; rm -rf breeze-icons-6.17.0
+printf 'BLFS_KF6_BASE7_DEPENDENCY_BUILT=breeze-icons-6.17.0\n' >>"$PROGRESS"
+/sbin/ldconfig
 packages=(kiconthemes knotifications kjobwidgets ktextwidgets kxmlgui kbookmarks)
 for name in "${packages[@]}"; do
   extract_package "$name-6.17.0.tar.xz" "$name-6.17.0"
@@ -55,6 +66,9 @@ done
 rm -rf /opt/kf6/lib/systemd
 /sbin/ldconfig
 [[ "$(grep -c '^BLFS_KF6_BASE7_BUILT=' "$PROGRESS")" -eq 6 ]]
+[[ "$(grep -c '^BLFS_KF6_BASE7_DEPENDENCY_BUILT=breeze-icons-6.17.0$' "$PROGRESS")" -eq 1 ]]
+[[ -f /usr/lib/cmake/KF6BreezeIcons/KF6BreezeIconsConfig.cmake && -e /usr/lib/libKF6BreezeIcons.so ]]
+[[ -f /usr/share/icons/breeze/index.theme && -f /usr/share/icons/breeze-dark/index.theme ]]
 for path in \
   /opt/kf6/lib/cmake/KF6IconThemes/KF6IconThemesConfig.cmake \
   /opt/kf6/lib/cmake/KF6Notifications/KF6NotificationsConfig.cmake \
@@ -138,9 +152,9 @@ readelf -h /tmp/blfs-kf6-base7-smoke-build/blfs-kf6-base7-smoke | grep -q 'Machi
 INTERPRETER="$(readelf -l /tmp/blfs-kf6-base7-smoke-build/blfs-kf6-base7-smoke | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
 [[ "$INTERPRETER" == /lib/ld-linux-aarch64.so.1 ]]
 {
-  printf 'BLFS_KF6_BASE7_RESULT=ok\nPACKAGE_COUNT=6\nDEPENDENCY_COUNT=0\nARCH=%s\n' "$(uname -m)"
+  printf 'BLFS_KF6_BASE7_RESULT=ok\nPACKAGE_COUNT=6\nDEPENDENCY_COUNT=1\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=BLFS_KF6_BASE7_EXEC_OK\nDYNAMIC_LINKER=%s\n' "$INTERPRETER"
-  printf 'QT=6.9.2\nECM=6.17.0\nKF6_VERSION=6.17.0\n'
+  printf 'QT=6.9.2\nECM=6.17.0\nKF6_VERSION=6.17.0\nDEPENDENCIES=breeze-icons\nBREEZE_TEST_SUITE=absent-BUILD_TESTING_OFF\n'
   printf 'PACKAGES=kiconthemes+knotifications+kjobwidgets+ktextwidgets+kxmlgui+kbookmarks\n'
   printf 'KICONTHEMES=native-breeze-icon-ok\nKNOTIFICATIONS=object-only-no-send\nKJOBWIDGETS=native-tracker-object\n'
   printf 'KTEXTWIDGETS=native-text-edit-ok\nKXMLGUI=native-action-collection-ok\nKBOOKMARKS=native-dom-bookmark-ok\n'

@@ -12,8 +12,9 @@ done
 for path in KF6IconThemes KF6Notifications KF6JobWidgets KF6TextWidgets KF6XmlGui KF6Bookmarks; do
   [[ ! -e "$LFS/opt/kf6/lib/cmake/$path" ]]
 done
+[[ ! -e "$LFS/usr/lib/cmake/KF6BreezeIcons" ]]
 [[ -x "$LFS/usr/bin/xfce4-terminal" && -f "$LFS/usr/lib/pkgconfig/libcanberra.pc" ]]
-for name in kiconthemes knotifications kjobwidgets ktextwidgets kxmlgui kbookmarks; do
+for name in breeze-icons kiconthemes knotifications kjobwidgets ktextwidgets kxmlgui kbookmarks; do
   [[ -f "$HOST_SOURCES/$name-6.17.0.tar.xz" ]]
 done
 mkdir -p "$ARTIFACTS"
@@ -48,9 +49,9 @@ sudo -n rm -f "$LFS/root/build-blfs-kf6-base7-chroot.sh" \
   "$LFS/root/blfs-kf6-base7-report.txt" "$LFS/root/blfs-kf6-base7-progress.txt"
 REPORT="$ARTIFACTS/blfs-kf6-base7-report.txt"
 for expected in \
-  'BLFS_KF6_BASE7_RESULT=ok' 'PACKAGE_COUNT=6' 'DEPENDENCY_COUNT=0' 'ARCH=aarch64' \
+  'BLFS_KF6_BASE7_RESULT=ok' 'PACKAGE_COUNT=6' 'DEPENDENCY_COUNT=1' 'ARCH=aarch64' \
   'NATIVE_BINARY_EXEC=BLFS_KF6_BASE7_EXEC_OK' 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' \
-  'QT=6.9.2' 'ECM=6.17.0' 'KF6_VERSION=6.17.0' \
+  'QT=6.9.2' 'ECM=6.17.0' 'KF6_VERSION=6.17.0' 'DEPENDENCIES=breeze-icons' 'BREEZE_TEST_SUITE=absent-BUILD_TESTING_OFF' \
   'PACKAGES=kiconthemes+knotifications+kjobwidgets+ktextwidgets+kxmlgui+kbookmarks' \
   'KICONTHEMES=native-breeze-icon-ok' 'KNOTIFICATIONS=object-only-no-send' \
   'KJOBWIDGETS=native-tracker-object' 'KTEXTWIDGETS=native-text-edit-ok' \
@@ -62,5 +63,6 @@ for expected in \
   grep -qxF "$expected" "$REPORT"
 done
 [[ "$(grep -c '^BLFS_KF6_BASE7_BUILT=' "$ARTIFACTS/blfs-kf6-base7-progress.txt")" -eq 6 ]]
+[[ "$(grep -c '^BLFS_KF6_BASE7_DEPENDENCY_BUILT=breeze-icons-6.17.0$' "$ARTIFACTS/blfs-kf6-base7-progress.txt")" -eq 1 ]]
 cat "$REPORT"
 trap - EXIT
