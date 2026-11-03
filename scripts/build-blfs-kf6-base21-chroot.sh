@@ -101,6 +101,7 @@ cmake -S /tmp/blfs-kf6-base21-smoke -B /tmp/blfs-kf6-base21-smoke-build \
 ninja -C /tmp/blfs-kf6-base21-smoke-build
 install -d -m 0700 /tmp/blfs-kf6-base21-runtime
 OUTPUT="$(XDG_RUNTIME_DIR=/tmp/blfs-kf6-base21-runtime QT_QPA_PLATFORM=offscreen \
+  QT_PLUGIN_PATH=/opt/kf6/lib/plugins:/opt/qt6/plugins \
   LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib:/usr/lib /tmp/blfs-kf6-base21-smoke-build/blfs-kf6-base21-smoke)"
 [[ "$OUTPUT" == BLFS_KF6_BASE21_EXEC_OK=6.9.2=template=render=feedback=disabled ]]
 printf 'NATIVE_SMOKE_OUTPUT=%s\nNATIVE_SMOKE_STATUS=0\n' "$OUTPUT"
