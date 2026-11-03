@@ -104,7 +104,7 @@ cat >/tmp/blfs-kf6-base7-smoke/main.cpp <<'EOF'
 #include <KTextEdit>
 #include <KMainWindow>
 #include <KActionCollection>
-#include <KBookmarkGroup>
+#include <KBookmark>
 #include <QAction>
 #include <QApplication>
 #include <QDomDocument>
