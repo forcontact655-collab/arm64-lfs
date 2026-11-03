@@ -1628,7 +1628,42 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-kf6-base20:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-kf6-base19-aarch64-v1-{{ checksum "scripts/build-blfs-kf6-base19-chroot.sh" }}-{{ checksum "scripts/run-blfs-kf6-base19.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-kf6-base20-sources-v1-{{ checksum "manifests/blfs-kf6-base20.sha256" }}-{{ checksum "manifests/wget-list-blfs-kf6-base20" }}-{{ checksum "scripts/fetch-blfs-kf6-base20-sources.sh" }}
+      - run:
+          name: Download and verify KStatusNotifierItem and KSvg sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-kf6-base20-sources bash scripts/fetch-blfs-kf6-base20-sources.sh 2>&1 | tee artifacts/blfs-kf6-base20-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-kf6-base20-sources-v1-{{ checksum "manifests/blfs-kf6-base20.sha256" }}-{{ checksum "manifests/wget-list-blfs-kf6-base20" }}-{{ checksum "scripts/fetch-blfs-kf6-base20-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-kf6-base20-sources
+      - run:
+          name: Build KStatusNotifierItem and KSvg
+          no_output_timeout: 60m
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-kf6-base20.sh 2>&1 | tee artifacts/blfs-kf6-base20-host.log
+      - save_cache:
+          key: blfs-12.4-kf6-base20-aarch64-v1-{{ checksum "scripts/build-blfs-kf6-base20-chroot.sh" }}-{{ checksum "scripts/run-blfs-kf6-base20.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-kf6-base19
+      - blfs-kf6-base20
