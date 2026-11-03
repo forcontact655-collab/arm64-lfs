@@ -94,7 +94,7 @@ cat >/tmp/blfs-kf6-base17-smoke/main.cpp <<'EOF'
 int main(int argc, char **argv) {
   QApplication app(argc, argv);
   app.setApplicationName(QStringLiteral("blfs-kf6-base17-smoke"));
-  KHolidays::HolidayRegion region(QStringLiteral("US"));
+  KHolidays::HolidayRegion region(QStringLiteral("US_en-us"));
   if (!region.isValid() || !region.isHoliday(QDate(2026, 1, 1))) return 1;
   Purpose::AlternativesModel alternatives;
   QJsonObject input{{QStringLiteral("text"), QStringLiteral("native")}};
@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
 EOF
 QML2_IMPORT_PATH=/opt/kf6/lib/qml:/opt/qt6/qml QML_IMPORT_PATH=/opt/kf6/lib/qml:/opt/qt6/qml \
 cmake -S /tmp/blfs-kf6-base17-smoke -B /tmp/blfs-kf6-base17-smoke-build \
-  -G Ninja -D CMAKE_BUILD_TYPE=Release -D "CMAKE_PREFIX_PATH=/opt/kf6;/opt/qt6"
+  -G Ninja -D CMAKE_BUILD_TYPE=Release -D "CMAKE_PREFIX_PATH=/opt/kf6;/opt/qt6" -D KDE_INSTALL_FULL_QMLDIR=/opt/kf6/lib/qml
 ninja -C /tmp/blfs-kf6-base17-smoke-build
 install -d -m 0700 /tmp/blfs-kf6-base17-runtime
 OUTPUT="$(QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software LIBGL_ALWAYS_SOFTWARE=1 \
