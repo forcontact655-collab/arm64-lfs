@@ -27,7 +27,7 @@ extract_package() {
   tar -xf "$SOURCES/$archive" -C "$SOURCES"
   cd "$SOURCES/$package_dir"
 }
-extract_package lmdb-LMDB_0.9.33.tar.gz lmdb-LMDB_0.9.33
+extract_package LMDB_0.9.33.tar.gz lmdb-LMDB_0.9.33
 cd libraries/liblmdb
 make
 sed -i 's| liblmdb.a||' Makefile

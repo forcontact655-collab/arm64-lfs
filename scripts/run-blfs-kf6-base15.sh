@@ -9,7 +9,7 @@ ARTIFACTS="$REPO/artifacts"
 for path in Qt6Core Qt6DBus Qt6Qml Qt6Quick Qt6Test; do [[ -f "$LFS/opt/qt6/lib/cmake/$path/${path}Config.cmake" ]]; done
 for path in KF6FileMetaData KF6Runner KF6CoreAddons KF6KIO; do [[ -f "$LFS/opt/kf6/lib/cmake/$path/${path}Config.cmake" ]]; done
 [[ ! -e "$LFS/opt/kf6/lib/cmake/KF6Baloo" && ! -e "$LFS/usr/include/lmdb.h" ]]
-for name in lmdb-LMDB_0.9.33.tar.gz baloo-6.17.0.tar.xz; do [[ -f "$HOST_SOURCES/$name" ]]; done
+for name in LMDB_0.9.33.tar.gz baloo-6.17.0.tar.xz; do [[ -f "$HOST_SOURCES/$name" ]]; done
 mkdir -p "$ARTIFACTS"
 sudo -n true
 cleanup() {
