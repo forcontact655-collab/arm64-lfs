@@ -95,9 +95,12 @@ cat >/tmp/blfs-kf6-base18-smoke/main.cpp <<'EOF'
 #include <QDateTime>
 #include <QString>
 #include <QTime>
+#include <QTimeZone>
 #include <QtGlobal>
+extern "C" {
 #include <libical/icalcomponent.h>
 #include <libical/icalparser.h>
+}
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -116,7 +119,7 @@ int main(int argc, char **argv) {
   KCalendarCore::Event::Ptr item(new KCalendarCore::Event);
   item->setUid(QStringLiteral("native-1"));
   item->setSummary(QStringLiteral("native"));
-  item->setDtStart(QDateTime(QDate(2026, 1, 1), QTime(0, 0), Qt::UTC));
+  item->setDtStart(QDateTime(QDate(2026, 1, 1), QTime(0, 0), QTimeZone::UTC));
   if (!calendar.addEvent(item) || calendar.events().size() != 1) return 3;
   if (calendar.events().constFirst()->summary() != QStringLiteral("native")) return 4;
   std::printf("BLFS_KF6_BASE18_EXEC_OK=%s=libical=parse=calendar=native\n", qVersion());
