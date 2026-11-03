@@ -71,7 +71,7 @@ EOF
 cat >/tmp/blfs-kf6-base19-smoke/main.cpp <<'EOF'
 #include <KDAV/DavItem>
 #include <KDAV/DavUrl>
-#include <KNotifyConfig/KNotifyConfigWidget>
+#include <KNotifyConfigWidget>
 #include <QApplication>
 #include <QByteArray>
 #include <QDataStream>
