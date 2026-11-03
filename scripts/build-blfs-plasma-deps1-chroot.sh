@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
     std::fprintf(stderr, "BOOST_SMOKE_FAILED\n");
     return 3;
   }
-  nl_socket *socket = nl_socket_alloc();
+  struct nl_sock *socket = nl_socket_alloc();
   if (!socket) {
     std::fprintf(stderr, "LIBNL_SMOKE_FAILED\n");
     return 4;
