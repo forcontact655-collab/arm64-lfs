@@ -954,7 +954,42 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-qt-declarative1:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-kf6-base2-aarch64-v1-{{ checksum "scripts/build-blfs-kf6-base2-chroot.sh" }}-{{ checksum "scripts/run-blfs-kf6-base2.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-qt-declarative1-sources-v1-{{ checksum "manifests/blfs-qt-declarative1.sha256" }}-{{ checksum "manifests/wget-list-blfs-qt-declarative1" }}-{{ checksum "scripts/fetch-blfs-qt-declarative1-sources.sh" }}
+      - run:
+          name: Download and verify Qt ShaderTools and Declarative sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-qt-declarative1-sources bash scripts/fetch-blfs-qt-declarative1-sources.sh 2>&1 | tee artifacts/blfs-qt-declarative1-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-qt-declarative1-sources-v1-{{ checksum "manifests/blfs-qt-declarative1.sha256" }}-{{ checksum "manifests/wget-list-blfs-qt-declarative1" }}-{{ checksum "scripts/fetch-blfs-qt-declarative1-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-qt-declarative1-sources
+      - run:
+          name: Build Qt ShaderTools QML and QtQuick
+          no_output_timeout: 60m
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-qt-declarative1.sh 2>&1 | tee artifacts/blfs-qt-declarative1-host.log
+      - save_cache:
+          key: blfs-12.4-qt-declarative1-aarch64-v1-{{ checksum "scripts/build-blfs-qt-declarative1-chroot.sh" }}-{{ checksum "scripts/run-blfs-qt-declarative1.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-kf6-base2
+      - blfs-qt-declarative1
