@@ -65,6 +65,7 @@ for expected in \
   'DEPENDENCIES=polkit-qt+docbook-xml+docbook-xsl-nons+mime-base32+uri' \
   'KAUTH_BACKEND=polkitqt6-built-runtime-not-tested' 'KCRASH=linked-not-triggered' \
   'KPTY=native-open-close-ok' 'KUNITCONVERSION=1km-to-1000m-ok' \
+  'DOCBOOK_SYSTEM_CATALOG=xmllint-valid-ok' \
   'KDOCTOOLS=meinproc-check-and-html-ok' 'PERL_URI_MIME_SMOKE=ok' \
   'MIME_BASE32_TEST_SUITE=make-test-passed' 'URI_TEST_SUITE=not-run-test-only-deps-unavailable' \
   'POLKIT_QT_TEST_SUITE=not-provided-upstream' \

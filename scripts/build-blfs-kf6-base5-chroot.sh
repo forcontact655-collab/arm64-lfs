@@ -251,12 +251,18 @@ INTERPRETER="$(readelf -l /tmp/blfs-kf6-base5-smoke-build/blfs-kf6-base5-smoke |
 cat >/tmp/blfs-kf6-base5-smoke.docbook <<'EOF'
 <?xml version="1.0"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<article id="blfs-kf6-base5"><title>BLFS KF6</title><para>meinproc-ok</para></article>
+<article id="blfs-kf6-base5"><title>BLFS KF6</title><para>system-catalog-ok</para></article>
 EOF
-XML_CATALOG_FILES=/etc/xml/catalog LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib \
-  /opt/kf6/bin/meinproc6 --check /tmp/blfs-kf6-base5-smoke.docbook
-XML_CATALOG_FILES=/etc/xml/catalog LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib \
-  /opt/kf6/bin/meinproc6 --stdout /tmp/blfs-kf6-base5-smoke.docbook >/tmp/blfs-kf6-base5-smoke.html
+XML_CATALOG_FILES=/etc/xml/catalog xmllint --valid --noout /tmp/blfs-kf6-base5-smoke.docbook
+cat >/tmp/blfs-kf6-base5-kde.docbook <<'EOF'
+<?xml version="1.0"?>
+<!DOCTYPE article PUBLIC "-//KDE//DTD DocBook XML V4.5-Based Variant V1.1//EN" "customization/dtd/kdedbx45.dtd">
+<article lang="en" id="blfs-kf6-base5-kde"><title>BLFS KF6</title><para>meinproc-ok</para></article>
+EOF
+LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib \
+  /opt/kf6/bin/meinproc6 --check /tmp/blfs-kf6-base5-kde.docbook
+LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib \
+  /opt/kf6/bin/meinproc6 --stdout /tmp/blfs-kf6-base5-kde.docbook >/tmp/blfs-kf6-base5-smoke.html
 grep -qi '<html' /tmp/blfs-kf6-base5-smoke.html
 grep -q 'meinproc-ok' /tmp/blfs-kf6-base5-smoke.html
 {
@@ -267,6 +273,7 @@ grep -q 'meinproc-ok' /tmp/blfs-kf6-base5-smoke.html
   printf 'DEPENDENCIES=polkit-qt+docbook-xml+docbook-xsl-nons+mime-base32+uri\n'
   printf 'KAUTH_BACKEND=polkitqt6-built-runtime-not-tested\nKCRASH=linked-not-triggered\n'
   printf 'KPTY=native-open-close-ok\nKUNITCONVERSION=1km-to-1000m-ok\n'
+  printf 'DOCBOOK_SYSTEM_CATALOG=xmllint-valid-ok\n'
   printf 'KDOCTOOLS=meinproc-check-and-html-ok\nPERL_URI_MIME_SMOKE=ok\n'
   printf 'MIME_BASE32_TEST_SUITE=make-test-passed\nURI_TEST_SUITE=not-run-test-only-deps-unavailable\n'
   printf 'POLKIT_QT_TEST_SUITE=not-provided-upstream\nDOCBOOK_TEST_SUITE=not-run-upstream-requirements-unavailable\n'
@@ -277,4 +284,5 @@ grep -q 'meinproc-ok' /tmp/blfs-kf6-base5-smoke.html
 } >"$REPORT"
 cat "$REPORT"
 rm -rf /tmp/blfs-kf6-base5-smoke /tmp/blfs-kf6-base5-smoke-build \
-  /tmp/blfs-kf6-base5-smoke.docbook /tmp/blfs-kf6-base5-smoke.html
+  /tmp/blfs-kf6-base5-smoke.docbook /tmp/blfs-kf6-base5-kde.docbook \
+  /tmp/blfs-kf6-base5-smoke.html
