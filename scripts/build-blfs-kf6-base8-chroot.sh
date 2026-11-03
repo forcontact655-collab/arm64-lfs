@@ -61,7 +61,7 @@ printf 'BLFS_KF6_BASE8_DEPENDENCY_BUILT=pygobject-3.52.3\n' >>"$PROGRESS"
 extract_package libsecret-0.21.7.tar.xz libsecret-0.21.7
 printf 'BUILD_BLFS_KF6_BASE8_DEPENDENCY=libsecret\n'
 mkdir bld; cd bld
-meson setup --prefix=/usr --buildtype=release \
+meson setup --prefix=/usr --libdir=lib --buildtype=release \
   -D gtk_doc=false -D manpage=false -D introspection=false -D vapi=false \
   -D crypto=libgcrypt ..
 ninja
