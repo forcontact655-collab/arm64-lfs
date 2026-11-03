@@ -4,12 +4,21 @@ export LFS="${LFS:-/home/circleci/lfs}"
 HOST_SOURCES="${HOST_SOURCES:-/home/circleci/blfs-plasma-pulse1-sources/sources}"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ARTIFACTS="$REPO/artifacts"
-[[ "$(uname -m)" == aarch64 && "$LFS" == /home/circleci/lfs ]]
-[[ "$HOST_SOURCES" == /home/circleci/blfs-plasma-pulse1-sources/sources ]]
-[[ ! -e "$LFS/usr/include/sndfile.h" && ! -e "$LFS/usr/include/pulse" && ! -e "$LFS/opt/kf6/lib/cmake/KF6PulseAudioQt" ]]
-for name in libsndfile-1.2.2.tar.xz pulseaudio-17.0.tar.xz pulseaudio-qt-1.7.0.tar.xz; do [[ -f "$HOST_SOURCES/$name" ]]; done
+preflight_fail() {
+  printf 'BLFS_PLASMA_PULSE1_PRECONDITION_FAILED=%s\n' "$1" >&2
+  exit 1
+}
+[[ "$(uname -m)" == aarch64 && "$LFS" == /home/circleci/lfs ]] || preflight_fail "arch-or-lfs-$(uname -m)-$LFS"
+[[ "$HOST_SOURCES" == /home/circleci/blfs-plasma-pulse1-sources/sources ]] || preflight_fail "source-path-$HOST_SOURCES"
+for path in "$LFS/usr/include/sndfile.h" "$LFS/usr/include/pulse" "$LFS/opt/kf6/lib/cmake/KF6PulseAudioQt"; do
+  [[ ! -e "$path" ]] || preflight_fail "existing-$path"
+done
+for name in libsndfile-1.2.2.tar.xz pulseaudio-17.0.tar.xz pulseaudio-qt-1.7.0.tar.xz; do
+  [[ -f "$HOST_SOURCES/$name" ]] || preflight_fail "missing-source-$name"
+done
+printf 'BLFS_PLASMA_PULSE1_RUN_PRECONDITIONS=ok\n'
 mkdir -p "$ARTIFACTS"
-sudo -n true
+sudo -n true || preflight_fail sudo
 cleanup() {
   set +e
   local path
