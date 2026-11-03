@@ -138,7 +138,7 @@ INTERPRETER="$(readelf -l /tmp/blfs-kf6-base14-smoke-build/blfs-kf6-base14-smoke
   printf 'BLUEZQT=native-device-type-qml-import-no-manager\nKFILEMETADATA=native-memory-result-no-file-io\nKRUNNER=native-query-match-no-manager\n'
   printf 'BLUEZ_RUNTIME=not-tested-no-dbus-init-or-hardware\nFILE_IO=not-tested-no-file-access\nRUNNER_RUNTIME=not-tested-no-dbus\n'
   printf 'BALOO=deferred-lmdb-required\nWINDOW_RUNTIME=not-tested-no-window-shown\nTEST_SUITES=not-run-BUILD_TESTING_OFF\n'
-  printf 'BASE13=preserved-pipeline-122\nBASE12=preserved-pipeline-121\nQT_MEDIA_SPEECH1=preserved-pipeline-120\n'
+  printf 'BASE13=preserved-pipeline-123\nBASE12=preserved-pipeline-121\nQT_MEDIA_SPEECH1=preserved-pipeline-120\n'
   printf 'PLASMA=absent\nBOOTABLE=no\n'
 } >"$REPORT"
 cat "$REPORT"

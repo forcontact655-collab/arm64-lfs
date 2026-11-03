@@ -48,7 +48,7 @@ for expected in \
   'BLUEZQT=native-device-type-qml-import-no-manager' 'KFILEMETADATA=native-memory-result-no-file-io' 'KRUNNER=native-query-match-no-manager' \
   'BLUEZ_RUNTIME=not-tested-no-dbus-init-or-hardware' 'FILE_IO=not-tested-no-file-access' 'RUNNER_RUNTIME=not-tested-no-dbus' \
   'BALOO=deferred-lmdb-required' 'WINDOW_RUNTIME=not-tested-no-window-shown' 'TEST_SUITES=not-run-BUILD_TESTING_OFF' \
-  'BASE13=preserved-pipeline-122' 'BASE12=preserved-pipeline-121' 'QT_MEDIA_SPEECH1=preserved-pipeline-120' \
+  'BASE13=preserved-pipeline-123' 'BASE12=preserved-pipeline-121' 'QT_MEDIA_SPEECH1=preserved-pipeline-120' \
   'PLASMA=absent' 'BOOTABLE=no'; do
   grep -qxF "$expected" "$REPORT"
 done
