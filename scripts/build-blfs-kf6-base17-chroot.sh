@@ -61,8 +61,8 @@ for path in \
   /opt/kf6/lib/qml/org/kde/kholidays/qmldir \
   /opt/kf6/lib/qml/org/kde/purpose/qmldir \
   /opt/kf6/lib/qml/org/kde/quickcharts/qmldir; do [[ -e "$path" ]]; done
-rm -rf /tmp/blfs-kf6-base17-smoke /tmp/blfs-kf6-base17-smoke-build /tmp/blfs-kf6-base17-runtime /tmp/blfs-kf6-base17-config
-mkdir -p /tmp/blfs-kf6-base17-smoke /tmp/blfs-kf6-base17-config
+rm -rf /tmp/blfs-kf6-base17-smoke /tmp/blfs-kf6-base17-smoke-build /tmp/blfs-kf6-base17-runtime /tmp/blfs-kf6-base17-config /tmp/blfs-kf6-base17-smoke-stderr.log
+mkdir -p /tmp/blfs-kf6-base17-smoke /tmp/blfs-kf6-base17-config /tmp/blfs-kf6-base17-smoke-stderr.log
 cat >/tmp/blfs-kf6-base17-smoke/CMakeLists.txt <<'EOF'
 cmake_minimum_required(VERSION 3.22)
 project(blfs_kf6_base17_smoke LANGUAGES CXX)
@@ -94,12 +94,19 @@ cat >/tmp/blfs-kf6-base17-smoke/main.cpp <<'EOF'
 int main(int argc, char **argv) {
   QApplication app(argc, argv);
   app.setApplicationName(QStringLiteral("blfs-kf6-base17-smoke"));
-  KHolidays::HolidayRegion region(QStringLiteral("US_en-us"));
-  if (!region.isValid() || !region.isHoliday(QDate(2026, 1, 1))) return 1;
+  KHolidays::HolidayRegion region(QStringLiteral("us_en-us"));
+  if (!region.isValid() || !region.isHoliday(QDate(2026, 1, 1))) {
+    std::fprintf(stderr, "KHOLIDAYS_SMOKE_FAILED valid=%d holiday=%d region=%s\n",
+                 int(region.isValid()), int(region.isHoliday(QDate(2026, 1, 1))), qPrintable(region.regionCode()));
+    return 1;
+  }
   Purpose::AlternativesModel alternatives;
   QJsonObject input{{QStringLiteral("text"), QStringLiteral("native")}};
   alternatives.setInputData(input);
-  if (alternatives.inputData() != input) return 2;
+  if (alternatives.inputData() != input) {
+    std::fprintf(stderr, "PURPOSE_SMOKE_FAILED input-data-roundtrip\n");
+    return 2;
+  }
   QQmlEngine engine;
   QQmlComponent component(&engine);
   component.setData(QByteArrayLiteral(
@@ -110,9 +117,17 @@ int main(int argc, char **argv) {
     return 3;
   }
   std::unique_ptr<QObject> object(component.create());
-  if (!object) return 4;
+  if (!object) {
+    const auto errors = component.errors();
+    for (const auto &error : errors) std::fprintf(stderr, "%s\n", qPrintable(error.toString()));
+    std::fprintf(stderr, "QML_CREATE_FAILED\n");
+    return 4;
+  }
   QQuickItem *item = qobject_cast<QQuickItem *>(object.get());
-  if (!item || item->width() != 24.0) return 5;
+  if (!item || item->width() != 24.0) {
+    std::fprintf(stderr, "QML_ITEM_FAILED item=%p width=%f\n", static_cast<void *>(item), item ? item->width() : -1.0);
+    return 5;
+  }
   std::printf("BLFS_KF6_BASE17_EXEC_OK=%s=holidays=us=purpose=data=charts=24\n", qVersion());
   return 0;
 }
@@ -122,12 +137,18 @@ cmake -S /tmp/blfs-kf6-base17-smoke -B /tmp/blfs-kf6-base17-smoke-build \
   -G Ninja -D CMAKE_BUILD_TYPE=Release -D "CMAKE_PREFIX_PATH=/opt/kf6;/opt/qt6" -D KDE_INSTALL_FULL_QMLDIR=/opt/kf6/lib/qml
 ninja -C /tmp/blfs-kf6-base17-smoke-build
 install -d -m 0700 /tmp/blfs-kf6-base17-runtime
+set +e
 OUTPUT="$(QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software LIBGL_ALWAYS_SOFTWARE=1 \
-  XDG_CONFIG_HOME=/tmp/blfs-kf6-base17-config XDG_DATA_DIRS=/opt/kf6/share:/usr/share \
+  XDG_CONFIG_HOME=/tmp/blfs-kf6-base17-config /tmp/blfs-kf6-base17-smoke-stderr.log XDG_DATA_DIRS=/opt/kf6/share:/usr/share \
   XDG_RUNTIME_DIR=/tmp/blfs-kf6-base17-runtime QML2_IMPORT_PATH=/opt/kf6/lib/qml:/opt/qt6/qml \
   QML_IMPORT_PATH=/opt/kf6/lib/qml:/opt/qt6/qml QT_PLUGIN_PATH=/opt/kf6/lib/plugins:/opt/qt6/plugins \
   QML_DISABLE_DISK_CACHE=1 LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib \
-  /tmp/blfs-kf6-base17-smoke-build/blfs-kf6-base17-smoke)"
+  /tmp/blfs-kf6-base17-smoke-build/blfs-kf6-base17-smoke 2>/tmp/blfs-kf6-base17-smoke-stderr.log)"
+NATIVE_STATUS=$?
+set -e
+cat /tmp/blfs-kf6-base17-smoke-stderr.log
+printf 'NATIVE_SMOKE_STATUS=%s\nNATIVE_SMOKE_OUTPUT=%s\n' "$NATIVE_STATUS" "$OUTPUT"
+[[ "$NATIVE_STATUS" -eq 0 ]]
 [[ "$OUTPUT" == BLFS_KF6_BASE17_EXEC_OK=6.9.2=holidays=us=purpose=data=charts=24 ]]
 readelf -h /tmp/blfs-kf6-base17-smoke-build/blfs-kf6-base17-smoke | grep -q 'Machine:.*AArch64'
 INTERPRETER="$(readelf -l /tmp/blfs-kf6-base17-smoke-build/blfs-kf6-base17-smoke | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
@@ -142,4 +163,4 @@ INTERPRETER="$(readelf -l /tmp/blfs-kf6-base17-smoke-build/blfs-kf6-base17-smoke
   printf 'PLASMA=absent\nBOOTABLE=no\n'
 } >"$REPORT"
 cat "$REPORT"
-rm -rf /tmp/blfs-kf6-base17-smoke /tmp/blfs-kf6-base17-smoke-build /tmp/blfs-kf6-base17-runtime /tmp/blfs-kf6-base17-config
+rm -rf /tmp/blfs-kf6-base17-smoke /tmp/blfs-kf6-base17-smoke-build /tmp/blfs-kf6-base17-runtime /tmp/blfs-kf6-base17-config /tmp/blfs-kf6-base17-smoke-stderr.log
