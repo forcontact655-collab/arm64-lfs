@@ -34,7 +34,7 @@ extract_package() {
 }
 extract_package libsecret-0.21.7.tar.xz libsecret-0.21.7
 printf 'BUILD_BLFS_KF6_BASE8_DEPENDENCY=libsecret\n'
-mkdir build; cd build
+mkdir bld; cd bld
 meson setup --prefix=/usr --buildtype=release \
   -D gtk_doc=false -D manpage=false -D introspection=false -D vapi=false \
   -D crypto=libgcrypt ..
