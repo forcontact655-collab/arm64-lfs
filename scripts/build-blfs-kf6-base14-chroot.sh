@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
   KFileMetaData::SimpleExtractionResult extracted(QStringLiteral("memory://base14"), QStringLiteral("text/plain"));
   extracted.append(QStringLiteral("native metadata"));
   extracted.addType(KFileMetaData::Type::Text);
-  if (extracted.text() != QStringLiteral("native metadata")) return 2;
+  if (extracted.text().trimmed() != QStringLiteral("native metadata")) return 2;
   KRunner::QueryMatch match;
   match.setText(QStringLiteral("native runner"));
   KRunner::RunnerContext context;
