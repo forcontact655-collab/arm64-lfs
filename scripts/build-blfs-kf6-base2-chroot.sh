@@ -16,8 +16,23 @@ for path in KF6Attica KF6Archive KF6Codecs KF6Config KF6CoreAddons KF6DBusAddons
   [[ -f "/opt/kf6/lib/cmake/$path/${path}Config.cmake" ]]
 done
 for path in KF6GuiAddons KF6I18n KF6IdleTime; do [[ ! -e "/opt/kf6/lib/cmake/$path" ]]; done
+[[ ! -e /usr/lib/cmake/PlasmaWaylandProtocols ]]
 [[ -x /usr/bin/xfce4-terminal ]]
 : >"$PROGRESS"
+archive=plasma-wayland-protocols-1.18.0.tar.xz
+[[ -f "$SOURCES/$archive" ]]
+first="$(tar -tf "$SOURCES/$archive" | head -n1)" || true
+package_dir="${first%%/*}"; package_dir="${package_dir#./}"
+[[ "$package_dir" == plasma-wayland-protocols-1.18.0 ]]
+rm -rf "$SOURCES/$package_dir"
+tar -xf "$SOURCES/$archive" -C "$SOURCES"
+mkdir "$SOURCES/$package_dir/build"; cd "$SOURCES/$package_dir/build"
+printf 'BUILD_BLFS_KF6_BASE2_DEPENDENCY=plasma-wayland-protocols\n'
+cmake -G Ninja -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=Release -W no-dev ..
+ninja install
+cd /sources; rm -rf "$package_dir"
+[[ -f /usr/lib/cmake/PlasmaWaylandProtocols/PlasmaWaylandProtocolsConfig.cmake ]]
+printf 'BLFS_KF6_BASE2_DEPENDENCY_BUILT=plasma-wayland-protocols-1.18.0\n' >>"$PROGRESS"
 packages=(kguiaddons ki18n kidletime)
 for name in "${packages[@]}"; do
   archive="$name-6.17.0.tar.xz"; [[ -f "$SOURCES/$archive" ]]
@@ -61,6 +76,7 @@ cat >/tmp/blfs-kf6-base2-smoke/CMakeLists.txt <<'EOF'
 cmake_minimum_required(VERSION 3.22)
 project(blfs_kf6_base2_smoke LANGUAGES CXX)
 find_package(Qt6 6.9.2 REQUIRED COMPONENTS Core)
+find_package(PlasmaWaylandProtocols 1.18.0 REQUIRED CONFIG)
 find_package(KF6GuiAddons 6.17.0 REQUIRED CONFIG)
 find_package(KF6I18n 6.17.0 REQUIRED CONFIG)
 find_package(KF6IdleTime 6.17.0 REQUIRED CONFIG)
@@ -85,13 +101,14 @@ cmake -S /tmp/blfs-kf6-base2-smoke -B /tmp/blfs-kf6-base2-smoke-build \
   -G Ninja -D CMAKE_BUILD_TYPE=Release -D "CMAKE_PREFIX_PATH=/opt/kf6;/opt/qt6"
 ninja -C /tmp/blfs-kf6-base2-smoke-build
 OUTPUT="$(LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib /tmp/blfs-kf6-base2-smoke-build/blfs-kf6-base2-smoke)"
-[[ "$OUTPUT" == BLFS_KF6_BASE2_EXEC_OK=6.9.2=blfs ]]
+[[ "$OUTPUT" == BLFS_KF6_BASE2_EXEC_OK=6.9.2=BLFS ]]
 readelf -h /tmp/blfs-kf6-base2-smoke-build/blfs-kf6-base2-smoke | grep -q 'Machine:.*AArch64'
 INTERPRETER="$(readelf -l /tmp/blfs-kf6-base2-smoke-build/blfs-kf6-base2-smoke | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
 [[ "$INTERPRETER" == /lib/ld-linux-aarch64.so.1 ]]
 {
   printf 'BLFS_KF6_BASE2_RESULT=ok\nPACKAGE_COUNT=3\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=BLFS_KF6_BASE2_EXEC_OK\nDYNAMIC_LINKER=%s\n' "$INTERPRETER"
+  printf 'DEPENDENCY=plasma-wayland-protocols-1.18.0\nDEPENDENCY_COUNT=1\n'
   printf 'QT=6.9.2\nECM=6.17.0\nKF6_VERSION=6.17.0\n'
   printf 'PACKAGES=kguiaddons+ki18n+kidletime\n'
   printf 'SMOKE_SCOPE=KLocalizedString;GuiAddons-and-IdleTime-found-and-linked\n'

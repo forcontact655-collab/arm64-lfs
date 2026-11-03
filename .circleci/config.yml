@@ -932,7 +932,7 @@ jobs:
           keys:
             - blfs-12.4-kf6-base2-sources-v1-{{ checksum "manifests/blfs-kf6-base2.sha256" }}-{{ checksum "manifests/wget-list-blfs-kf6-base2" }}-{{ checksum "scripts/fetch-blfs-kf6-base2-sources.sh" }}
       - run:
-          name: Download and verify three official KF6 sources
+          name: Download and verify KF6 base2 sources and protocol dependency
           command: |
             set -o pipefail
             mkdir -p artifacts
