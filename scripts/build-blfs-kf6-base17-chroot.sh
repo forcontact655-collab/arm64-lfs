@@ -78,7 +78,7 @@ target_link_libraries(blfs-kf6-base17-smoke PRIVATE
 EOF
 cat >/tmp/blfs-kf6-base17-smoke/main.cpp <<'EOF'
 #include <KHolidays/HolidayRegion>
-#include <Purpose/Job>
+#include <Purpose/AlternativesModel>
 #include <QApplication>
 #include <QDate>
 #include <QJsonObject>
@@ -96,10 +96,10 @@ int main(int argc, char **argv) {
   app.setApplicationName(QStringLiteral("blfs-kf6-base17-smoke"));
   KHolidays::HolidayRegion region(QStringLiteral("US"));
   if (!region.isValid() || !region.isHoliday(QDate(2026, 1, 1))) return 1;
-  Purpose::Job job;
+  Purpose::AlternativesModel alternatives;
   QJsonObject input{{QStringLiteral("text"), QStringLiteral("native")}};
-  job.setData(input);
-  if (job.data() != input) return 2;
+  alternatives.setInputData(input);
+  if (alternatives.inputData() != input) return 2;
   QQmlEngine engine;
   QQmlComponent component(&engine);
   component.setData(QByteArrayLiteral(
@@ -117,6 +117,7 @@ int main(int argc, char **argv) {
   return 0;
 }
 EOF
+QML2_IMPORT_PATH=/opt/kf6/lib/qml:/opt/qt6/qml QML_IMPORT_PATH=/opt/kf6/lib/qml:/opt/qt6/qml \
 cmake -S /tmp/blfs-kf6-base17-smoke -B /tmp/blfs-kf6-base17-smoke-build \
   -G Ninja -D CMAKE_BUILD_TYPE=Release -D "CMAKE_PREFIX_PATH=/opt/kf6;/opt/qt6"
 ninja -C /tmp/blfs-kf6-base17-smoke-build
@@ -135,8 +136,8 @@ INTERPRETER="$(readelf -l /tmp/blfs-kf6-base17-smoke-build/blfs-kf6-base17-smoke
   printf 'BLFS_KF6_BASE17_RESULT=ok\nPACKAGE_COUNT=4\nDEPENDENCY_COUNT=0\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=BLFS_KF6_BASE17_EXEC_OK\nDYNAMIC_LINKER=%s\n' "$INTERPRETER"
   printf 'QT=6.9.2\nECM=6.17.0\nKF6_VERSION=6.17.0\nPACKAGES=qqc2-desktop-style+kholidays+purpose+kquickcharts\nDEPENDENCIES=none\n'
-  printf 'QQC2=native-qml-desktop-import\nKHOLIDAYS=native-us-holiday\nPURPOSE=native-job-data-no-start\nQUICKCHARTS=qml-barchart-unshown\n'
-  printf 'KCALENDARCORE=deferred-libical-required\nNETWORK_RUNTIME=not-tested-no-job-start\nWINDOW_RUNTIME=not-tested-no-window-shown\n'
+  printf 'QQC2=native-qml-desktop-import\nKHOLIDAYS=native-us-holiday\nPURPOSE=native-alternatives-model-no-start\nQUICKCHARTS=qml-barchart-unshown\n'
+  printf 'SPIRV_OPT=absent-qsb-fallback\nKCALENDARCORE=deferred-libical-required\nNETWORK_RUNTIME=not-tested-no-job-start\nWINDOW_RUNTIME=not-tested-no-window-shown\n'
   printf 'TEST_SUITES=not-run-BUILD_TESTING_OFF\nBASE16=preserved-pipeline-129\nBASE15=preserved-pipeline-128\nBASE14=preserved-pipeline-126\n'
   printf 'PLASMA=absent\nBOOTABLE=no\n'
 } >"$REPORT"

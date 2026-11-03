@@ -45,8 +45,8 @@ for expected in \
   'BLFS_KF6_BASE17_RESULT=ok' 'PACKAGE_COUNT=4' 'DEPENDENCY_COUNT=0' 'ARCH=aarch64' \
   'NATIVE_BINARY_EXEC=BLFS_KF6_BASE17_EXEC_OK' 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' \
   'QT=6.9.2' 'ECM=6.17.0' 'KF6_VERSION=6.17.0' 'PACKAGES=qqc2-desktop-style+kholidays+purpose+kquickcharts' 'DEPENDENCIES=none' \
-  'QQC2=native-qml-desktop-import' 'KHOLIDAYS=native-us-holiday' 'PURPOSE=native-job-data-no-start' 'QUICKCHARTS=qml-barchart-unshown' \
-  'KCALENDARCORE=deferred-libical-required' 'NETWORK_RUNTIME=not-tested-no-job-start' 'WINDOW_RUNTIME=not-tested-no-window-shown' \
+  'QQC2=native-qml-desktop-import' 'KHOLIDAYS=native-us-holiday' 'PURPOSE=native-alternatives-model-no-start' 'QUICKCHARTS=qml-barchart-unshown' \
+  'SPIRV_OPT=absent-qsb-fallback' 'KCALENDARCORE=deferred-libical-required' 'NETWORK_RUNTIME=not-tested-no-job-start' 'WINDOW_RUNTIME=not-tested-no-window-shown' \
   'TEST_SUITES=not-run-BUILD_TESTING_OFF' 'BASE16=preserved-pipeline-129' 'BASE15=preserved-pipeline-128' 'BASE14=preserved-pipeline-126' \
   'PLASMA=absent' 'BOOTABLE=no'; do
   grep -qxF "$expected" "$REPORT"
