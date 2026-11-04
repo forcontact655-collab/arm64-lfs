@@ -34,6 +34,7 @@ done
 [[ -f /root/blfs-xfce-launch1-x11-smoke.c ]]
 [[ ! -e /usr/share/themes/VimAnimeDark ]]
 [[ ! -e /usr/local/bin/vim-xfce-visual-apply ]]
+[[ ! -e /usr/local/bin/vim-xfce-monitor-names ]]
 [[ ! -e /root/.config/xfce4 ]]
 [[ -f "$SOURCES/146271413_p0.png" ]]
 printf '2995b1f1e50865287e688764d612a89ae9b65713d6f6cf68b73e8954f9a5a24a  %s\n' "$SOURCES/146271413_p0.png" | sha256sum -c -
@@ -120,6 +121,7 @@ import hashlib
 import os
 from pathlib import Path
 import subprocess
+import time
 
 SRC = Path('/usr/share/backgrounds/vim/lilith-memory-paradise.png')
 OUT = Path(os.environ.get('VIM_XFCE_VISUAL_OUT', '/usr/share/backgrounds/vim/generated'))
@@ -147,6 +149,19 @@ def dimensions():
         return x11.XDisplayWidth(display, 0), x11.XDisplayHeight(display, 0)
     finally:
         x11.XCloseDisplay(display)
+
+def monitor_names():
+    result = subprocess.run(['/usr/local/bin/vim-xfce-monitor-names'],
+                            text=True, capture_output=True)
+    names = []
+    if result.returncode == 0:
+        for name in result.stdout.splitlines():
+            name = name.strip()
+            if name and all(c.isalnum() or c in '_.-' for c in name):
+                names.append(name)
+    if not names:
+        names = ['0', 'screen', 'default']
+    return list(dict.fromkeys(names))
 
 def setv(channel, prop, typ, value):
     value = str(value)
@@ -228,19 +243,33 @@ BackgroundDarkness=0.85
 
 listing = run(['xfconf-query', '-c', 'xfce4-desktop', '-l'], True).stdout.splitlines()
 props = [p for p in listing if p.endswith('/last-image')]
-if not props:
-    props = ['/backdrop/screen0/monitor0/workspace0/last-image']
-for prop in props:
-    setv('xfce4-desktop', prop, 'string', str(wall))
-    base = prop[:-len('last-image')]
-    setv('xfce4-desktop', base + 'image-style', 'int', '4')
-    setv('xfce4-desktop', base + 'color-style', 'int', '0')
-    rgba = base + 'rgba1'
-    subprocess.run(['xfconf-query', '-c', 'xfce4-desktop', '-p', rgba, '-r'],
+names = monitor_names()
+print('VISUAL_MONITORS=' + ','.join(names))
+bases = {p[:-len('last-image')] for p in props}
+# Xvfb and real X11 servers can use different RandR connector names.  Cover
+# every connected connector instead of assuming the historical monitor0 name.
+for name in names:
+    for workspace in range(4):
+        bases.add(f'/backdrop/screen0/monitor{name}/workspace{workspace}/')
+setv('xfce4-desktop', '/backdrop/single-workspace-mode', 'bool', 'false')
+setv('xfce4-desktop', '/backdrop/single-workspace-number', 'int', '0')
+def set_rgba(prop):
+    subprocess.run(['xfconf-query', '-c', 'xfce4-desktop', '-p', prop, '-r'],
                    text=True, capture_output=True)
-    run(['xfconf-query', '-c', 'xfce4-desktop', '-p', rgba, '--create',
+    run(['xfconf-query', '-c', 'xfce4-desktop', '-p', prop, '--create',
          '-t', 'double', '-s', '0.025', '-t', 'double', '-s', '0.030',
          '-t', 'double', '-s', '0.050', '-t', 'double', '-s', '1.0'])
+for base in sorted(bases):
+    setv('xfce4-desktop', base + 'last-image', 'string', str(wall))
+    setv('xfce4-desktop', base + 'image-style', 'int', '4')
+    setv('xfce4-desktop', base + 'color-style', 'int', '0')
+    set_rgba(base + 'rgba1')
+    if base + 'image-show' in listing:
+        setv('xfce4-desktop', base + 'image-show', 'bool', 'true')
+    if base + 'image-path' in listing:
+        setv('xfce4-desktop', base + 'image-path', 'string', str(wall))
+    if base + 'last-single-image' in listing:
+        setv('xfce4-desktop', base + 'last-single-image', 'string', str(wall))
 
 ids_result = subprocess.run(['xfconf-query', '-c', 'xfce4-panel', '-p', '/panels/panel-ids'],
                             text=True, capture_output=True)
@@ -255,6 +284,7 @@ subprocess.Popen(['xfwm4', '--replace'], stdout=xfwm_log, stderr=xfwm_log,
                  start_new_session=True)
 xfwm_log.close()
 run(['xfdesktop', '--reload'])
+time.sleep(2)
 print(f'VISUAL_WALLPAPER={wall}\nVISUAL_DIMENSIONS={w}x{h}\nVISUAL_WALLPAPER_SHA256={hashlib.sha256(wall.read_bytes()).hexdigest()}')
 print('VIM_XFCE_VISUAL_APPLY_OK')
 PYAPPLY
@@ -265,6 +295,51 @@ python3 -m py_compile /usr/local/bin/vim-xfce-visual-apply
 gcc /root/blfs-xfce-launch1-x11-smoke.c -o "$PROBE" $(pkg-config --cflags --libs x11 libpng)
 readelf -h "$PROBE" | grep -q 'Machine:.*AArch64'
 readelf -l "$PROBE" | grep -q '/lib/ld-linux-aarch64.so.1'
+cat >/tmp/vim-xfce-monitor-names.c <<'CMON'
+#include <X11/Xlib.h>
+#include <X11/extensions/Xrandr.h>
+#include <stdio.h>
+int main(void) {
+  Display *display = XOpenDisplay(NULL);
+  if (!display) return 2;
+  Window root = RootWindow(display, DefaultScreen(display));
+  int found = 0;
+  XRRScreenResources *resources = XRRGetScreenResourcesCurrent(display, root);
+  if (resources) {
+    for (int i = 0; i < resources->noutput; i++) {
+      XRROutputInfo *output = XRRGetOutputInfo(display, resources, resources->outputs[i]);
+      if (output) {
+        if (output->connection == RR_Connected) {
+          printf("%s\n", output->name);
+          found++;
+        }
+        XRRFreeOutputInfo(output);
+      }
+    }
+    XRRFreeScreenResources(resources);
+  }
+  if (!found) {
+    int count = 0;
+    XRRMonitorInfo *monitors = XRRGetMonitors(display, root, True, &count);
+    if (monitors) {
+      for (int i = 0; i < count; i++) {
+        char *name = XGetAtomName(display, monitors[i].name);
+        if (name) {
+          printf("%s\n", name);
+          XFree(name);
+          found++;
+        }
+      }
+      XRRFreeMonitors(monitors);
+    }
+  }
+  XCloseDisplay(display);
+  return found ? 0 : 3;
+}
+CMON
+gcc /tmp/vim-xfce-monitor-names.c -o /usr/local/bin/vim-xfce-monitor-names $(pkg-config --cflags --libs x11 xrandr)
+chmod 755 /usr/local/bin/vim-xfce-monitor-names
+rm -f /tmp/vim-xfce-monitor-names.c
 
 cat >/root/blfs-xfce-visual1-session.sh <<'SESSION'
 #!/usr/bin/env bash
@@ -477,7 +552,7 @@ CLIENTS="$(awk -F= '/^X11_CLIENT_COUNT=/{value=$2} END{print value}' "$X11_LOG")
   printf 'DESKTOP_LAUNCH=headless-xvfb-startxfce4-terminal-ok\nX11_CLIENT_COUNT=%s\n' "$CLIENTS"
   printf 'SCREENSHOT_DESKTOP=png-wallpaper-visible\nSCREENSHOT_TERMINAL=png-terminal-visible-required\nSCREENSHOT_PIXEL_ACCEPTANCE=desktop-nonblack-bright-colorful\n'
   printf 'WALLPAPER=Lilith-Memory-Paradise\nWALLPAPER_RENDER=rawvideo-final-darkening\nDESKTOP_COLOR_STYLE=solid-dark\nWALLPAPER_SOURCE_SHA256=2995b1f1e50865287e688764d612a89ae9b65713d6f6cf68b73e8954f9a5a24a\nWALLPAPER_DERIVATIVE=1280x800\nWALLPAPER_SHA256=%s\n' "$WALL_SHA"
-  printf 'PERSISTENT_PROFILE=/root/.config/xfce4\nADAPTIVE_WALLPAPER=generated-on-apply-no-watcher\n'
+  printf 'PERSISTENT_PROFILE=/root/.config/xfce4\nMONITOR_DETECTION=native-xrandr\nADAPTIVE_WALLPAPER=generated-on-apply-no-watcher\n'
   printf 'REAL_DISPLAY=not-tested\nHARDWARE_GRAPHICS=not-tested\nEXISTING_ARCH=not-accessed-not-modified\nPLASMA=not-built\nBOOTABLE=no\n'
 } >>"$REPORT"
 printf 'BLFS_XFCE_VISUAL1_BUILT=VimAnimeDark+Lilith+profile\n' >>"$PROGRESS"

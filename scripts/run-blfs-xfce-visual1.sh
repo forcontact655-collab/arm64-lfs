@@ -13,6 +13,7 @@ done
 [[ -f "$HOST_SOURCES/146271413_p0.png" ]] || preflight_fail missing-wallpaper-source
 [[ ! -e "$LFS/usr/share/themes/VimAnimeDark" ]] || preflight_fail existing-visual-theme
 [[ ! -e "$LFS/usr/local/bin/vim-xfce-visual-apply" ]] || preflight_fail existing-visual-applier
+[[ ! -e "$LFS/usr/local/bin/vim-xfce-monitor-names" ]] || preflight_fail existing-monitor-helper
 [[ ! -e "$LFS/root/.config/xfce4" ]] || preflight_fail existing-root-xfce-profile
 mkdir -p "$ARTIFACTS"
 sudo -n true || preflight_fail sudo
@@ -36,14 +37,25 @@ sudo -n mount -t devpts devpts -o gid=5,mode=0620 "$LFS/dev/pts"
 sudo -n mount -t proc proc "$LFS/proc"
 sudo -n mount -t sysfs sysfs "$LFS/sys"
 sudo -n mount -t tmpfs tmpfs "$LFS/run"
+set +e
 sudo -n chroot "$LFS" /usr/bin/env -i \
   HOME=/root TERM=xterm TMPDIR=/tmp PATH=/usr/local/bin:/usr/bin:/usr/sbin \
   MAKEFLAGS="-j$(nproc)" /bin/bash --login /root/build-blfs-xfce-visual1-chroot.sh
+CHROOT_STATUS=$?
+set -e
 cleanup
 for name in report.txt progress.txt values.txt x11.txt session.log apply.log xvfb.log terminal.log theme-sha256sums.txt profile-sha256sums.txt screenshot-stats.txt screen-desktop.png screen-terminal.png; do
-  sudo -n cat "$LFS/root/blfs-xfce-visual1-$name" >"$ARTIFACTS/blfs-xfce-visual1-$name"
+  if sudo -n test -f "$LFS/root/blfs-xfce-visual1-$name"; then
+    sudo -n cat "$LFS/root/blfs-xfce-visual1-$name" >"$ARTIFACTS/blfs-xfce-visual1-$name"
+  fi
 done
-sudo -n cat "$LFS/usr/share/backgrounds/vim/generated/lilith-memory-paradise-1280x800.png" >"$ARTIFACTS/blfs-xfce-visual1-wallpaper-1280x800.png"
+if sudo -n test -f "$LFS/usr/share/backgrounds/vim/generated/lilith-memory-paradise-1280x800.png"; then
+  sudo -n cat "$LFS/usr/share/backgrounds/vim/generated/lilith-memory-paradise-1280x800.png" >"$ARTIFACTS/blfs-xfce-visual1-wallpaper-1280x800.png"
+fi
+if [[ "$CHROOT_STATUS" -ne 0 ]]; then
+  printf 'BLFS_XFCE_VISUAL1_CHROOT_STATUS=%s\n' "$CHROOT_STATUS" >&2
+  exit "$CHROOT_STATUS"
+fi
 for name in xsettings.xml xfwm4.xml xfce4-panel.xml xfce4-desktop.xml xfce4-terminal.xml; do
   sudo -n cat "$LFS/root/.config/xfce4/xfconf/xfce-perchannel-xml/$name" >"$ARTIFACTS/blfs-xfce-visual1-profile-$name"
 done
@@ -64,7 +76,7 @@ for expected in \
   'XFCE_CORE=18-of-18' 'XFCE_APPS=pipeline-87' 'GTK_THEME=VimAnimeDark' 'XFWM_THEME=VimAnimeDark' 'XFWM_ASSETS=xpm-only' \
   'PANEL_STYLE=dark-navy-cyan-pink' 'TERMINAL_STYLE=dark-navy-transparent' 'TERMINAL_EXEC=VIM_XFCE_VISUAL_TERMINAL_EXEC_OK' \
   'DESKTOP_LAUNCH=headless-xvfb-startxfce4-terminal-ok' 'SCREENSHOT_DESKTOP=png-wallpaper-visible' 'SCREENSHOT_TERMINAL=png-terminal-visible-required' 'SCREENSHOT_PIXEL_ACCEPTANCE=desktop-nonblack-bright-colorful' \
-  'WALLPAPER=Lilith-Memory-Paradise' 'WALLPAPER_RENDER=rawvideo-final-darkening' 'DESKTOP_COLOR_STYLE=solid-dark' 'WALLPAPER_DERIVATIVE=1280x800' 'PERSISTENT_PROFILE=/root/.config/xfce4' \
+  'WALLPAPER=Lilith-Memory-Paradise' 'WALLPAPER_RENDER=rawvideo-final-darkening' 'DESKTOP_COLOR_STYLE=solid-dark' 'WALLPAPER_DERIVATIVE=1280x800' 'PERSISTENT_PROFILE=/root/.config/xfce4' 'MONITOR_DETECTION=native-xrandr' \
   'ADAPTIVE_WALLPAPER=generated-on-apply-no-watcher' 'REAL_DISPLAY=not-tested' 'HARDWARE_GRAPHICS=not-tested' \
   'EXISTING_ARCH=not-accessed-not-modified' 'PLASMA=not-built' 'BOOTABLE=no'; do
   grep -qxF "$expected" "$REPORT"
@@ -77,6 +89,7 @@ grep -q 'xfwm4 /general/theme=VimAnimeDark' "$ARTIFACTS/blfs-xfce-visual1-values
 grep -q 'VIM_XFCE_VISUAL_APPLY_OK' "$ARTIFACTS/blfs-xfce-visual1-apply.log"
 grep -q '^SCREENSHOT_WALLPAPER_ACCEPTANCE=ok$' "$ARTIFACTS/blfs-xfce-visual1-screenshot-stats.txt"
 grep -q '^VISUAL_WALLPAPER_NONBLACK=' "$ARTIFACTS/blfs-xfce-visual1-apply.log"
+grep -q '^VISUAL_MONITORS=' "$ARTIFACTS/blfs-xfce-visual1-apply.log"
 clients="$(awk -F= '/^X11_CLIENT_COUNT=/{v=$2} END{print v}' "$ARTIFACTS/blfs-xfce-visual1-x11.txt")"
 [[ "$clients" =~ ^[0-9]+$ && "$clients" -ge 4 ]]
 python3 - "$ARTIFACTS/blfs-xfce-visual1-screen-desktop.png" "$ARTIFACTS/blfs-xfce-visual1-screen-terminal.png" "$ARTIFACTS/blfs-xfce-visual1-wallpaper-1280x800.png" <<'PY'
