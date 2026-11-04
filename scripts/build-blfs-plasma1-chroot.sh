@@ -12,7 +12,7 @@ SOURCES=/sources
 REPORT=/root/blfs-plasma1-report.txt
 PROGRESS=/root/blfs-plasma1-progress.txt
 [[ "$(id -u)" -eq 0 && "$(uname -m)" == aarch64 ]]
-[[ ! -e /tools && -x /usr/bin/g++ && -x /usr/bin/cmake && -x /usr/bin/ninja && -x /usr/bin/which ]]
+[[ ! -e /tools && -x /usr/bin/g++ && -x /usr/bin/cmake && -x /usr/bin/ninja && -x /usr/bin/which && -x /usr/bin/meson && -x /usr/bin/python3 ]]
 [[ "$(/opt/qt6/bin/qmake6 -query QT_VERSION)" == 6.9.2 ]]
 for path in \
   /opt/qt6/lib/cmake/Qt6WaylandClient/Qt6WaylandClientConfig.cmake \
@@ -28,6 +28,29 @@ for path in \
   [[ ! -e "$path" ]]
 done
 : >"$PROGRESS"
+archive=pycairo-1.28.0.tar.gz
+package_dir=pycairo-1.28.0
+[[ -f "$SOURCES/$archive" ]]
+first="$(tar -tf "$SOURCES/$archive" | head -n1)" || true
+[[ "${first%%/*}" == "$package_dir" ]]
+rm -rf "$SOURCES/$package_dir"
+tar -xf "$SOURCES/$archive" -C "$SOURCES"
+cd "$SOURCES/$package_dir"
+mkdir build
+cd build
+printf 'BUILD_BLFS_PLASMA1=pycairo\n'
+meson setup --prefix=/usr --buildtype=release ..
+ninja
+if python3 -c 'import pytest' 2>/dev/null; then
+  ninja test
+  PYCAIRO_TEST_SUITE=passed
+else
+  PYCAIRO_TEST_SUITE=not-run-pytest-absent
+fi
+ninja install
+cd /sources
+rm -rf "$package_dir"
+printf 'BLFS_PLASMA1_BUILT=pycairo-1.28.0\n' >>"$PROGRESS"
 archive=lm-sensors-3-6-2.tar.gz
 package_dir=lm-sensors-3-6-2
 [[ -f "$SOURCES/$archive" ]]
@@ -76,8 +99,10 @@ for name in "${packages[@]}"; do
 done
 rm -rf /opt/kf6/lib/systemd
 /sbin/ldconfig
-[[ "$(grep -c '^BLFS_PLASMA1_BUILT=' "$PROGRESS")" -eq 9 ]]
+[[ "$(grep -c '^BLFS_PLASMA1_BUILT=' "$PROGRESS")" -eq 10 ]]
 [[ -e /usr/lib/libsensors.so && -e /usr/include/sensors/sensors.h ]]
+PYCAIRO_OUTPUT="$(python3 -c 'import cairo; print(cairo.version)')"
+[[ "$PYCAIRO_OUTPUT" == 1.28.0 ]]
 for path in \
   /opt/kf6/lib/cmake/KDecoration3/KDecoration3Config.cmake \
   /opt/kf6/lib/cmake/PlasmaActivities/PlasmaActivitiesConfig.cmake \
@@ -142,9 +167,10 @@ readelf -h /tmp/blfs-plasma1-smoke-build/blfs-plasma1-smoke | grep -q 'Machine:.
 INTERPRETER="$(readelf -l /tmp/blfs-plasma1-smoke-build/blfs-plasma1-smoke | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
 [[ "$INTERPRETER" == /lib/ld-linux-aarch64.so.1 ]]
 {
-  printf 'BLFS_PLASMA1_RESULT=ok\nPACKAGE_COUNT=9\nSOURCE_COUNT=9\nARCH=%s\n' "$(uname -m)"
+  printf 'BLFS_PLASMA1_RESULT=ok\nPACKAGE_COUNT=10\nSOURCE_COUNT=10\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=BLFS_PLASMA1_EXEC_OK\nNATIVE_SMOKE_OUTPUT=%s\nNATIVE_SMOKE_STATUS=0\nDYNAMIC_LINKER=%s\n' "$OUTPUT" "$INTERPRETER"
-  printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=lm-sensors+kdecoration+libkscreen+libksysguard+breeze+breeze-gtk+layer-shell-qt+plasma-activities+libplasma\n'
+  printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=pycairo+lm-sensors+kdecoration+libkscreen+libksysguard+breeze+breeze-gtk+layer-shell-qt+plasma-activities+libplasma\n'
+  printf 'PYCAIRO=1.28.0\nPYCAIRO_SMOKE=native-import-%s\nPYCAIRO_TEST_SUITE=%s\n' "$PYCAIRO_OUTPUT" "$PYCAIRO_TEST_SUITE"
   printf 'LM_SENSORS=3-6-2\nKDECORATION=6.4.4\nLIBKSCREEN=6.4.4\nLIBKSYSGUARD=6.4.4\nBREEZE=6.4.4\nBREEZE_GTK=6.4.4\nLAYER_SHELL_QT=6.4.4\nPLASMA_ACTIVITIES=6.4.4\nLIBPLASMA=6.4.4\n'
   printf 'NATIVE_SMOKE=cmake-targets+decoration-state+plasma-theme-offscreen+sensors-version\nTEST_SUITES=not-run-BUILD_TESTING_OFF\nSENSORS_TEST_SUITE=not-provided\nSENSORS_RUNTIME=library-version-only-no-hwmon\nACTIVITIES_RUNTIME=not-tested-no-service\n'
   printf 'PLASMA=core-libraries-built-not-running\nPLASMA_DESKTOP=not-built\nREAL_DISPLAY=not-tested\nHARDWARE_GRAPHICS=not-tested\nBOOTABLE=no\n'

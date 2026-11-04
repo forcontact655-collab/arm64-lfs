@@ -30,7 +30,7 @@ while IFS= read -r url; do
   fi
   count=$((count + 1))
 done <"$URL_MANIFEST"
-[[ "$count" -eq 9 ]]
+[[ "$count" -eq 10 ]]
 (cd "$SOURCES" && sha256sum -c "$SHA256_MANIFEST")
 while read -r _ name; do (cd "$SOURCES" && sha256sum "$name"); done <"$SHA256_MANIFEST" >"$ARTIFACTS/blfs-plasma1-source-sha256sums.txt"
 bytes="$(du -sb "$SOURCES" | awk '{print $1}')"

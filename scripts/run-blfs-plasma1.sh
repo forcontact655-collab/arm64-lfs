@@ -24,6 +24,7 @@ for path in \
   "$LFS/opt/kf6/lib/cmake/KF6Kirigami/KF6KirigamiConfig.cmake"; do
   [[ -e "$path" ]] || preflight_fail "missing-existing-$path"
 done
+[[ -f "$HOST_SOURCES/pycairo-1.28.0.tar.gz" ]] || preflight_fail missing-source-pycairo
 [[ -f "$HOST_SOURCES/lm-sensors-3-6-2.tar.gz" ]] || preflight_fail missing-source-lm-sensors
 for name in kdecoration libkscreen libksysguard breeze breeze-gtk layer-shell-qt plasma-activities libplasma; do
   [[ -f "$HOST_SOURCES/$name-6.4.4.tar.xz" ]] || preflight_fail "missing-source-$name"
@@ -71,13 +72,14 @@ sudo -n rm -f "$LFS/root/build-blfs-plasma1-chroot.sh" \
   "$LFS/root/blfs-plasma1-report.txt" "$LFS/root/blfs-plasma1-progress.txt"
 REPORT="$ARTIFACTS/blfs-plasma1-report.txt"
 for expected in \
-  'BLFS_PLASMA1_RESULT=ok' 'PACKAGE_COUNT=9' 'SOURCE_COUNT=9' 'ARCH=aarch64' \
+  'BLFS_PLASMA1_RESULT=ok' 'PACKAGE_COUNT=10' 'SOURCE_COUNT=10' 'ARCH=aarch64' \
   'NATIVE_BINARY_EXEC=BLFS_PLASMA1_EXEC_OK' 'NATIVE_SMOKE_OUTPUT=BLFS_PLASMA1_EXEC_OK=6.9.2=6.4.4=default=3.6.2' 'NATIVE_SMOKE_STATUS=0' 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' \
-  'QT=6.9.2' 'PLASMA_VERSION=6.4.4' 'PACKAGES=lm-sensors+kdecoration+libkscreen+libksysguard+breeze+breeze-gtk+layer-shell-qt+plasma-activities+libplasma' \
-  'LM_SENSORS=3-6-2' 'KDECORATION=6.4.4' 'LIBKSCREEN=6.4.4' 'LIBKSYSGUARD=6.4.4' 'BREEZE=6.4.4' 'BREEZE_GTK=6.4.4' 'LAYER_SHELL_QT=6.4.4' 'PLASMA_ACTIVITIES=6.4.4' 'LIBPLASMA=6.4.4' \
+  'QT=6.9.2' 'PLASMA_VERSION=6.4.4' 'PACKAGES=pycairo+lm-sensors+kdecoration+libkscreen+libksysguard+breeze+breeze-gtk+layer-shell-qt+plasma-activities+libplasma' \
+  'PYCAIRO=1.28.0' 'PYCAIRO_SMOKE=native-import-1.28.0' 'LM_SENSORS=3-6-2' 'KDECORATION=6.4.4' 'LIBKSCREEN=6.4.4' 'LIBKSYSGUARD=6.4.4' 'BREEZE=6.4.4' 'BREEZE_GTK=6.4.4' 'LAYER_SHELL_QT=6.4.4' 'PLASMA_ACTIVITIES=6.4.4' 'LIBPLASMA=6.4.4' \
   'NATIVE_SMOKE=cmake-targets+decoration-state+plasma-theme-offscreen+sensors-version' 'TEST_SUITES=not-run-BUILD_TESTING_OFF' 'SENSORS_TEST_SUITE=not-provided' 'SENSORS_RUNTIME=library-version-only-no-hwmon' 'ACTIVITIES_RUNTIME=not-tested-no-service' \
   'PLASMA=core-libraries-built-not-running' 'PLASMA_DESKTOP=not-built' 'REAL_DISPLAY=not-tested' 'HARDWARE_GRAPHICS=not-tested' 'BOOTABLE=no'; do
   grep -qxF "$expected" "$REPORT"
 done
-[[ "$(grep -c '^BLFS_PLASMA1_BUILT=' "$ARTIFACTS/blfs-plasma1-progress.txt")" -eq 9 ]]
+grep -Eq '^PYCAIRO_TEST_SUITE=(passed|not-run-pytest-absent)$' "$REPORT"
+[[ "$(grep -c '^BLFS_PLASMA1_BUILT=' "$ARTIFACTS/blfs-plasma1-progress.txt")" -eq 10 ]]
 cat "$REPORT"
