@@ -141,7 +141,7 @@ KINFOCENTER_LIBRARY="$(find /opt/kf6/lib -maxdepth 1 -type f -name 'libKInfoCent
 [[ -n "$KINFOCENTER_LIBRARY" ]]
 KINFOCENTER_QMLDIR="$(find /opt/kf6/lib/qml -type f -path '*/org/kde/kinfocenter/private/qmldir' -print -quit)"
 [[ -n "$KINFOCENTER_QMLDIR" ]]
-AURORAE_PLUGIN="$(find /opt/kf6/lib/plugins/org.kde.kdecoration3 -maxdepth 1 -type f -name 'liborg.kde.kwin.aurorae.so' -print -quit)"
+AURORAE_PLUGIN="$(find /opt/kf6/lib/plugins/org.kde.kdecoration3 -maxdepth 1 -type f -name 'org.kde.kwin.aurorae.so' -print -quit)"
 [[ -n "$AURORAE_PLUGIN" ]]
 
 # The daemon's version path exits before D-Bus registration.  It is a
