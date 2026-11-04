@@ -207,7 +207,7 @@ cat >/tmp/blfs-plasma2-smoke/main.cpp <<'EOF'
 #include <typeinfo>
 int main(int argc, char **argv) {
   QCoreApplication app(argc, argv);
-  if (std::strcmp(typeid(KSldApp).name(), "") == 0 ||
+  if (std::strcmp(typeid(ScreenLocker::KSldApp).name(), "") == 0 ||
       std::strcmp(typeid(KGlobalAccelD).name(), "") == 0) return 1;
   KWayland::Client::ConnectionThread connection;
   connection.setSocketName(QStringLiteral("vim-plasma2-no-compositor"));
