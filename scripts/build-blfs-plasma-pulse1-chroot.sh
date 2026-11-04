@@ -10,12 +10,10 @@ set +h
 SOURCES=/sources
 REPORT=/root/blfs-plasma-pulse1-report.txt
 PROGRESS=/root/blfs-plasma-pulse1-progress.txt
-# Trace only startup and the first extraction so a silent chroot failure is diagnosable.
-set -x
 [[ "$(id -u)" -eq 0 && "$(uname -m)" == aarch64 ]]
 [[ ! -e /tools && -x /usr/bin/g++ && -x /usr/bin/cmake && -x /usr/bin/ninja && -x /usr/bin/meson ]]
 [[ "$(/opt/qt6/bin/qmake6 -query QT_VERSION)" == 6.9.2 ]]
-[[ -f /opt/kf6/lib/cmake/KF6CoreAddons/KF6CoreAddonsConfig.cmake && -f /opt/kf6/lib/cmake/ECM/ECMConfig.cmake ]]
+[[ -f /opt/kf6/lib/cmake/KF6CoreAddons/KF6CoreAddonsConfig.cmake && -f /usr/share/ECM/cmake/ECMConfig.cmake ]]
 [[ -x /usr/bin/sassc && -x /usr/bin/xdotool && -f /usr/include/taglib/tstring.h && -f /usr/include/utf8cpp/utf8.h ]]
 [[ "$(pkg-config --modversion alsa)" == 1.2.14 && "$(pkg-config --modversion glib-2.0)" == 2.84.4 ]]
 [[ ! -e /usr/include/sndfile.h && ! -e /usr/include/pulse && ! -e /opt/kf6/lib/cmake/KF6PulseAudioQt ]]
@@ -33,7 +31,6 @@ extract_package() {
 
 extract_package libsndfile-1.2.2.tar.xz libsndfile-1.2.2
 printf 'BUILD_BLFS_PLASMA_PULSE1=libsndfile\n'
-set +x
 sed '/typedef enum/,/bool ;/d' -i src/ALAC/alac_{en,de}coder.c
 ./configure --prefix=/usr --disable-static --docdir=/usr/share/doc/libsndfile-1.2.2
 make
