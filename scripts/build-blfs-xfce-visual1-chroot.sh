@@ -16,6 +16,7 @@ DESKTOP_SCREEN=/root/blfs-xfce-visual1-screen-desktop.png
 TERMINAL_SCREEN=/root/blfs-xfce-visual1-screen-terminal.png
 THEME_HASHES=/root/blfs-xfce-visual1-theme-sha256sums.txt
 PROFILE_HASHES=/root/blfs-xfce-visual1-profile-sha256sums.txt
+SCREENSHOT_STATS=/root/blfs-xfce-visual1-screenshot-stats.txt
 PROBE=/tmp/blfs-xfce-visual1-probe
 TEST_HOME=/tmp/blfs-xfce-visual1-home
 TEST_RUNTIME=/tmp/blfs-xfce-visual1-runtime
@@ -26,7 +27,7 @@ OUT_DIR=/usr/share/backgrounds/vim/generated
 [[ "$(id -u)" -eq 0 ]]
 [[ "$(uname -m)" == aarch64 ]]
 [[ ! -e /tools ]]
-for p in /usr/bin/gcc /usr/bin/python3 /usr/bin/ffmpeg /usr/bin/ffprobe /usr/bin/Xvfb /usr/bin/dbus-run-session /usr/bin/setsid /usr/bin/startxfce4 /usr/bin/xfconf-query /usr/bin/xfce4-terminal /usr/bin/ps; do
+for p in /usr/bin/gcc /usr/bin/python3 /usr/bin/ffmpeg /usr/bin/ffprobe /usr/bin/Xvfb /usr/bin/dbus-run-session /usr/bin/setsid /usr/bin/startxfce4 /usr/bin/xfconf-query /usr/bin/xfce4-terminal /usr/bin/xfdesktop /usr/bin/ps; do
   [[ -x "$p" ]]
 done
 [[ -d /usr/share/themes/Daloa/xfwm4 ]]
@@ -173,12 +174,30 @@ if not wall.is_file():
         f'[b][f]overlay={fg_x}:{fg_y},format=rgb24[out]'
     )
     tmp = wall.with_suffix('.tmp.png')
-    run(['ffmpeg', '-y', '-v', 'error', '-i', str(SRC), '-filter_complex', filters,
-         '-map', '[out]', '-frames:v', '1', str(tmp)])
+    raw = subprocess.run(['ffmpeg', '-y', '-v', 'error', '-i', str(SRC),
+                          '-filter_complex', filters, '-map', '[out]', '-frames:v', '1',
+                          '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:1'],
+                         capture_output=True, check=True).stdout
+    assert len(raw) == w * h * 3, len(raw)
+    # Apply the same final darkening pass as the reviewed Lilith composition.
+    pixels = bytearray(round(value * 0.65) for value in raw)
+    assert max(pixels) > 40
+    ppm = wall.with_suffix('.tmp.ppm')
+    ppm.write_bytes(f'P6\n{w} {h}\n255\n'.encode() + pixels)
+    run(['ffmpeg', '-y', '-v', 'error', '-i', str(ppm), '-frames:v', '1', str(tmp)])
+    ppm.unlink()
     probe = run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries',
                  'stream=width,height', '-of', 'csv=p=0', str(tmp)], True).stdout.strip()
     assert probe == f'{w},{h}', probe
     tmp.replace(wall)
+raw_check = subprocess.run(['ffmpeg', '-v', 'error', '-i', str(wall), '-frames:v', '1',
+                            '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:1'],
+                           capture_output=True, check=True).stdout
+assert len(raw_check) == w * h * 3
+wall_nonblack = sum(1 for i in range(0, len(raw_check), 3)
+                    if max(raw_check[i:i + 3]) > 32) / (w * h)
+assert wall_nonblack > 0.25, wall_nonblack
+print(f'VISUAL_WALLPAPER_NONBLACK={wall_nonblack:.6f}')
 
 setv('xsettings', '/Net/ThemeName', 'string', 'VimAnimeDark')
 setv('xsettings', '/Gtk/ApplicationPreferDarkTheme', 'bool', 'true')
@@ -213,8 +232,15 @@ if not props:
     props = ['/backdrop/screen0/monitor0/workspace0/last-image']
 for prop in props:
     setv('xfce4-desktop', prop, 'string', str(wall))
-    style = prop[:-len('last-image')] + 'image-style'
-    setv('xfce4-desktop', style, 'int', '4')
+    base = prop[:-len('last-image')]
+    setv('xfce4-desktop', base + 'image-style', 'int', '4')
+    setv('xfce4-desktop', base + 'color-style', 'int', '0')
+    rgba = base + 'rgba1'
+    subprocess.run(['xfconf-query', '-c', 'xfce4-desktop', '-p', rgba, '-r'],
+                   text=True, capture_output=True)
+    run(['xfconf-query', '-c', 'xfce4-desktop', '-p', rgba, '--create',
+         '-t', 'double', '-s', '0.025', '-t', 'double', '-s', '0.030',
+         '-t', 'double', '-s', '0.050', '-t', 'double', '-s', '1.0'])
 
 ids_result = subprocess.run(['xfconf-query', '-c', 'xfce4-panel', '-p', '/panels/panel-ids'],
                             text=True, capture_output=True)
@@ -228,6 +254,7 @@ xfwm_log = open('/tmp/vim-xfce-visual-xfwm4.log', 'w')
 subprocess.Popen(['xfwm4', '--replace'], stdout=xfwm_log, stderr=xfwm_log,
                  start_new_session=True)
 xfwm_log.close()
+run(['xfdesktop', '--reload'])
 print(f'VISUAL_WALLPAPER={wall}\nVISUAL_DIMENSIONS={w}x{h}\nVISUAL_WALLPAPER_SHA256={hashlib.sha256(wall.read_bytes()).hexdigest()}')
 print('VIM_XFCE_VISUAL_APPLY_OK')
 PYAPPLY
@@ -297,7 +324,7 @@ DISPLAY="$DISPLAY" "$VISUAL_PROBE" session "$VISUAL_TERMINAL_SCREEN" >>"$VISUAL_
     xfconf-query -c "$1" -p "$2" 2>&1 || true
   done
   printf '%s\n' '--- WALLPAPER ---'
-  xfconf-query -c xfce4-desktop -l 2>/dev/null | grep -E '/(last-image|image-style)$' | while read -r p; do
+  xfconf-query -c xfce4-desktop -l 2>/dev/null | grep -E '/(last-image|image-style|color-style|rgba1)$' | while read -r p; do
     printf '%s=' "$p"; xfconf-query -c xfce4-desktop -p "$p" 2>&1 || true
   done
 } >"$VISUAL_VALUES"
@@ -394,6 +421,42 @@ grep -q VIM_XFCE_VISUAL_SESSION_OK "$SESSION_LOG.launcher"
 [[ -s "$DESKTOP_SCREEN" && -s "$TERMINAL_SCREEN" ]]
 grep -q 'X11_WM_CHECK=present' "$X11_LOG"
 grep -q 'SCREENSHOT_NON_BACKGROUND_PIXELS=[1-9]' "$X11_LOG"
+python3 - "$DESKTOP_SCREEN" "$TERMINAL_SCREEN" >"$SCREENSHOT_STATS" <<'PYSTATS'
+import subprocess
+import sys
+
+W, H = 1280, 800
+def measure(path):
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', path, '-frames:v', '1',
+                          '-f', 'rawvideo', '-pix_fmt', 'rgb24', 'pipe:1'],
+                         capture_output=True, check=True).stdout
+    assert len(raw) == W * H * 3, (path, len(raw))
+    total = W * H
+    nonblack = bright = colorful = 0
+    for i in range(0, len(raw), 3):
+        r, g, b = raw[i:i + 3]
+        high = max(r, g, b)
+        if high > 32:
+            nonblack += 1
+        if high > 100:
+            bright += 1
+        if high > 50 and high - min(r, g, b) > 20:
+            colorful += 1
+    return nonblack / total, bright / total, colorful / total
+
+desktop = measure(sys.argv[1])
+terminal = measure(sys.argv[2])
+for name, values in [('DESKTOP', desktop), ('TERMINAL', terminal)]:
+    print('%s_NONBLACK=%.6f' % (name, values[0]))
+    print('%s_BRIGHT=%.6f' % (name, values[1]))
+    print('%s_COLORFUL=%.6f' % (name, values[2]))
+# A few icons and panels must not pass as a wallpaper: require substantial image coverage.
+assert desktop[0] > 0.20 and desktop[1] > 0.03 and desktop[2] > 0.03, desktop
+assert terminal[0] > 0.05, terminal
+print('SCREENSHOT_WALLPAPER_ACCEPTANCE=ok')
+PYSTATS
+cat "$SCREENSHOT_STATS"
+grep -q '^SCREENSHOT_WALLPAPER_ACCEPTANCE=ok$' "$SCREENSHOT_STATS"
 
 mkdir -p /root/.config/xfce4/xfconf
 cp -a "$TEST_HOME/.config/xfce4/xfconf/xfce-perchannel-xml" /root/.config/xfce4/xfconf/
@@ -412,8 +475,8 @@ CLIENTS="$(awk -F= '/^X11_CLIENT_COUNT=/{value=$2} END{print value}' "$X11_LOG")
 {
   printf 'PANEL_STYLE=dark-navy-cyan-pink\nTERMINAL_STYLE=dark-navy-transparent\nTERMINAL_EXEC=VIM_XFCE_VISUAL_TERMINAL_EXEC_OK\n'
   printf 'DESKTOP_LAUNCH=headless-xvfb-startxfce4-terminal-ok\nX11_CLIENT_COUNT=%s\n' "$CLIENTS"
-  printf 'SCREENSHOT_DESKTOP=png-nonblank\nSCREENSHOT_TERMINAL=png-terminal-visible-required\n'
-  printf 'WALLPAPER=Lilith-Memory-Paradise\nWALLPAPER_SOURCE_SHA256=2995b1f1e50865287e688764d612a89ae9b65713d6f6cf68b73e8954f9a5a24a\nWALLPAPER_DERIVATIVE=1280x800\nWALLPAPER_SHA256=%s\n' "$WALL_SHA"
+  printf 'SCREENSHOT_DESKTOP=png-wallpaper-visible\nSCREENSHOT_TERMINAL=png-terminal-visible-required\nSCREENSHOT_PIXEL_ACCEPTANCE=desktop-nonblack-bright-colorful\n'
+  printf 'WALLPAPER=Lilith-Memory-Paradise\nWALLPAPER_RENDER=rawvideo-final-darkening\nDESKTOP_COLOR_STYLE=solid-dark\nWALLPAPER_SOURCE_SHA256=2995b1f1e50865287e688764d612a89ae9b65713d6f6cf68b73e8954f9a5a24a\nWALLPAPER_DERIVATIVE=1280x800\nWALLPAPER_SHA256=%s\n' "$WALL_SHA"
   printf 'PERSISTENT_PROFILE=/root/.config/xfce4\nADAPTIVE_WALLPAPER=generated-on-apply-no-watcher\n'
   printf 'REAL_DISPLAY=not-tested\nHARDWARE_GRAPHICS=not-tested\nEXISTING_ARCH=not-accessed-not-modified\nPLASMA=not-built\nBOOTABLE=no\n'
 } >>"$REPORT"
