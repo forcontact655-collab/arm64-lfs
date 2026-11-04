@@ -161,7 +161,7 @@ KGLOBAL_STATUS=$?
 set -e
 printf 'KGLOBALACCELD_VERSION_STATUS=%s\nKGLOBALACCELD_VERSION_OUTPUT=%s\n' "$KGLOBAL_STATUS" "$KGLOBAL_OUTPUT"
 [[ "$KGLOBAL_STATUS" -eq 0 ]]
-[[ "$KGLOBAL_OUTPUT" == *6.4.4* ]]
+[[ "$KGLOBAL_OUTPUT" == *"kglobalaccel 6.17.0"* ]]
 
 # Native, display-free smoke.  Typeinfo references make the two internal
 # libraries real link-time/runtime dependencies without starting lockers or
@@ -250,7 +250,7 @@ INTERPRETER="$(readelf -l /tmp/blfs-plasma2-smoke-build/blfs-plasma2-smoke | sed
   printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nLINUX_PAM=1.7.1\nPACKAGES=linux-pam+kscreenlocker+kinfocenter+kglobalacceld+kwayland+aurorae\n'
   printf 'KSCREENLOCKER=6.4.4\nKINFOCENTER=6.4.4\nKGLOBALACCELD=6.4.4\nKWAYLAND=6.4.4\nAURORAE=6.4.4\n'
   printf 'LINUX_PAM_TEST_SUITE=ninja-test-passed\nPAM_LIBDIR=/usr/lib64\nPAM_SMOKE=native-strerror-no-auth\nPAM_CONFIG=standard-files-present-or-created\nKSCREENLOCKER_SMOKE=native-typeinfo-no-lock-no-dbus\nKINFOCENTER_SMOKE=library-qml-and-symlink-only\nKINFOCENTER_VULKAN=disabled-qt-vulkan-unavailable-opengl-only\nKINFOCENTER_OPENGL_HELPER=installed-not-run-no-display\nKINFOCENTER_LAUNCHER=deferred-systemsettings-not-built\n'
-  printf 'KGLOBALACCELD_VERSION_EXEC=passed-no-dbus-registration\nKWAYLAND_SMOKE=native-object-no-compositor\nAURORAE_SMOKE=native-plugin-metadata-not-loaded\n'
+  printf 'KGLOBALACCELD_VERSION_EXEC=passed-6.17.0-kf6-version-no-dbus-registration\nKWAYLAND_SMOKE=native-object-no-compositor\nAURORAE_SMOKE=native-plugin-metadata-not-loaded\n'
   printf 'NATIVE_SMOKE=cmake-targets+pam-strerror+typeinfo+kwayland-object+aurorae-metadata\nTEST_SUITES=not-run-BUILD_TESTING_OFF\n'
   printf 'PLASMA1=preserved-pipeline-163\nPLASMA=core-libraries-and-second-stage-built-not-running\nPLASMA_DESKTOP=not-built\nREAL_DISPLAY=not-tested\nHARDWARE_GRAPHICS=not-tested\nBOOTABLE=no\n'
 } >"$REPORT"
