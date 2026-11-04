@@ -26,7 +26,7 @@ for path in \
   "$LFS/opt/kf6/lib/cmake/Aurorae/AuroraeConfig.cmake" \
   "$LFS/opt/kf6/bin/kinfocenter" \
   "$LFS/usr/include/security/pam_appl.h" \
-  "$LFS/usr/lib/libpam.so"; do
+  "$LFS/usr/lib64/libpam.so"; do
   [[ ! -e "$path" && ! -L "$path" ]] || preflight_fail "existing-$path"
 done
 [[ -f "$HOST_SOURCES/Linux-PAM-1.7.1.tar.xz" ]] || preflight_fail missing-source-linux-pam
@@ -82,7 +82,7 @@ for expected in \
   'NATIVE_BINARY_EXEC=BLFS_PLASMA2_EXEC_OK' 'NATIVE_SMOKE_OUTPUT=BLFS_PLASMA2_EXEC_OK=6.9.2=6.4.4=pam-success=locker-type=accel-type=kwayland-object=aurorae-metadata' 'NATIVE_SMOKE_STATUS=0' 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' \
   'QT=6.9.2' 'PLASMA_VERSION=6.4.4' 'LINUX_PAM=1.7.1' 'PACKAGES=linux-pam+kscreenlocker+kinfocenter+kglobalacceld+kwayland+aurorae' \
   'KSCREENLOCKER=6.4.4' 'KINFOCENTER=6.4.4' 'KGLOBALACCELD=6.4.4' 'KWAYLAND=6.4.4' 'AURORAE=6.4.4' \
-  'LINUX_PAM_TEST_SUITE=ninja-test-passed' 'PAM_SMOKE=native-strerror-no-auth' 'PAM_CONFIG=standard-files-present-or-created' 'KSCREENLOCKER_SMOKE=native-typeinfo-no-lock-no-dbus' 'KINFOCENTER_SMOKE=library-qml-and-symlink-only' 'KINFOCENTER_VULKAN=disabled-qt-vulkan-unavailable-opengl-only' 'KINFOCENTER_OPENGL_HELPER=installed-not-run-no-display' 'KINFOCENTER_LAUNCHER=deferred-systemsettings-not-built' \
+  'LINUX_PAM_TEST_SUITE=ninja-test-passed' 'PAM_LIBDIR=/usr/lib64' 'PAM_SMOKE=native-strerror-no-auth' 'PAM_CONFIG=standard-files-present-or-created' 'KSCREENLOCKER_SMOKE=native-typeinfo-no-lock-no-dbus' 'KINFOCENTER_SMOKE=library-qml-and-symlink-only' 'KINFOCENTER_VULKAN=disabled-qt-vulkan-unavailable-opengl-only' 'KINFOCENTER_OPENGL_HELPER=installed-not-run-no-display' 'KINFOCENTER_LAUNCHER=deferred-systemsettings-not-built' \
   'KGLOBALACCELD_VERSION_EXEC=passed-no-dbus-registration' 'KWAYLAND_SMOKE=native-object-no-compositor' 'AURORAE_SMOKE=native-plugin-metadata-not-loaded' \
   'NATIVE_SMOKE=cmake-targets+pam-strerror+typeinfo+kwayland-object+aurorae-metadata' 'TEST_SUITES=not-run-BUILD_TESTING_OFF' \
   'PLASMA1=preserved-pipeline-163' 'PLASMA=core-libraries-and-second-stage-built-not-running' 'PLASMA_DESKTOP=not-built' 'REAL_DISPLAY=not-tested' 'HARDWARE_GRAPHICS=not-tested' 'BOOTABLE=no'; do

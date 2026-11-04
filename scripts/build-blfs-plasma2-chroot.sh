@@ -31,7 +31,7 @@ for path in \
   /opt/kf6/lib/cmake/Aurorae/AuroraeConfig.cmake \
   /opt/kf6/bin/kinfocenter \
   /usr/include/security/pam_appl.h \
-  /usr/lib/libpam.so; do
+  /usr/lib64/libpam.so; do
   [[ ! -e "$path" && ! -L "$path" ]]
 done
 : >"$PROGRESS"
@@ -124,7 +124,7 @@ rm -rf /opt/kf6/lib/systemd
 [[ "$(grep -c '^BLFS_PLASMA2_BUILT=' "$PROGRESS")" -eq 6 ]]
 for path in \
   /usr/include/security/pam_appl.h \
-  /usr/lib/libpam.so \
+  /usr/lib64/libpam.so \
   /usr/sbin/unix_chkpwd \
   /opt/kf6/libexec/kinfocenter-opengl-helper \
   /opt/kf6/lib/cmake/KScreenLocker/KScreenLockerConfig.cmake \
@@ -155,7 +155,7 @@ set +e
 KGLOBAL_OUTPUT="$(QT_QPA_PLATFORM=offscreen XDG_SESSION_TYPE=x11 \
   XDG_CONFIG_HOME=/tmp/blfs-plasma2-config XDG_RUNTIME_DIR=/tmp/blfs-plasma2-runtime \
   QT_PLUGIN_PATH=/opt/kf6/lib/plugins:/opt/qt6/plugins \
-  LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib:/usr/lib \
+  LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib:/usr/lib64:/usr/lib \
   /opt/kf6/libexec/kglobalacceld --version 2>&1)"
 KGLOBAL_STATUS=$?
 set -e
@@ -233,7 +233,7 @@ OUTPUT="$(QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software LIBGL_ALWAYS_SOFTW
   XDG_RUNTIME_DIR=/tmp/blfs-plasma2-runtime QML2_IMPORT_PATH=/opt/kf6/lib/qml:/opt/qt6/qml \
   QML_IMPORT_PATH=/opt/kf6/lib/qml:/opt/qt6/qml QT_PLUGIN_PATH=/opt/kf6/lib/plugins:/opt/qt6/plugins \
   QML_DISABLE_DISK_CACHE=1 AURORAE_PLUGIN_PATH="$AURORAE_PLUGIN" \
-  LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib:/usr/lib \
+  LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib:/usr/lib64:/usr/lib \
   /tmp/blfs-plasma2-smoke-build/blfs-plasma2-smoke 2>/tmp/blfs-plasma2-smoke-stderr.log)"
 NATIVE_STATUS=$?
 set -e
@@ -249,7 +249,7 @@ INTERPRETER="$(readelf -l /tmp/blfs-plasma2-smoke-build/blfs-plasma2-smoke | sed
   printf 'NATIVE_BINARY_EXEC=BLFS_PLASMA2_EXEC_OK\nNATIVE_SMOKE_OUTPUT=%s\nNATIVE_SMOKE_STATUS=0\nDYNAMIC_LINKER=%s\n' "$OUTPUT" "$INTERPRETER"
   printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nLINUX_PAM=1.7.1\nPACKAGES=linux-pam+kscreenlocker+kinfocenter+kglobalacceld+kwayland+aurorae\n'
   printf 'KSCREENLOCKER=6.4.4\nKINFOCENTER=6.4.4\nKGLOBALACCELD=6.4.4\nKWAYLAND=6.4.4\nAURORAE=6.4.4\n'
-  printf 'LINUX_PAM_TEST_SUITE=ninja-test-passed\nPAM_SMOKE=native-strerror-no-auth\nPAM_CONFIG=standard-files-present-or-created\nKSCREENLOCKER_SMOKE=native-typeinfo-no-lock-no-dbus\nKINFOCENTER_SMOKE=library-qml-and-symlink-only\nKINFOCENTER_VULKAN=disabled-qt-vulkan-unavailable-opengl-only\nKINFOCENTER_OPENGL_HELPER=installed-not-run-no-display\nKINFOCENTER_LAUNCHER=deferred-systemsettings-not-built\n'
+  printf 'LINUX_PAM_TEST_SUITE=ninja-test-passed\nPAM_LIBDIR=/usr/lib64\nPAM_SMOKE=native-strerror-no-auth\nPAM_CONFIG=standard-files-present-or-created\nKSCREENLOCKER_SMOKE=native-typeinfo-no-lock-no-dbus\nKINFOCENTER_SMOKE=library-qml-and-symlink-only\nKINFOCENTER_VULKAN=disabled-qt-vulkan-unavailable-opengl-only\nKINFOCENTER_OPENGL_HELPER=installed-not-run-no-display\nKINFOCENTER_LAUNCHER=deferred-systemsettings-not-built\n'
   printf 'KGLOBALACCELD_VERSION_EXEC=passed-no-dbus-registration\nKWAYLAND_SMOKE=native-object-no-compositor\nAURORAE_SMOKE=native-plugin-metadata-not-loaded\n'
   printf 'NATIVE_SMOKE=cmake-targets+pam-strerror+typeinfo+kwayland-object+aurorae-metadata\nTEST_SUITES=not-run-BUILD_TESTING_OFF\n'
   printf 'PLASMA1=preserved-pipeline-163\nPLASMA=core-libraries-and-second-stage-built-not-running\nPLASMA_DESKTOP=not-built\nREAL_DISPLAY=not-tested\nHARDWARE_GRAPHICS=not-tested\nBOOTABLE=no\n'
