@@ -41,7 +41,7 @@ first="$(tar -tf "$SOURCES/$libva_archive" | head -n1)" || true
 rm -rf "$SOURCES/$libva_dir"
 tar -xf "$SOURCES/$libva_archive" -C "$SOURCES"
 cd "$SOURCES/$libva_dir"
-mkdir build
+# BLFS uses the source's existing build/ directory (gen_version.sh lives there).
 cd build
 printf 'BUILD_BLFS_PLASMA3=libva\n'
 meson setup --prefix=/usr --buildtype=release ..
