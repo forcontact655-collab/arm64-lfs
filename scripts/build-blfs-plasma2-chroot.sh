@@ -135,14 +135,17 @@ for path in \
   /opt/kf6/lib/qml/org/kde/kwin/decoration/qmldir; do
   [[ -e "$path" ]]
 done
+printf 'PLASMA2_POSTCHECK=kinfocenter-link\n'
 [[ -L /opt/kf6/bin/kinfocenter ]]
 [[ "$(readlink /opt/kf6/bin/kinfocenter)" == */systemsettings ]]
-KINFOCENTER_LIBRARY="$(find /opt/kf6/lib -maxdepth 1 -type f -name 'libKInfoCenterInternal.so*' -print -quit)"
-[[ -n "$KINFOCENTER_LIBRARY" ]]
-KINFOCENTER_QMLDIR="$(find /opt/kf6/lib/qml -type f -path '*/org/kde/kinfocenter/private/qmldir' -print -quit)"
-[[ -n "$KINFOCENTER_QMLDIR" ]]
-AURORAE_PLUGIN="$(find /opt/kf6/lib/plugins/org.kde.kdecoration3 -maxdepth 1 -type f -name 'org.kde.kwin.aurorae.so' -print -quit)"
-[[ -n "$AURORAE_PLUGIN" ]]
+KINFOCENTER_LIBRARY=/opt/kf6/lib/libKInfoCenterInternal.so
+[[ -f "$KINFOCENTER_LIBRARY" ]]
+KINFOCENTER_QMLDIR=/opt/kf6/lib/qml/org/kde/kinfocenter/private/qmldir
+[[ -f "$KINFOCENTER_QMLDIR" ]]
+printf 'PLASMA2_POSTCHECK=kinfocenter-files\n'
+AURORAE_PLUGIN=/opt/kf6/lib/plugins/org.kde.kdecoration3/org.kde.kwin.aurorae.so
+[[ -f "$AURORAE_PLUGIN" ]]
+printf 'PLASMA2_POSTCHECK=aurorae-file\n'
 
 # The daemon's version path exits before D-Bus registration.  It is a
 # version execution only, not a global-shortcut or display-session test.
