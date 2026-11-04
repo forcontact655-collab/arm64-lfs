@@ -12,7 +12,7 @@ SOURCES=/sources
 REPORT=/root/blfs-plasma1-report.txt
 PROGRESS=/root/blfs-plasma1-progress.txt
 [[ "$(id -u)" -eq 0 && "$(uname -m)" == aarch64 ]]
-[[ ! -e /tools && -x /usr/bin/g++ && -x /usr/bin/cmake && -x /usr/bin/ninja ]]
+[[ ! -e /tools && -x /usr/bin/g++ && -x /usr/bin/cmake && -x /usr/bin/ninja && -x /usr/bin/which ]]
 [[ "$(/opt/qt6/bin/qmake6 -query QT_VERSION)" == 6.9.2 ]]
 for path in \
   /opt/qt6/lib/cmake/Qt6WaylandClient/Qt6WaylandClientConfig.cmake \
@@ -28,6 +28,22 @@ for path in \
   [[ ! -e "$path" ]]
 done
 : >"$PROGRESS"
+archive=lm-sensors-3-6-2.tar.gz
+package_dir=lm-sensors-3-6-2
+[[ -f "$SOURCES/$archive" ]]
+first="$(tar -tf "$SOURCES/$archive" | head -n1)" || true
+[[ "${first%%/*}" == "$package_dir" ]]
+rm -rf "$SOURCES/$package_dir"
+tar -xf "$SOURCES/$archive" -C "$SOURCES"
+cd "$SOURCES/$package_dir"
+printf 'BUILD_BLFS_PLASMA1=lm-sensors\n'
+make PREFIX=/usr BUILD_STATIC_LIB=0 MANDIR=/usr/share/man
+make PREFIX=/usr BUILD_STATIC_LIB=0 MANDIR=/usr/share/man install
+install -v -m755 -d /usr/share/doc/lm-sensors-3-6-2
+cp -rv README INSTALL doc/* /usr/share/doc/lm-sensors-3-6-2
+cd /sources
+rm -rf "$package_dir"
+printf 'BLFS_PLASMA1_BUILT=lm-sensors-3-6-2\n' >>"$PROGRESS"
 packages=(kdecoration libkscreen libksysguard breeze breeze-gtk layer-shell-qt plasma-activities libplasma)
 for name in "${packages[@]}"; do
   archive="$name-6.4.4.tar.xz"
@@ -60,7 +76,8 @@ for name in "${packages[@]}"; do
 done
 rm -rf /opt/kf6/lib/systemd
 /sbin/ldconfig
-[[ "$(grep -c '^BLFS_PLASMA1_BUILT=' "$PROGRESS")" -eq 8 ]]
+[[ "$(grep -c '^BLFS_PLASMA1_BUILT=' "$PROGRESS")" -eq 9 ]]
+[[ -e /usr/lib/libsensors.so && -e /usr/include/sensors/sensors.h ]]
 for path in \
   /opt/kf6/lib/cmake/KDecoration3/KDecoration3Config.cmake \
   /opt/kf6/lib/cmake/PlasmaActivities/PlasmaActivitiesConfig.cmake \
@@ -77,8 +94,9 @@ find_package(Qt6 6.9.2 REQUIRED COMPONENTS Core Gui Qml Quick)
 find_package(KDecoration3 6.4.4 REQUIRED CONFIG)
 find_package(PlasmaActivities 6.4.4 REQUIRED CONFIG)
 find_package(Plasma 6.4.4 REQUIRED CONFIG)
+find_library(SENSORS_LIBRARY NAMES sensors REQUIRED)
 add_executable(blfs-plasma1-smoke main.cpp)
-target_link_libraries(blfs-plasma1-smoke PRIVATE Qt6::Core Qt6::Gui Plasma::Activities KDecoration3::KDecoration Plasma::Plasma)
+target_link_libraries(blfs-plasma1-smoke PRIVATE Qt6::Core Qt6::Gui Plasma::Activities KDecoration3::KDecoration Plasma::Plasma ${SENSORS_LIBRARY})
 EOF
 cat >/tmp/blfs-plasma1-smoke/main.cpp <<'EOF'
 #include <QGuiApplication>
@@ -86,8 +104,10 @@ cat >/tmp/blfs-plasma1-smoke/main.cpp <<'EOF'
 #include <QString>
 #include <KDecoration3/Decoration>
 #include <Plasma/Theme>
+#include <sensors/sensors.h>
 #include <QtGlobal>
 #include <cstdio>
+#include <cstring>
 int main(int argc, char **argv) {
   QGuiApplication app(argc, argv);
   app.setApplicationName(QStringLiteral("blfs-plasma1-smoke"));
@@ -96,7 +116,8 @@ int main(int argc, char **argv) {
   if (state.borders() != QMarginsF(1.0, 2.0, 3.0, 4.0)) return 1;
   Plasma::Theme theme(QStringLiteral("default"));
   if (theme.themeName() != QStringLiteral("default")) return 2;
-  std::printf("BLFS_PLASMA1_EXEC_OK=%s=6.4.4=default\n", qVersion());
+  if (!libsensors_version || std::strcmp(libsensors_version, "3.6.2") != 0) return 3;
+  std::printf("BLFS_PLASMA1_EXEC_OK=%s=6.4.4=default=3.6.2\n", qVersion());
   return 0;
 }
 EOF
@@ -116,16 +137,16 @@ set -e
 cat /tmp/blfs-plasma1-smoke-stderr.log
 printf 'NATIVE_SMOKE_STATUS=%s\nNATIVE_SMOKE_OUTPUT=%s\n' "$NATIVE_STATUS" "$OUTPUT"
 [[ "$NATIVE_STATUS" -eq 0 ]]
-[[ "$OUTPUT" == BLFS_PLASMA1_EXEC_OK=6.9.2=6.4.4=default ]]
+[[ "$OUTPUT" == BLFS_PLASMA1_EXEC_OK=6.9.2=6.4.4=default=3.6.2 ]]
 readelf -h /tmp/blfs-plasma1-smoke-build/blfs-plasma1-smoke | grep -q 'Machine:.*AArch64'
 INTERPRETER="$(readelf -l /tmp/blfs-plasma1-smoke-build/blfs-plasma1-smoke | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
 [[ "$INTERPRETER" == /lib/ld-linux-aarch64.so.1 ]]
 {
-  printf 'BLFS_PLASMA1_RESULT=ok\nPACKAGE_COUNT=8\nSOURCE_COUNT=8\nARCH=%s\n' "$(uname -m)"
+  printf 'BLFS_PLASMA1_RESULT=ok\nPACKAGE_COUNT=9\nSOURCE_COUNT=9\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=BLFS_PLASMA1_EXEC_OK\nNATIVE_SMOKE_OUTPUT=%s\nNATIVE_SMOKE_STATUS=0\nDYNAMIC_LINKER=%s\n' "$OUTPUT" "$INTERPRETER"
-  printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=kdecoration+libkscreen+libksysguard+breeze+breeze-gtk+layer-shell-qt+plasma-activities+libplasma\n'
-  printf 'KDECORATION=6.4.4\nLIBKSCREEN=6.4.4\nLIBKSYSGUARD=6.4.4\nBREEZE=6.4.4\nBREEZE_GTK=6.4.4\nLAYER_SHELL_QT=6.4.4\nPLASMA_ACTIVITIES=6.4.4\nLIBPLASMA=6.4.4\n'
-  printf 'NATIVE_SMOKE=cmake-targets+decoration-state+plasma-theme-offscreen\nTEST_SUITES=not-run-BUILD_TESTING_OFF\nACTIVITIES_RUNTIME=not-tested-no-service\n'
+  printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=lm-sensors+kdecoration+libkscreen+libksysguard+breeze+breeze-gtk+layer-shell-qt+plasma-activities+libplasma\n'
+  printf 'LM_SENSORS=3-6-2\nKDECORATION=6.4.4\nLIBKSCREEN=6.4.4\nLIBKSYSGUARD=6.4.4\nBREEZE=6.4.4\nBREEZE_GTK=6.4.4\nLAYER_SHELL_QT=6.4.4\nPLASMA_ACTIVITIES=6.4.4\nLIBPLASMA=6.4.4\n'
+  printf 'NATIVE_SMOKE=cmake-targets+decoration-state+plasma-theme-offscreen+sensors-version\nTEST_SUITES=not-run-BUILD_TESTING_OFF\nSENSORS_TEST_SUITE=not-provided\nSENSORS_RUNTIME=library-version-only-no-hwmon\nACTIVITIES_RUNTIME=not-tested-no-service\n'
   printf 'PLASMA=core-libraries-built-not-running\nPLASMA_DESKTOP=not-built\nREAL_DISPLAY=not-tested\nHARDWARE_GRAPHICS=not-tested\nBOOTABLE=no\n'
 } >"$REPORT"
 cat "$REPORT"
