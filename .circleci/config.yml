@@ -1943,7 +1943,42 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-plasma1:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-xfce-visual1-aarch64-v1-{{ checksum "scripts/build-blfs-xfce-visual1-chroot.sh" }}-{{ checksum "scripts/run-blfs-xfce-visual1.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma1-sources-v1-{{ checksum "manifests/blfs-plasma1.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma1" }}-{{ checksum "scripts/fetch-blfs-plasma1-sources.sh" }}
+      - run:
+          name: Download and verify the first Plasma core sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-plasma1-sources bash scripts/fetch-blfs-plasma1-sources.sh 2>&1 | tee artifacts/blfs-plasma1-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-plasma1-sources-v1-{{ checksum "manifests/blfs-plasma1.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma1" }}-{{ checksum "scripts/fetch-blfs-plasma1-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-plasma1-sources
+      - run:
+          name: Build the first Plasma core libraries
+          no_output_timeout: 90m
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-plasma1.sh 2>&1 | tee artifacts/blfs-plasma1-host.log
+      - save_cache:
+          key: blfs-12.4-plasma1-aarch64-v1-{{ checksum "scripts/build-blfs-plasma1-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma1.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-xfce-visual1
+      - blfs-plasma1
