@@ -29,10 +29,62 @@ for path in \
   /opt/kf6/lib/cmake/KGlobalAccelD/KGlobalAccelDConfig.cmake \
   /opt/kf6/lib/cmake/KWayland/KWaylandConfig.cmake \
   /opt/kf6/lib/cmake/Aurorae/AuroraeConfig.cmake \
-  /opt/kf6/bin/kinfocenter; do
+  /opt/kf6/bin/kinfocenter \
+  /usr/include/security/pam_appl.h \
+  /usr/lib/libpam.so; do
   [[ ! -e "$path" && ! -L "$path" ]]
 done
 : >"$PROGRESS"
+# Linux-PAM is a required kscreenlocker dependency and was absent from the
+# accepted rootfs (pipeline 164 stopped at its CMake probe).  This is the
+# BLFS first-time Meson build, with its pre-install test configuration.
+archive=Linux-PAM-1.7.1.tar.xz
+package_dir=Linux-PAM-1.7.1
+[[ -f "$SOURCES/$archive" ]]
+first="$(tar -tf "$SOURCES/$archive" | head -n1)" || true
+[[ "${first%%/*}" == "$package_dir" ]]
+rm -rf "$SOURCES/$package_dir"
+tar -xf "$SOURCES/$archive" -C "$SOURCES"
+cd "$SOURCES/$package_dir"
+mkdir build
+cd build
+printf 'BUILD_BLFS_PLASMA2=linux-pam\n'
+meson setup .. \
+  --prefix=/usr \
+  --buildtype=release \
+  -D docdir=/usr/share/doc/Linux-PAM-1.7.1
+ninja
+install -v -m755 -d /etc/pam.d
+PAM_OTHER_CREATED=0
+if [[ ! -e /etc/pam.d/other ]]; then
+  cat >/etc/pam.d/other <<'EOF'
+auth     required       pam_deny.so
+account  required       pam_deny.so
+password required       pam_deny.so
+session  required       pam_deny.so
+EOF
+  PAM_OTHER_CREATED=1
+fi
+ninja test
+if [[ "$PAM_OTHER_CREATED" -eq 1 ]]; then rm -f /etc/pam.d/other; fi
+ninja install
+chmod -v 4755 /usr/sbin/unix_chkpwd
+rm -rf /usr/lib/systemd
+cd /sources
+rm -rf "$package_dir"
+printf 'BLFS_PLASMA2_BUILT=linux-pam-1.7.1\n' >>"$PROGRESS"
+# Create the generic BLFS PAM configuration only when it is not already
+# present; this stage must not silently replace an existing system policy.
+for pam_file in system-account system-auth system-session system-password; do
+  [[ ! -e "/etc/pam.d/$pam_file" ]] || continue
+  case "$pam_file" in
+    system-account) pam_line='account   required    pam_unix.so' ;;
+    system-auth) pam_line='auth      required    pam_unix.so' ;;
+    system-session) pam_line='session   required    pam_unix.so' ;;
+    system-password) pam_line='password  required    pam_unix.so       yescrypt shadow try_first_pass' ;;
+  esac
+  printf '# Begin /etc/pam.d/%s\n%s\n# End /etc/pam.d/%s\n' "$pam_file" "$pam_line" "$pam_file" >"/etc/pam.d/$pam_file"
+done
 packages=(kscreenlocker kinfocenter kglobalacceld kwayland aurorae)
 for name in "${packages[@]}"; do
   archive="$name-6.4.4.tar.xz"
@@ -65,8 +117,11 @@ for name in "${packages[@]}"; do
 done
 rm -rf /opt/kf6/lib/systemd
 /sbin/ldconfig
-[[ "$(grep -c '^BLFS_PLASMA2_BUILT=' "$PROGRESS")" -eq 5 ]]
+[[ "$(grep -c '^BLFS_PLASMA2_BUILT=' "$PROGRESS")" -eq 6 ]]
 for path in \
+  /usr/include/security/pam_appl.h \
+  /usr/lib/libpam.so \
+  /usr/sbin/unix_chkpwd \
   /opt/kf6/lib/cmake/KScreenLocker/KScreenLockerConfig.cmake \
   /opt/kf6/lib/cmake/KGlobalAccelD/KGlobalAccelDConfig.cmake \
   /opt/kf6/lib/cmake/KWayland/KWaylandConfig.cmake \
@@ -122,15 +177,19 @@ find_package(KScreenLocker 6.4.4 REQUIRED CONFIG)
 find_package(KGlobalAccelD 6.4.4 REQUIRED CONFIG)
 find_package(KWayland 6.4.4 REQUIRED CONFIG)
 find_package(Aurorae 6.4.4 REQUIRED CONFIG)
+find_path(PAM_INCLUDE_DIR NAMES security/pam_appl.h REQUIRED)
+find_library(PAM_LIBRARY NAMES pam REQUIRED)
 add_executable(blfs-plasma2-smoke main.cpp)
+target_include_directories(blfs-plasma2-smoke PRIVATE "${PAM_INCLUDE_DIR}")
 target_link_libraries(blfs-plasma2-smoke PRIVATE
-  Qt6::Core Qt6::Gui PW::KScreenLocker K::KGlobalAccelD Plasma::KWaylandClient)
+  Qt6::Core Qt6::Gui PW::KScreenLocker K::KGlobalAccelD Plasma::KWaylandClient "${PAM_LIBRARY}")
 EOF
 cat >/tmp/blfs-plasma2-smoke/main.cpp <<'EOF'
 #include <QCoreApplication>
 #include <QJsonObject>
 #include <QPluginLoader>
 #include <QString>
+#include <security/pam_appl.h>
 #include <KScreenLocker/KsldApp>
 #include <kglobalacceld.h>
 #include <KWayland/Client/connection_thread.h>
@@ -151,7 +210,9 @@ int main(int argc, char **argv) {
   const QJsonObject metadata = aurorae.metaData();
   if (metadata.isEmpty() || metadata.value(QStringLiteral("IID")).toString().isEmpty()) return 4;
   if (aurorae.isLoaded()) return 5;
-  std::printf("BLFS_PLASMA2_EXEC_OK=%s=6.4.4=locker-type=accel-type=kwayland-object=aurorae-metadata\n", qVersion());
+  const char *pam_success = pam_strerror(nullptr, PAM_SUCCESS);
+  if (!pam_success || std::strcmp(pam_success, "Success") != 0) return 6;
+  std::printf("BLFS_PLASMA2_EXEC_OK=%s=6.4.4=pam-success=locker-type=accel-type=kwayland-object=aurorae-metadata\n", qVersion());
   return 0;
 }
 EOF
@@ -171,18 +232,18 @@ set -e
 cat /tmp/blfs-plasma2-smoke-stderr.log
 printf 'NATIVE_SMOKE_STATUS=%s\nNATIVE_SMOKE_OUTPUT=%s\n' "$NATIVE_STATUS" "$OUTPUT"
 [[ "$NATIVE_STATUS" -eq 0 ]]
-[[ "$OUTPUT" == BLFS_PLASMA2_EXEC_OK=6.9.2=6.4.4=locker-type=accel-type=kwayland-object=aurorae-metadata ]]
+[[ "$OUTPUT" == BLFS_PLASMA2_EXEC_OK=6.9.2=6.4.4=pam-success=locker-type=accel-type=kwayland-object=aurorae-metadata ]]
 readelf -h /tmp/blfs-plasma2-smoke-build/blfs-plasma2-smoke | grep -q 'Machine:.*AArch64'
 INTERPRETER="$(readelf -l /tmp/blfs-plasma2-smoke-build/blfs-plasma2-smoke | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
 [[ "$INTERPRETER" == /lib/ld-linux-aarch64.so.1 ]]
 {
-  printf 'BLFS_PLASMA2_RESULT=ok\nPACKAGE_COUNT=5\nSOURCE_COUNT=5\nARCH=%s\n' "$(uname -m)"
+  printf 'BLFS_PLASMA2_RESULT=ok\nPACKAGE_COUNT=6\nSOURCE_COUNT=6\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=BLFS_PLASMA2_EXEC_OK\nNATIVE_SMOKE_OUTPUT=%s\nNATIVE_SMOKE_STATUS=0\nDYNAMIC_LINKER=%s\n' "$OUTPUT" "$INTERPRETER"
-  printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=kscreenlocker+kinfocenter+kglobalacceld+kwayland+aurorae\n'
+  printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nLINUX_PAM=1.7.1\nPACKAGES=linux-pam+kscreenlocker+kinfocenter+kglobalacceld+kwayland+aurorae\n'
   printf 'KSCREENLOCKER=6.4.4\nKINFOCENTER=6.4.4\nKGLOBALACCELD=6.4.4\nKWAYLAND=6.4.4\nAURORAE=6.4.4\n'
-  printf 'KSCREENLOCKER_SMOKE=native-typeinfo-no-lock-no-dbus\nKINFOCENTER_SMOKE=library-qml-and-symlink-only\nKINFOCENTER_LAUNCHER=deferred-systemsettings-not-built\n'
+  printf 'LINUX_PAM_TEST_SUITE=ninja-test-passed\nPAM_SMOKE=native-strerror-no-auth\nPAM_CONFIG=standard-files-present-or-created\nKSCREENLOCKER_SMOKE=native-typeinfo-no-lock-no-dbus\nKINFOCENTER_SMOKE=library-qml-and-symlink-only\nKINFOCENTER_LAUNCHER=deferred-systemsettings-not-built\n'
   printf 'KGLOBALACCELD_VERSION_EXEC=passed-no-dbus-registration\nKWAYLAND_SMOKE=native-object-no-compositor\nAURORAE_SMOKE=native-plugin-metadata-not-loaded\n'
-  printf 'NATIVE_SMOKE=cmake-targets+typeinfo+kwayland-object+aurorae-metadata\nTEST_SUITES=not-run-BUILD_TESTING_OFF\n'
+  printf 'NATIVE_SMOKE=cmake-targets+pam-strerror+typeinfo+kwayland-object+aurorae-metadata\nTEST_SUITES=not-run-BUILD_TESTING_OFF\n'
   printf 'PLASMA1=preserved-pipeline-163\nPLASMA=core-libraries-and-second-stage-built-not-running\nPLASMA_DESKTOP=not-built\nREAL_DISPLAY=not-tested\nHARDWARE_GRAPHICS=not-tested\nBOOTABLE=no\n'
 } >"$REPORT"
 cat "$REPORT"
