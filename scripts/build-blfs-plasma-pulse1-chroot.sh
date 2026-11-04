@@ -43,6 +43,7 @@ extract_package pulseaudio-17.0.tar.xz pulseaudio-17.0
 mkdir build; cd build
 printf 'BUILD_BLFS_PLASMA_PULSE1=pulseaudio\n'
 meson setup --prefix=/usr \
+  --libdir=/usr/lib \
   --buildtype=release \
   -D database=gdbm \
   -D doxygen=false \
