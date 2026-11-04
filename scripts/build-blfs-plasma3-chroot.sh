@@ -12,7 +12,7 @@ SOURCES=/sources
 REPORT=/root/blfs-plasma3-report.txt
 PROGRESS=/root/blfs-plasma3-progress.txt
 [[ "$(id -u)" -eq 0 && "$(uname -m)" == aarch64 ]]
-[[ ! -e /tools && -x /usr/bin/g++ && -x /usr/bin/cmake && -x /usr/bin/ninja && -x /usr/bin/pkg-config ]]
+[[ ! -e /tools && -x /usr/bin/g++ && -x /usr/bin/cmake && -x /usr/bin/ninja && -x /usr/bin/pkg-config && -x /usr/bin/meson ]]
 [[ "$(/opt/qt6/bin/qmake6 -query QT_VERSION)" == 6.9.2 ]]
 for path in \
   /opt/kf6/lib/cmake/Plasma/PlasmaConfig.cmake \
@@ -31,6 +31,29 @@ for path in \
   [[ ! -e "$path" && ! -L "$path" ]]
 done
 : >"$PROGRESS"
+# kpipewire has an unconditional pkg-config requirement on libva and
+# libva-drm.  Build the BLFS 12.4 dependency before the Plasma sources.
+libva_archive=libva-2.22.0.tar.gz
+libva_dir=libva-2.22.0
+[[ -f "$SOURCES/$libva_archive" ]]
+first="$(tar -tf "$SOURCES/$libva_archive" | head -n1)" || true
+[[ "${first%%/*}" == "$libva_dir" ]]
+rm -rf "$SOURCES/$libva_dir"
+tar -xf "$SOURCES/$libva_archive" -C "$SOURCES"
+cd "$SOURCES/$libva_dir"
+mkdir build
+cd build
+printf 'BUILD_BLFS_PLASMA3=libva\n'
+meson setup --prefix=/usr --buildtype=release ..
+ninja
+ninja install
+cd /sources
+rm -rf "$libva_dir"
+printf 'BLFS_PLASMA3_BUILT=libva-2.22.0\n' >>"$PROGRESS"
+/sbin/ldconfig
+pkg-config --exists libva libva-drm
+[[ "$(pkg-config --modversion libva)" == 1.22.0 ]]
+[[ "$(pkg-config --modversion libva-drm)" == 1.22.0 ]]
 packages=(plasma5support plasma-activities-stats kpipewire)
 for name in "${packages[@]}"; do
   archive="$name-6.4.4.tar.xz"
@@ -63,7 +86,11 @@ for name in "${packages[@]}"; do
   printf 'BLFS_PLASMA3_BUILT=%s-6.4.4\n' "$name" >>"$PROGRESS"
 done
 /sbin/ldconfig
-[[ "$(grep -c '^BLFS_PLASMA3_BUILT=' "$PROGRESS")" -eq 3 ]]
+[[ "$(grep -c '^BLFS_PLASMA3_BUILT=' "$PROGRESS")" -eq 4 ]]
+printf 'PLASMA3_POSTCHECK=libva-pkg-config\n'
+pkg-config --exists libva libva-drm
+[[ "$(pkg-config --modversion libva)" == 1.22.0 ]]
+[[ "$(pkg-config --modversion libva-drm)" == 1.22.0 ]]
 printf 'PLASMA3_POSTCHECK=config-files\n'
 for path in \
   /opt/kf6/lib/cmake/Plasma5Support/Plasma5SupportConfig.cmake \
@@ -146,11 +173,11 @@ readelf -h /tmp/blfs-plasma3-smoke-build/blfs-plasma3-smoke | grep -q 'Machine:.
 INTERPRETER="$(readelf -l /tmp/blfs-plasma3-smoke-build/blfs-plasma3-smoke | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
 [[ "$INTERPRETER" == /lib/ld-linux-aarch64.so.1 ]]
 {
-  printf 'BLFS_PLASMA3_RESULT=ok\nPACKAGE_COUNT=3\nSOURCE_COUNT=3\nARCH=%s\n' "$(uname -m)"
+  printf 'BLFS_PLASMA3_RESULT=ok\nPACKAGE_COUNT=4\nSOURCE_COUNT=4\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=BLFS_PLASMA3_EXEC_OK\nNATIVE_SMOKE_OUTPUT=%s\nNATIVE_SMOKE_STATUS=0\nDYNAMIC_LINKER=%s\n' "$OUTPUT" "$INTERPRETER"
-  printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=plasma5support+plasma-activities-stats+kpipewire\n'
-  printf 'PLASMA5SUPPORT=6.4.4\nPLASMA_ACTIVITIES_STATS=6.4.4\nKPIPEWIRE=6.4.4\n'
-  printf 'PLASMA5SUPPORT_SMOKE=native-version-string\nPLASMA_ACTIVITIES_STATS_SMOKE=native-typeinfo-no-database\nKPIPEWIRE_SMOKE=native-typeinfo-no-stream-no-session\n'
+  printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=libva+plasma5support+plasma-activities-stats+kpipewire\n'
+  printf 'LIBVA=2.22.0\nLIBVA_API=1.22.0\nPLASMA5SUPPORT=6.4.4\nPLASMA_ACTIVITIES_STATS=6.4.4\nKPIPEWIRE=6.4.4\n'
+  printf 'LIBVA_SMOKE=pkg-config-libva-and-drm-no-hardware\nPLASMA5SUPPORT_SMOKE=native-version-string\nPLASMA_ACTIVITIES_STATS_SMOKE=native-typeinfo-no-database\nKPIPEWIRE_SMOKE=native-typeinfo-no-stream-no-session\n'
   printf 'NATIVE_SMOKE=cmake-targets+version+typeinfo-no-pipewire-session\nTEST_SUITES=not-run-BUILD_TESTING_OFF\n'
   printf 'PLASMA2=preserved-pipeline-171\nPLASMA=third-stage-libraries-built-not-running\nKWIN=not-built\nPLASMA_WORKSPACE=not-built\nPLASMA_DESKTOP=not-built\nPIPEWIRE_SESSION=not-tested\nPHONON_VLC=not-tested\nREAL_DISPLAY=not-tested\nHARDWARE_GRAPHICS=not-tested\nBOOTABLE=no\n'
 } >"$REPORT"

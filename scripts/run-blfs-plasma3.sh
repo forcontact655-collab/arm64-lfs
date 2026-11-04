@@ -23,6 +23,7 @@ for path in \
   "$LFS/opt/kf6/lib/cmake/KPipeWire/KPipeWireConfig.cmake"; do
   [[ ! -e "$path" && ! -L "$path" ]] || preflight_fail "existing-$path"
 done
+[[ -f "$HOST_SOURCES/libva-2.22.0.tar.gz" ]] || preflight_fail "missing-source-libva"
 for name in plasma5support plasma-activities-stats kpipewire; do
   [[ -f "$HOST_SOURCES/$name-6.4.4.tar.xz" ]] || preflight_fail "missing-source-$name"
 done
@@ -69,14 +70,14 @@ sudo -n rm -f "$LFS/root/build-blfs-plasma3-chroot.sh" \
   "$LFS/root/blfs-plasma3-report.txt" "$LFS/root/blfs-plasma3-progress.txt"
 REPORT="$ARTIFACTS/blfs-plasma3-report.txt"
 for expected in \
-  'BLFS_PLASMA3_RESULT=ok' 'PACKAGE_COUNT=3' 'SOURCE_COUNT=3' 'ARCH=aarch64' \
+  'BLFS_PLASMA3_RESULT=ok' 'PACKAGE_COUNT=4' 'SOURCE_COUNT=4' 'ARCH=aarch64' \
   'NATIVE_BINARY_EXEC=BLFS_PLASMA3_EXEC_OK' 'NATIVE_SMOKE_OUTPUT=BLFS_PLASMA3_EXEC_OK=6.9.2=6.4.4=plasma5support=activities-stats=kpipewire-type' 'NATIVE_SMOKE_STATUS=0' 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' \
-  'QT=6.9.2' 'PLASMA_VERSION=6.4.4' 'PACKAGES=plasma5support+plasma-activities-stats+kpipewire' \
-  'PLASMA5SUPPORT=6.4.4' 'PLASMA_ACTIVITIES_STATS=6.4.4' 'KPIPEWIRE=6.4.4' \
-  'PLASMA5SUPPORT_SMOKE=native-version-string' 'PLASMA_ACTIVITIES_STATS_SMOKE=native-typeinfo-no-database' 'KPIPEWIRE_SMOKE=native-typeinfo-no-stream-no-session' \
+  'QT=6.9.2' 'PLASMA_VERSION=6.4.4' 'PACKAGES=libva+plasma5support+plasma-activities-stats+kpipewire' \
+  'LIBVA=2.22.0' 'LIBVA_API=1.22.0' 'PLASMA5SUPPORT=6.4.4' 'PLASMA_ACTIVITIES_STATS=6.4.4' 'KPIPEWIRE=6.4.4' \
+  'LIBVA_SMOKE=pkg-config-libva-and-drm-no-hardware' 'PLASMA5SUPPORT_SMOKE=native-version-string' 'PLASMA_ACTIVITIES_STATS_SMOKE=native-typeinfo-no-database' 'KPIPEWIRE_SMOKE=native-typeinfo-no-stream-no-session' \
   'NATIVE_SMOKE=cmake-targets+version+typeinfo-no-pipewire-session' 'TEST_SUITES=not-run-BUILD_TESTING_OFF' \
   'PLASMA2=preserved-pipeline-171' 'PLASMA=third-stage-libraries-built-not-running' 'KWIN=not-built' 'PLASMA_WORKSPACE=not-built' 'PLASMA_DESKTOP=not-built' 'PIPEWIRE_SESSION=not-tested' 'PHONON_VLC=not-tested' 'REAL_DISPLAY=not-tested' 'HARDWARE_GRAPHICS=not-tested' 'BOOTABLE=no'; do
   grep -qxF "$expected" "$REPORT"
 done
-[[ "$(grep -c '^BLFS_PLASMA3_BUILT=' "$ARTIFACTS/blfs-plasma3-progress.txt")" -eq 3 ]]
+[[ "$(grep -c '^BLFS_PLASMA3_BUILT=' "$ARTIFACTS/blfs-plasma3-progress.txt")" -eq 4 ]]
 cat "$REPORT"
