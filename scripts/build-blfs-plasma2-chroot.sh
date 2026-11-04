@@ -95,6 +95,10 @@ for name in "${packages[@]}"; do
   rm -rf "$SOURCES/$package_dir"
   tar -xf "$SOURCES/$archive" -C "$SOURCES"
   cd "$SOURCES/$package_dir"
+  if [[ "$name" == kinfocenter ]]; then
+    [[ -f /root/blfs-plasma2-kinfocenter-opengl-only.patch ]]
+    patch -Np1 -i /root/blfs-plasma2-kinfocenter-opengl-only.patch
+  fi
   mkdir build
   cd build
   printf 'BUILD_BLFS_PLASMA2=%s\n' "$name"
@@ -122,6 +126,7 @@ for path in \
   /usr/include/security/pam_appl.h \
   /usr/lib/libpam.so \
   /usr/sbin/unix_chkpwd \
+  /opt/kf6/libexec/kinfocenter-opengl-helper \
   /opt/kf6/lib/cmake/KScreenLocker/KScreenLockerConfig.cmake \
   /opt/kf6/lib/cmake/KGlobalAccelD/KGlobalAccelDConfig.cmake \
   /opt/kf6/lib/cmake/KWayland/KWaylandConfig.cmake \
@@ -241,7 +246,7 @@ INTERPRETER="$(readelf -l /tmp/blfs-plasma2-smoke-build/blfs-plasma2-smoke | sed
   printf 'NATIVE_BINARY_EXEC=BLFS_PLASMA2_EXEC_OK\nNATIVE_SMOKE_OUTPUT=%s\nNATIVE_SMOKE_STATUS=0\nDYNAMIC_LINKER=%s\n' "$OUTPUT" "$INTERPRETER"
   printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nLINUX_PAM=1.7.1\nPACKAGES=linux-pam+kscreenlocker+kinfocenter+kglobalacceld+kwayland+aurorae\n'
   printf 'KSCREENLOCKER=6.4.4\nKINFOCENTER=6.4.4\nKGLOBALACCELD=6.4.4\nKWAYLAND=6.4.4\nAURORAE=6.4.4\n'
-  printf 'LINUX_PAM_TEST_SUITE=ninja-test-passed\nPAM_SMOKE=native-strerror-no-auth\nPAM_CONFIG=standard-files-present-or-created\nKSCREENLOCKER_SMOKE=native-typeinfo-no-lock-no-dbus\nKINFOCENTER_SMOKE=library-qml-and-symlink-only\nKINFOCENTER_LAUNCHER=deferred-systemsettings-not-built\n'
+  printf 'LINUX_PAM_TEST_SUITE=ninja-test-passed\nPAM_SMOKE=native-strerror-no-auth\nPAM_CONFIG=standard-files-present-or-created\nKSCREENLOCKER_SMOKE=native-typeinfo-no-lock-no-dbus\nKINFOCENTER_SMOKE=library-qml-and-symlink-only\nKINFOCENTER_VULKAN=disabled-qt-vulkan-unavailable-opengl-only\nKINFOCENTER_OPENGL_HELPER=installed-not-run-no-display\nKINFOCENTER_LAUNCHER=deferred-systemsettings-not-built\n'
   printf 'KGLOBALACCELD_VERSION_EXEC=passed-no-dbus-registration\nKWAYLAND_SMOKE=native-object-no-compositor\nAURORAE_SMOKE=native-plugin-metadata-not-loaded\n'
   printf 'NATIVE_SMOKE=cmake-targets+pam-strerror+typeinfo+kwayland-object+aurorae-metadata\nTEST_SUITES=not-run-BUILD_TESTING_OFF\n'
   printf 'PLASMA1=preserved-pipeline-163\nPLASMA=core-libraries-and-second-stage-built-not-running\nPLASMA_DESKTOP=not-built\nREAL_DISPLAY=not-tested\nHARDWARE_GRAPHICS=not-tested\nBOOTABLE=no\n'

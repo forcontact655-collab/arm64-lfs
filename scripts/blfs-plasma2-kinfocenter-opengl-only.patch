@@ -1,0 +1,121 @@
+--- a/kcms/about-distro/src/GPUEntry.h
++++ b/kcms/about-distro/src/GPUEntry.h
+@@ -7,7 +7,7 @@
+ #ifndef GPUENTRY_H
+ #define GPUENTRY_H
+ 
+-#include <QVulkanInstance>
++#include "gpu_vulkan_stub.h"
+ 
+ #include "Entry.h"
+ 
+--- a/kcms/about-distro/src/GPUEntryFactory.cpp
++++ b/kcms/about-distro/src/GPUEntryFactory.cpp
+@@ -14,8 +14,7 @@
+ #include <QOpenGLFunctions>
+ #include <QProcess>
+ #include <QStandardPaths>
+-#include <QVulkanFunctions>
+-#include <QVulkanInstance>
++#include "gpu_vulkan_stub.h"
+ 
+ #include <KLibexec>
+ #include <KLocalizedString>
+@@ -111,58 +110,9 @@
+ 
+ std::vector<GPUEntry::Device> vulkanDevices()
+ {
+-    if (qEnvironmentVariableIntValue("KINFOCENTER_SIMULATION") == 1) {
+-        return {
+-            {u"AMD Radeon RX 7900 XTX\nMesa 1.2.3 (RADV NAVI31)]"_s, VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU},
+-            {u"AMD Radeon Graphics (RADV RAPHAEL_MENDOCINO)"_s, VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU},
+-            {u"Intel(R) UHD Graphics (CML GT2)"_s, VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU},
+-            {u"llvmpipe (LLVM 18.1.6, 256 bits)"_s, VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU},
+-
+-        };
+-    }
+-
+-    QVulkanInstance instance;
+-    if (!instance.create()) {
+-        qWarning() << "Failed to create vulkan instance";
+-        return {};
+-    }
+-    auto functions = instance.functions();
+-
+-    uint32_t count = 0;
+-    functions->vkEnumeratePhysicalDevices(instance.vkInstance(), &count, nullptr);
+-    if (count == 0) {
+-        qWarning("No vulkan devices");
+-        return {};
+-    }
+-
+-    QVarLengthArray<VkPhysicalDevice, 4> devices(count);
+-    VkResult error = functions->vkEnumeratePhysicalDevices(instance.vkInstance(), &count, devices.data());
+-    if (error != VK_SUCCESS || count == 0) {
+-        qWarning("Failed to enumerate vulkan devices: %d", error);
+-        return {};
+-    }
+-
+-    std::vector<GPUEntry::Device> deviceList;
+-    deviceList.reserve(devices.count());
+-    for (const auto &device : devices) {
+-        VkPhysicalDeviceProperties properties;
+-        functions->vkGetPhysicalDeviceProperties(device, &properties);
+-        qDebug("Physical device %d: '%s' %d.%d.%d (api %d.%d.%d vendor 0x%X device 0x%X type %d)",
+-               0,
+-               properties.deviceName,
+-               VK_VERSION_MAJOR(properties.driverVersion),
+-               VK_VERSION_MINOR(properties.driverVersion),
+-               VK_VERSION_PATCH(properties.driverVersion),
+-               VK_VERSION_MAJOR(properties.apiVersion),
+-               VK_VERSION_MINOR(properties.apiVersion),
+-               VK_VERSION_PATCH(properties.apiVersion),
+-               properties.vendorID,
+-               properties.deviceID,
+-               properties.deviceType);
+-
+-        deviceList.emplace_back(QString::fromUtf8(properties.deviceName), properties.deviceType);
+-    }
+-    return deviceList;
++    // This rootfs intentionally uses the accepted Qt build without Vulkan.
++    // Keep the upstream OpenGL fallback instead of adding a second Qt build.
++    return {};
+ }
+ 
+ void stripLlvmpipe(std::vector<GPUEntry::Device> &devices)
+@@ -253,10 +203,6 @@
+ {
+     if (drmDeviceCount() == 0) {
+         return {};
+-    }
+-
+-    if (auto optionalGpus = vulkanGPUs(); optionalGpus.has_value() && !optionalGpus->empty()) {
+-        return optionalGpus;
+     }
+ 
+     if (auto optionalGpus = openglGPUs(); optionalGpus.has_value() && !optionalGpus->empty()) {
+--- a/kcms/about-distro/src/opengl-helper/main.cpp
++++ b/kcms/about-distro/src/opengl-helper/main.cpp
+@@ -10,7 +10,7 @@
+ #include <QOffscreenSurface>
+ #include <QOpenGLContext>
+ #include <QOpenGLFunctions>
+-#include <QVulkanInstance>
++#include "../gpu_vulkan_stub.h"
+ 
+ using namespace Qt::StringLiterals;
+ 
+--- /dev/null
++++ b/kcms/about-distro/src/gpu_vulkan_stub.h
+@@ -0,0 +1,11 @@
++// Build-only compatibility for a Qt without Vulkan support.
++// The Kinfocenter OpenGL path needs only these enum values.
++#pragma once
++
++using VkPhysicalDeviceType = int;
++inline constexpr VkPhysicalDeviceType VK_PHYSICAL_DEVICE_TYPE_OTHER = 0;
++inline constexpr VkPhysicalDeviceType VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU = 1;
++inline constexpr VkPhysicalDeviceType VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU = 2;
++inline constexpr VkPhysicalDeviceType VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU = 3;
++inline constexpr VkPhysicalDeviceType VK_PHYSICAL_DEVICE_TYPE_CPU = 4;
++inline constexpr VkPhysicalDeviceType VK_PHYSICAL_DEVICE_TYPE_MAX_ENUM = 0x7fffffff;
