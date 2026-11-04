@@ -182,10 +182,12 @@ rm -rf /tmp/blfs-plasma-deps4-smoke /tmp/blfs-plasma-deps4-smoke-build /tmp/blfs
 mkdir -p /tmp/blfs-plasma-deps4-smoke
 cat >/tmp/blfs-plasma-deps4-smoke/main.cpp <<'EOF'
 #include <archive.h>
+extern "C" {
 #include <libavcodec/avcodec.h>
 #include <libavutil/avutil.h>
 #include <libdisplay-info/info.h>
 #include <libdisplay-info/edid.h>
+}
 #include <libevdev/libevdev.h>
 #include <mtdev.h>
 #include <mtdev-plumbing.h>
