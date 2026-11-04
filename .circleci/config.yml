@@ -1838,7 +1838,42 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-plasma-deps3:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma-pulse1-aarch64-v1-{{ checksum "scripts/build-blfs-plasma-pulse1-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma-pulse1.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma-deps3-sources-v1-{{ checksum "manifests/blfs-plasma-deps3.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma-deps3" }}-{{ checksum "scripts/fetch-blfs-plasma-deps3-sources.sh" }}
+      - run:
+          name: Download and verify CrackLib Phonon and PipeWire sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-plasma-deps3-sources bash scripts/fetch-blfs-plasma-deps3-sources.sh 2>&1 | tee artifacts/blfs-plasma-deps3-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-plasma-deps3-sources-v1-{{ checksum "manifests/blfs-plasma-deps3.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma-deps3" }}-{{ checksum "scripts/fetch-blfs-plasma-deps3-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-plasma-deps3-sources
+      - run:
+          name: Build CrackLib libpwquality Phonon and PipeWire
+          no_output_timeout: 60m
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-plasma-deps3.sh 2>&1 | tee artifacts/blfs-plasma-deps3-host.log
+      - save_cache:
+          key: blfs-12.4-plasma-deps3-aarch64-v1-{{ checksum "scripts/build-blfs-plasma-deps3-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma-deps3.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma-pulse1
+      - blfs-plasma-deps3
