@@ -185,7 +185,7 @@ static void close_restricted(int, void *) {}
 int main(int argc, char **argv) {
   QCoreApplication app(argc, argv);
   libinput_interface interface{open_restricted, close_restricted};
-  libinput *input = libinput_new(&interface, nullptr);
+  libinput *input = libinput_path_create_context(&interface, nullptr);
   if (!input) return 1;
   libinput_unref(input);
   if (std::strcmp(typeid(QSensor).name(), "") == 0) return 2;
