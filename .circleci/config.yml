@@ -2433,7 +2433,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-plasma32:
+  blfs-plasma33:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -2441,28 +2441,28 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-plasma31-aarch64-v1-{{ checksum "scripts/build-blfs-plasma31-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma31.sh" }}
+            - blfs-12.4-plasma32-aarch64-v1-{{ checksum "scripts/build-blfs-plasma32-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma32.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-plasma32-sources-v1-{{ checksum "manifests/blfs-plasma32.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma32" }}-{{ checksum "scripts/fetch-blfs-plasma32-sources.sh" }}
+            - blfs-12.4-plasma33-sources-v1-{{ checksum "manifests/blfs-plasma33.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma33" }}-{{ checksum "scripts/fetch-blfs-plasma33-sources.sh" }}
       - run:
-          name: Download and verify Xorg Wacom and Wacom Tablet sources
+          name: Download and verify libndp and NetworkManager sources
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-plasma32-sources bash scripts/fetch-blfs-plasma32-sources.sh 2>&1 | tee artifacts/blfs-plasma32-sources-circleci.log
+            LFS=/home/circleci/blfs-plasma33-sources bash scripts/fetch-blfs-plasma33-sources.sh 2>&1 | tee artifacts/blfs-plasma33-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-plasma32-sources-v1-{{ checksum "manifests/blfs-plasma32.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma32" }}-{{ checksum "scripts/fetch-blfs-plasma32-sources.sh" }}
+          key: blfs-12.4-plasma33-sources-v1-{{ checksum "manifests/blfs-plasma33.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma33" }}-{{ checksum "scripts/fetch-blfs-plasma33-sources.sh" }}
           paths:
-            - /home/circleci/blfs-plasma32-sources
+            - /home/circleci/blfs-plasma33-sources
       - run:
-          name: Build Xorg Wacom and Wacom Tablet without device or UI execution
+          name: Build libndp and NetworkManager without daemon or network execution
           no_output_timeout: 90m
           command: |
             set -o pipefail
-            bash scripts/run-blfs-plasma32.sh 2>&1 | tee artifacts/blfs-plasma32-host.log
+            bash scripts/run-blfs-plasma33.sh 2>&1 | tee artifacts/blfs-plasma33-host.log
       - save_cache:
-          key: blfs-12.4-plasma32-aarch64-v1-{{ checksum "scripts/build-blfs-plasma32-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma32.sh" }}
+          key: blfs-12.4-plasma33-aarch64-v1-{{ checksum "scripts/build-blfs-plasma33-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma33.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -2471,4 +2471,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma32
+      - blfs-plasma33
