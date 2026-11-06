@@ -29,7 +29,6 @@ for path in \
   "$LFS/opt/kf6/lib/plugins/kf6/kded/printmanager.so" \
   "$LFS/opt/kf6/lib/plugins/plasma/kcms/systemsettings/kcm_printer_manager.so" \
   "$LFS/opt/kf6/lib/qml/org/kde/plasma/printmanager" \
-  "$LFS/opt/kf6/lib/qml/org/kde/systemmonitor" \
   "$LFS/opt/kf6/lib/qml/org/kde/ksysguard/page" \
   "$LFS/opt/kf6/lib/qml/org/kde/ksysguard/table" \
   "$LFS/opt/kf6/share/plasma/plasmoids/org.kde.plasma.printmanager" \
@@ -92,7 +91,7 @@ for expected in \
   'PRINT_MANAGER_KCM=installed-not-opened' 'PRINT_MANAGER_KDED=installed-not-loaded' 'PRINT_MANAGER_PLASMOID=installed-not-loaded' 'PRINT_MANAGER_TOOLS=installed-not-executed' \
   'SCP_INSTALL=disabled-verified-cache-and-source-exclusion' 'PACKAGEKIT_INSTALLER=disabled' 'SMB_PRINTING=not-tested' \
   'PRINT_TOOLS=not-run' 'PRINT_JOBS=not-created' 'PRINTERS=not-configured' 'PRINTING=not-tested' \
-  'SYSTEMMONITOR=6.4.4' 'SYSTEMMONITOR_EXECUTABLE=installed-not-executed' 'SYSTEMMONITOR_QML=installed-not-loaded' 'QML_PLUGIN_COUNT=4' 'SENSOR_FACES=installed-not-loaded' \
+  'SYSTEMMONITOR=6.4.4' 'SYSTEMMONITOR_EXECUTABLE=installed-not-executed' 'SYSTEMMONITOR_QML=embedded-in-executable-not-loaded' 'QML_PLUGIN_COUNT=3' 'SENSOR_FACES=installed-not-loaded' \
   'KSYSGUARD=required-build-dependency-verified' 'KSYSTEMSTATS=not-started-runtime-unverified' 'SENSORS=not-queried' 'PROCESSES=not-listed-or-signalled' 'SYSTEMMONITOR_UI=not-opened' \
   'TEST_SUITES=not-run' 'PLASMA17=preserved-pipeline-204' 'XDG_PORTAL_KDE=preserved-not-activated' 'PLASMA16=preserved-pipeline-201' 'PLASMA15=preserved-pipeline-199' \
   'SDDM=preserved-not-started' 'PLASMA_DESKTOP=preserved-pipeline-183-not-running' 'ACTIVITY_SERVICE=preserved-not-started' 'KWIN=preserved-not-rebuilt-not-running' \
@@ -106,4 +105,5 @@ grep -qx 'CUPS_HEADER_VERSION=2.4.12' "$ARTIFACTS/blfs-plasma18-print-manager-co
 grep -qx 'SCP_INSTALL_SOURCE=excluded' "$ARTIFACTS/blfs-plasma18-print-manager-config.txt"
 grep -Eq '^KSysGuard_DIR(:[^=]+)?=/opt/kf6/' "$ARTIFACTS/blfs-plasma18-systemmonitor-config.txt"
 grep -qx 'SYSTEMMONITOR_RUNTIME=not-started' "$ARTIFACTS/blfs-plasma18-systemmonitor-config.txt"
+grep -qx 'SYSTEMMONITOR_QML=embedded-qrc-main-globalmenu' "$ARTIFACTS/blfs-plasma18-systemmonitor-config.txt"
 cat "$REPORT"

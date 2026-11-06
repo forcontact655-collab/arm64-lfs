@@ -42,7 +42,6 @@ for path in \
   /opt/kf6/lib/plugins/kf6/kded/printmanager.so \
   /opt/kf6/lib/plugins/plasma/kcms/systemsettings/kcm_printer_manager.so \
   /opt/kf6/lib/qml/org/kde/plasma/printmanager \
-  /opt/kf6/lib/qml/org/kde/systemmonitor \
   /opt/kf6/lib/qml/org/kde/ksysguard/page \
   /opt/kf6/lib/qml/org/kde/ksysguard/table \
   /opt/kf6/share/plasma/plasmoids/org.kde.plasma.printmanager \
@@ -113,6 +112,12 @@ cmake -G Ninja \
 } >"$SYSTEMMONITOR_CONFIG"
 grep -Eq '^KSysGuard_DIR(:[^=]+)?=/opt/kf6/' "$SYSTEMMONITOR_CONFIG"
 grep -qx 'SYSTEMMONITOR_RUNTIME=not-started' "$SYSTEMMONITOR_CONFIG"
+# The application's own org.kde.systemmonitor QML is embedded in the
+# executable.  Unlike page/table it installs no separate qmldir/plugin.
+grep -q 'qrc_qmake_org_kde_systemmonitor\.cpp\.o' build.ninja
+grep -q 'plasma-systemmonitor_Main_qml\.cpp\.o' build.ninja
+grep -q 'plasma-systemmonitor_GlobalMenu_qml\.cpp\.o' build.ninja
+printf 'SYSTEMMONITOR_QML=embedded-qrc-main-globalmenu\n' >>"$SYSTEMMONITOR_CONFIG"
 ninja
 ninja install
 cd /sources
@@ -166,10 +171,9 @@ check_qml_module() {
   QML_PLUGIN_COUNT=$((QML_PLUGIN_COUNT + 1))
 }
 check_qml_module org.kde.plasma.printmanager /opt/kf6/lib/qml/org/kde/plasma/printmanager
-check_qml_module org.kde.systemmonitor /opt/kf6/lib/qml/org/kde/systemmonitor
 check_qml_module org.kde.ksysguard.page /opt/kf6/lib/qml/org/kde/ksysguard/page
 check_qml_module org.kde.ksysguard.table /opt/kf6/lib/qml/org/kde/ksysguard/table
-[[ "$QML_PLUGIN_COUNT" -eq 4 ]]
+[[ "$QML_PLUGIN_COUNT" -eq 3 ]]
 printf 'PLASMA18_POSTCHECK=print-manager-systemmonitor-elf-qml-files-not-executed\n'
 {
   printf 'BLFS_PLASMA18_RESULT=ok\nPACKAGE_COUNT=2\nSOURCE_COUNT=2\nARCH=%s\n' "$(uname -m)"
@@ -179,7 +183,7 @@ printf 'PLASMA18_POSTCHECK=print-manager-systemmonitor-elf-qml-files-not-execute
   printf 'PRINT_MANAGER_KCM=installed-not-opened\nPRINT_MANAGER_KDED=installed-not-loaded\nPRINT_MANAGER_PLASMOID=installed-not-loaded\nPRINT_MANAGER_TOOLS=installed-not-executed\n'
   printf 'SCP_INSTALL=disabled-verified-cache-and-source-exclusion\nPACKAGEKIT_INSTALLER=disabled\nSMB_PRINTING=not-tested\n'
   printf 'PRINT_TOOLS=not-run\nPRINT_JOBS=not-created\nPRINTERS=not-configured\nPRINTING=not-tested\n'
-  printf 'SYSTEMMONITOR=6.4.4\nSYSTEMMONITOR_EXECUTABLE=installed-not-executed\nSYSTEMMONITOR_QML=installed-not-loaded\nQML_PLUGIN_COUNT=%s\nSENSOR_FACES=installed-not-loaded\n' "$QML_PLUGIN_COUNT"
+  printf 'SYSTEMMONITOR=6.4.4\nSYSTEMMONITOR_EXECUTABLE=installed-not-executed\nSYSTEMMONITOR_QML=embedded-in-executable-not-loaded\nQML_PLUGIN_COUNT=%s\nSENSOR_FACES=installed-not-loaded\n' "$QML_PLUGIN_COUNT"
   printf 'KSYSGUARD=required-build-dependency-verified\nKSYSTEMSTATS=not-started-runtime-unverified\nSENSORS=not-queried\nPROCESSES=not-listed-or-signalled\nSYSTEMMONITOR_UI=not-opened\n'
   printf 'TEST_SUITES=not-run\nPLASMA17=preserved-pipeline-204\nXDG_PORTAL_KDE=preserved-not-activated\nPLASMA16=preserved-pipeline-201\nPLASMA15=preserved-pipeline-199\n'
   printf 'SDDM=preserved-not-started\nPLASMA_DESKTOP=preserved-pipeline-183-not-running\nACTIVITY_SERVICE=preserved-not-started\nKWIN=preserved-not-rebuilt-not-running\n'
