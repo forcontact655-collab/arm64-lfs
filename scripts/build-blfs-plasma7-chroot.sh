@@ -35,7 +35,7 @@ for path in \
   /opt/kf6/libexec/kactivitymanagerd \
   /opt/kf6/lib/libkactivitymanagerd_plugin.so \
   /opt/kf6/share/dbus-1/services/org.kde.ActivityManager.service \
-  /opt/kf6/lib/plugins/platformthemes/libKDEPlasmaPlatformTheme6.so; do
+  /opt/kf6/lib/plugins/platformthemes/KDEPlasmaPlatformTheme6.so; do
   [[ ! -e "$path" && ! -L "$path" ]]
 done
 pkg-config --exists wayland-client xcb x11 xcursor
@@ -83,7 +83,7 @@ for path in \
   /opt/kf6/libexec/kactivitymanagerd \
   /opt/kf6/lib/libkactivitymanagerd_plugin.so \
   /opt/kf6/share/dbus-1/services/org.kde.ActivityManager.service \
-  /opt/kf6/lib/plugins/platformthemes/libKDEPlasmaPlatformTheme6.so \
+  /opt/kf6/lib/plugins/platformthemes/KDEPlasmaPlatformTheme6.so \
   /opt/kf6/bin/knetattach \
   /opt/kf6/bin/plasmashell; do
   [[ -e "$path" ]]
@@ -92,7 +92,7 @@ done
 for binary in \
   /opt/kf6/libexec/kactivitymanagerd \
   /opt/kf6/lib/libkactivitymanagerd_plugin.so \
-  /opt/kf6/lib/plugins/platformthemes/libKDEPlasmaPlatformTheme6.so; do
+  /opt/kf6/lib/plugins/platformthemes/KDEPlasmaPlatformTheme6.so; do
   readelf -h "$binary" | grep -q 'Machine:.*AArch64'
 done
 readelf -l /opt/kf6/libexec/kactivitymanagerd | grep -q '/lib/ld-linux-aarch64.so.1'
@@ -153,7 +153,7 @@ NATIVE_SMOKE_OUTPUT="$(env -u DISPLAY -u WAYLAND_DISPLAY -u DBUS_SESSION_BUS_ADD
   QT_PLUGIN_PATH=/opt/kf6/lib/plugins:/opt/qt6/plugins \
   LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib:/usr/lib64:/usr/lib \
   /tmp/blfs-plasma7-smoke-build/blfs-plasma7-smoke \
-  /opt/kf6/lib/plugins/platformthemes/libKDEPlasmaPlatformTheme6.so \
+  /opt/kf6/lib/plugins/platformthemes/KDEPlasmaPlatformTheme6.so \
   2>/tmp/blfs-plasma7-smoke-stderr.log)"
 NATIVE_STATUS=$?
 set -e

@@ -21,7 +21,7 @@ for path in \
   "$LFS/opt/kf6/libexec/kactivitymanagerd" \
   "$LFS/opt/kf6/lib/libkactivitymanagerd_plugin.so" \
   "$LFS/opt/kf6/share/dbus-1/services/org.kde.ActivityManager.service" \
-  "$LFS/opt/kf6/lib/plugins/platformthemes/libKDEPlasmaPlatformTheme6.so"; do
+  "$LFS/opt/kf6/lib/plugins/platformthemes/KDEPlasmaPlatformTheme6.so"; do
   [[ ! -e "$path" && ! -L "$path" ]] || preflight_fail "existing-$path"
 done
 for name in kactivitymanagerd-6.4.4.tar.xz plasma-integration-6.4.4.tar.xz; do
