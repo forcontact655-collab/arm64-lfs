@@ -2271,7 +2271,7 @@ jobs:
           keys:
             - blfs-12.4-plasma16-sources-v1-{{ checksum "manifests/blfs-plasma16.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma16" }}-{{ checksum "scripts/fetch-blfs-plasma16-sources.sh" }}
       - run:
-          name: Download and verify KDE portal and Plasma Vault sources
+          name: Download and verify Plasma Vault source
           command: |
             set -o pipefail
             mkdir -p artifacts
@@ -2281,7 +2281,7 @@ jobs:
           paths:
             - /home/circleci/blfs-plasma16-sources
       - run:
-          name: Build KDE portal and Plasma Vault without portal requests or vault operations
+          name: Build Plasma Vault plugins without vault operations
           no_output_timeout: 90m
           command: |
             set -o pipefail
