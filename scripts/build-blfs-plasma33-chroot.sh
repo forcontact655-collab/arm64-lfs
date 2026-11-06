@@ -90,7 +90,7 @@ rm -f /tmp/blfs-plasma33-before-nspr.txt /tmp/blfs-plasma33-after-nspr.txt
 for path in /usr/lib/libnspr4.so /usr/lib/libplc4.so /usr/lib/libplds4.so /usr/lib/pkgconfig/nspr.pc /usr/include/nspr/prinit.h /usr/bin/nspr-config; do
   grep -qxF "$path" "$NSPR_MANIFEST"
 done
-[[ "$(pkg-config --modversion nspr)" == 4.37 ]]
+[[ "$(pkg-config --modversion nspr)" == 4.37.0 ]]
 printf 'BLFS_PLASMA33_BUILT=NSPR-4.37\n' >>"$PROGRESS"
 
 snapshot_tree >/tmp/blfs-plasma33-before-nss.txt
@@ -122,7 +122,7 @@ rm -f /tmp/blfs-plasma33-before-nss.txt /tmp/blfs-plasma33-after-nss.txt
 for path in /usr/lib/libnss3.so /usr/lib/libssl3.so /usr/lib/libsmime3.so /usr/lib/libsoftokn3.so /usr/lib/libnssckbi.so /usr/lib/pkgconfig/nss.pc /usr/include/nss/nss.h /usr/bin/certutil /usr/bin/nss-config /usr/bin/pk12util; do
   grep -qxF "$path" "$NSS_MANIFEST"
 done
-[[ "$(pkg-config --modversion nss)" == 3.115 ]]
+[[ "$(pkg-config --modversion nss)" == 3.115.0 ]]
 {
   printf 'NSPR_VERSION=%s\nNSS_VERSION=%s\n' "$(pkg-config --modversion nspr)" "$(pkg-config --modversion nss)"
   printf 'NSS_SYSTEM_ZLIB=1\nNSS_DISABLE_GTESTS=1\nNSS_TESTS=not-run-gtests-disabled\nNSS_TOOLS=installed-not-executed\nP11_KIT=not-reconfigured\n'

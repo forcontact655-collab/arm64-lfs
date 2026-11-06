@@ -115,7 +115,7 @@ grep -qx 'BLFS_PLASMA33_BUILT=NSS-3.115' "$ARTIFACTS/blfs-plasma33-progress.txt"
 grep -qx 'BLFS_PLASMA33_BUILT=libndp-1.9' "$ARTIFACTS/blfs-plasma33-progress.txt"
 grep -qx 'BLFS_PLASMA33_BUILT=NetworkManager-1.54.0' "$ARTIFACTS/blfs-plasma33-progress.txt"
 NSS_CONFIG="$ARTIFACTS/blfs-plasma33-nss-config.txt"
-for expected in 'NSPR_VERSION=4.37' 'NSS_VERSION=3.115' 'NSS_SYSTEM_ZLIB=1' 'NSS_DISABLE_GTESTS=1' 'NSS_TESTS=not-run-gtests-disabled' 'NSS_TOOLS=installed-not-executed' 'P11_KIT=not-reconfigured'; do
+for expected in 'NSPR_VERSION=4.37.0' 'NSS_VERSION=3.115.0' 'NSS_SYSTEM_ZLIB=1' 'NSS_DISABLE_GTESTS=1' 'NSS_TESTS=not-run-gtests-disabled' 'NSS_TOOLS=installed-not-executed' 'P11_KIT=not-reconfigured'; do
   grep -qxF "$expected" "$NSS_CONFIG"
 done
 grep -qEx 'NSS_SYSTEM_SQLITE=[01]' "$NSS_CONFIG"
