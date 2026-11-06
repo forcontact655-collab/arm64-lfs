@@ -2363,7 +2363,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-plasma26:
+  blfs-plasma27:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -2374,25 +2374,25 @@ jobs:
             - blfs-12.4-plasma24-aarch64-v1-{{ checksum "scripts/build-blfs-plasma24-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma24.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-plasma26-sources-v1-{{ checksum "manifests/blfs-plasma26.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma26" }}-{{ checksum "scripts/fetch-blfs-plasma26-sources.sh" }}
+            - blfs-12.4-plasma26-sources-v1-{{ checksum "manifests/blfs-plasma27.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma27" }}-{{ checksum "scripts/fetch-blfs-plasma27-sources.sh" }}
       - run:
           name: Download and verify ZXing and Prison sources
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-plasma26-sources bash scripts/fetch-blfs-plasma26-sources.sh 2>&1 | tee artifacts/blfs-plasma26-sources-circleci.log
+            LFS=/home/circleci/blfs-plasma27-sources bash scripts/fetch-blfs-plasma27-sources.sh 2>&1 | tee artifacts/blfs-plasma27-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-plasma26-sources-v1-{{ checksum "manifests/blfs-plasma26.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma26" }}-{{ checksum "scripts/fetch-blfs-plasma26-sources.sh" }}
+          key: blfs-12.4-plasma26-sources-v1-{{ checksum "manifests/blfs-plasma27.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma27" }}-{{ checksum "scripts/fetch-blfs-plasma27-sources.sh" }}
           paths:
-            - /home/circleci/blfs-plasma26-sources
+            - /home/circleci/blfs-plasma27-sources
       - run:
           name: Build ZXing and Prison scanner without camera access
           no_output_timeout: 90m
           command: |
             set -o pipefail
-            bash scripts/run-blfs-plasma26.sh 2>&1 | tee artifacts/blfs-plasma26-host.log
+            bash scripts/run-blfs-plasma27.sh 2>&1 | tee artifacts/blfs-plasma27-host.log
       - save_cache:
-          key: blfs-12.4-plasma26-aarch64-v1-{{ checksum "scripts/build-blfs-plasma26-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma26.sh" }}
+          key: blfs-12.4-plasma26-aarch64-v1-{{ checksum "scripts/build-blfs-plasma27-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma27.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -2401,4 +2401,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma26
+      - blfs-plasma27
