@@ -72,14 +72,14 @@ REPORT="$ARTIFACTS/blfs-plasma7-report.txt"
 for expected in \
   'BLFS_PLASMA7_RESULT=ok' 'PACKAGE_COUNT=2' 'SOURCE_COUNT=2' 'ARCH=aarch64' \
   'NATIVE_BINARY_EXEC=BLFS_PLASMA7_EXEC_OK' \
-  'NATIVE_SMOKE_OUTPUT=BLFS_PLASMA7_EXEC_OK=6.9.2=KdePlatformThemePlugin=kde' \
+  'NATIVE_SMOKE_OUTPUT=BLFS_PLASMA7_EXEC_OK=6.9.2=offscreen=breeze' \
   'NATIVE_SMOKE_STATUS=0' 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' \
   'QT=6.9.2' 'PLASMA_VERSION=6.4.4' 'PACKAGES=kactivitymanagerd+plasma-integration' \
   'KACTIVITYMANAGERD=6.4.4' 'PLASMA_INTEGRATION=6.4.4' \
-  'NATIVE_SMOKE=native-qpluginloader-instance-no-gui-display-or-dbus' \
+  'NATIVE_SMOKE=native-offscreen-kde-platform-theme-icon-hint-no-display-or-dbus' \
   'ACTIVITY_SERVICE=installed-not-started-no-dbus' \
   'KACTIVITYMANAGERD_EXEC=not-run-service-has-no-version-only-mode' \
-  'PLATFORM_THEME_PLUGIN=native-load-and-instance-only-no-theme-session' \
+  'PLATFORM_THEME_PLUGIN=native-offscreen-theme-icon-hint-no-shell-session' \
   'QT5=not-built-BUILD_QT5_OFF' 'TEST_SUITES=not-run-BUILD_TESTING_OFF' \
   'SYSTEMD_USER_UNITS=removed-sysv-inapplicable' 'PLASMA6=preserved-pipeline-183' \
   'PLASMA_DESKTOP=preserved-not-rebuilt-not-running' 'KWIN=preserved-not-rebuilt-not-running' \

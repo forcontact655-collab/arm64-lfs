@@ -99,8 +99,8 @@ readelf -l /opt/kf6/libexec/kactivitymanagerd | grep -q '/lib/ld-linux-aarch64.s
 printf 'PLASMA7_POSTCHECK=service-and-integration-files\n'
 
 # kactivitymanagerd has no version-only mode: its main() immediately initializes
-# the service and D-Bus registration. Do not execute it here. Instead load and
-# instantiate only the new Qt platform-theme plugin under QCoreApplication.
+# the service and D-Bus registration. Do not execute it here. Load the new
+# platform theme through Qt itself with the offscreen QPA and no real display.
 rm -rf /tmp/blfs-plasma7-smoke /tmp/blfs-plasma7-smoke-build \
   /tmp/blfs-plasma7-home /tmp/blfs-plasma7-runtime /tmp/blfs-plasma7-smoke-stderr.log
 mkdir -p /tmp/blfs-plasma7-smoke /tmp/blfs-plasma7-home/.config \
@@ -108,33 +108,24 @@ mkdir -p /tmp/blfs-plasma7-smoke /tmp/blfs-plasma7-home/.config \
 cat >/tmp/blfs-plasma7-smoke/CMakeLists.txt <<'EOF'
 cmake_minimum_required(VERSION 3.22)
 project(blfs_plasma7_smoke LANGUAGES CXX)
-find_package(Qt6 6.9.2 REQUIRED COMPONENTS Core)
+find_package(Qt6 6.9.2 REQUIRED COMPONENTS Core Gui)
 add_executable(blfs-plasma7-smoke main.cpp)
-target_link_libraries(blfs-plasma7-smoke PRIVATE Qt6::Core)
+target_link_libraries(blfs-plasma7-smoke PRIVATE Qt6::Core Qt6::Gui)
 EOF
 cat >/tmp/blfs-plasma7-smoke/main.cpp <<'EOF'
-#include <QCoreApplication>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QJsonValue>
-#include <QPluginLoader>
-#include <QObject>
+#include <QGuiApplication>
+#include <QIcon>
+#include <QString>
 #include <QtGlobal>
 #include <cstdio>
-#include <cstring>
 int main(int argc, char **argv) {
-  QCoreApplication app(argc, argv);
-  if (argc != 2) return 1;
-  QPluginLoader loader(QString::fromLocal8Bit(argv[1]));
-  const QJsonObject metadata = loader.metaData().value(QStringLiteral("MetaData")).toObject();
-  if (!metadata.value(QStringLiteral("Keys")).toArray().contains(QJsonValue(QStringLiteral("kde")))) return 2;
-  if (!loader.load()) return 3;
-  QObject *instance = loader.instance();
-  if (!instance) return 4;
-  const char *className = instance->metaObject()->className();
-  if (std::strcmp(className, "KdePlatformThemePlugin") != 0) return 5;
-  std::printf("BLFS_PLASMA7_EXEC_OK=%s=%s=kde\n", qVersion(), className);
-  if (!loader.unload()) return 6;
+  QGuiApplication app(argc, argv);
+  if (QGuiApplication::platformName() != QStringLiteral("offscreen")) return 1;
+  std::fprintf(stderr, "PLASMA7_SMOKE_STAGE=qgui-offscreen\n");
+  const QString iconTheme = QIcon::themeName();
+  std::fprintf(stderr, "PLASMA7_SMOKE_ICON_THEME=%s\n", qPrintable(iconTheme));
+  if (iconTheme != QStringLiteral("breeze")) return 2;
+  std::printf("BLFS_PLASMA7_EXEC_OK=%s=offscreen=breeze\n", qVersion());
   return 0;
 }
 EOF
@@ -145,6 +136,8 @@ install -d -m0700 /tmp/blfs-plasma7-runtime
 set +e
 NATIVE_SMOKE_OUTPUT="$(env -u DISPLAY -u WAYLAND_DISPLAY -u DBUS_SESSION_BUS_ADDRESS \
   HOME=/tmp/blfs-plasma7-home LC_ALL=C.UTF-8 NO_AT_BRIDGE=1 \
+  QT_QPA_PLATFORM=offscreen QT_QPA_PLATFORMTHEME=kde \
+  QT_QUICK_BACKEND=software LIBGL_ALWAYS_SOFTWARE=1 \
   XDG_RUNTIME_DIR=/tmp/blfs-plasma7-runtime \
   XDG_CONFIG_HOME=/tmp/blfs-plasma7-home/.config \
   XDG_CACHE_HOME=/tmp/blfs-plasma7-home/.cache \
@@ -153,14 +146,13 @@ NATIVE_SMOKE_OUTPUT="$(env -u DISPLAY -u WAYLAND_DISPLAY -u DBUS_SESSION_BUS_ADD
   QT_PLUGIN_PATH=/opt/kf6/lib/plugins:/opt/qt6/plugins \
   LD_LIBRARY_PATH=/opt/kf6/lib:/opt/qt6/lib:/usr/lib64:/usr/lib \
   /tmp/blfs-plasma7-smoke-build/blfs-plasma7-smoke \
-  /opt/kf6/lib/plugins/platformthemes/KDEPlasmaPlatformTheme6.so \
   2>/tmp/blfs-plasma7-smoke-stderr.log)"
 NATIVE_STATUS=$?
 set -e
 cat /tmp/blfs-plasma7-smoke-stderr.log
 printf 'NATIVE_SMOKE_STATUS=%s\nNATIVE_SMOKE_OUTPUT=%s\n' "$NATIVE_STATUS" "$NATIVE_SMOKE_OUTPUT"
 [[ "$NATIVE_STATUS" -eq 0 ]]
-[[ "$NATIVE_SMOKE_OUTPUT" == BLFS_PLASMA7_EXEC_OK=6.9.2=KdePlatformThemePlugin=kde ]]
+[[ "$NATIVE_SMOKE_OUTPUT" == BLFS_PLASMA7_EXEC_OK=6.9.2=offscreen=breeze ]]
 readelf -h /tmp/blfs-plasma7-smoke-build/blfs-plasma7-smoke | grep -q 'Machine:.*AArch64'
 INTERPRETER="$(readelf -l /tmp/blfs-plasma7-smoke-build/blfs-plasma7-smoke | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
 [[ "$INTERPRETER" == /lib/ld-linux-aarch64.so.1 ]]
@@ -168,9 +160,9 @@ INTERPRETER="$(readelf -l /tmp/blfs-plasma7-smoke-build/blfs-plasma7-smoke | sed
   printf 'BLFS_PLASMA7_RESULT=ok\nPACKAGE_COUNT=2\nSOURCE_COUNT=2\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=BLFS_PLASMA7_EXEC_OK\nNATIVE_SMOKE_OUTPUT=%s\nNATIVE_SMOKE_STATUS=0\nDYNAMIC_LINKER=%s\n' "$NATIVE_SMOKE_OUTPUT" "$INTERPRETER"
   printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=kactivitymanagerd+plasma-integration\nKACTIVITYMANAGERD=6.4.4\nPLASMA_INTEGRATION=6.4.4\n'
-  printf 'NATIVE_SMOKE=native-qpluginloader-instance-no-gui-display-or-dbus\n'
+  printf 'NATIVE_SMOKE=native-offscreen-kde-platform-theme-icon-hint-no-display-or-dbus\n'
   printf 'ACTIVITY_SERVICE=installed-not-started-no-dbus\nKACTIVITYMANAGERD_EXEC=not-run-service-has-no-version-only-mode\n'
-  printf 'PLATFORM_THEME_PLUGIN=native-load-and-instance-only-no-theme-session\nQT5=not-built-BUILD_QT5_OFF\n'
+  printf 'PLATFORM_THEME_PLUGIN=native-offscreen-theme-icon-hint-no-shell-session\nQT5=not-built-BUILD_QT5_OFF\n'
   printf 'TEST_SUITES=not-run-BUILD_TESTING_OFF\nSYSTEMD_USER_UNITS=removed-sysv-inapplicable\n'
   printf 'PLASMA6=preserved-pipeline-183\nPLASMA_DESKTOP=preserved-not-rebuilt-not-running\n'
   printf 'KWIN=preserved-not-rebuilt-not-running\nPLASMASHELL=not-started\nSTARTPLASMA=not-run\nCOMPOSITOR=not-started\n'
