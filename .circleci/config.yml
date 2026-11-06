@@ -2258,7 +2258,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-plasma16:
+  blfs-plasma17:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -2266,28 +2266,28 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-plasma15-aarch64-v1-{{ checksum "scripts/build-blfs-plasma15-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma15.sh" }}
+            - blfs-12.4-plasma16-aarch64-v1-{{ checksum "scripts/build-blfs-plasma16-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma16.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-plasma16-sources-v1-{{ checksum "manifests/blfs-plasma16.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma16" }}-{{ checksum "scripts/fetch-blfs-plasma16-sources.sh" }}
+            - blfs-12.4-plasma17-sources-v1-{{ checksum "manifests/blfs-plasma17.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma17" }}-{{ checksum "scripts/fetch-blfs-plasma17-sources.sh" }}
       - run:
-          name: Download and verify Plasma Vault source
+          name: Download and verify CUPS Qt base and KDE portal sources
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-plasma16-sources bash scripts/fetch-blfs-plasma16-sources.sh 2>&1 | tee artifacts/blfs-plasma16-sources-circleci.log
+            LFS=/home/circleci/blfs-plasma17-sources bash scripts/fetch-blfs-plasma17-sources.sh 2>&1 | tee artifacts/blfs-plasma17-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-plasma16-sources-v1-{{ checksum "manifests/blfs-plasma16.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma16" }}-{{ checksum "scripts/fetch-blfs-plasma16-sources.sh" }}
+          key: blfs-12.4-plasma17-sources-v1-{{ checksum "manifests/blfs-plasma17.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma17" }}-{{ checksum "scripts/fetch-blfs-plasma17-sources.sh" }}
           paths:
-            - /home/circleci/blfs-plasma16-sources
+            - /home/circleci/blfs-plasma17-sources
       - run:
-          name: Build Plasma Vault plugins without vault operations
+          name: Build CUPS Qt base and KDE portal without printing or portal activation
           no_output_timeout: 90m
           command: |
             set -o pipefail
-            bash scripts/run-blfs-plasma16.sh 2>&1 | tee artifacts/blfs-plasma16-host.log
+            bash scripts/run-blfs-plasma17.sh 2>&1 | tee artifacts/blfs-plasma17-host.log
       - save_cache:
-          key: blfs-12.4-plasma16-aarch64-v1-{{ checksum "scripts/build-blfs-plasma16-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma16.sh" }}
+          key: blfs-12.4-plasma17-aarch64-v1-{{ checksum "scripts/build-blfs-plasma17-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma17.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -2296,4 +2296,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma16
+      - blfs-plasma17
