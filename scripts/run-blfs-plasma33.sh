@@ -99,7 +99,7 @@ for expected in \
   'NATIVE_BINARY_EXEC=not-run-new-installed-tools-post-install' 'NEW_EXECUTABLES=installed-not-executed' \
   'ELF_ARCH=AArch64' 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' \
   'PACKAGES=NSPR,NSS,libndp,NetworkManager' 'NSPR=4.37' 'NSS=3.115' 'LIBNDP=1.9' 'NETWORKMANAGER=1.54.0' 'LIBNM=1.54.0' \
-  'NSPR_TOOLS=installed-not-executed' 'NSS_SYSTEM_ZLIB=1' 'NSS_DISABLE_GTESTS=1' 'NSS_TESTS=not-run-gtests-disabled' 'NSS_TOOLS=installed-not-executed' 'P11_KIT=not-reconfigured' \
+  'NSPR_TOOLS=installed-not-executed' 'NSS_USE_64=1' 'NSS_SYSTEM_ZLIB=1' 'NSS_DISABLE_GTESTS=1' 'NSS_TESTS=not-run-gtests-disabled' 'NSS_TOOLS=installed-not-executed' 'P11_KIT=not-reconfigured' \
   'NETWORKMANAGER_RUNTIME=not-started' 'NMCLI=installed-not-executed' 'NM_ONLINE=installed-not-executed' 'NDPTOOL=installed-not-executed' \
   'DBUS_SERVICES=installed-not-activated' 'UDEV_RULES=installed-not-reloaded' 'NETWORK_INTERFACES=not-accessed' 'LIVE_NETWORK_CONFIGURATION=not-changed' \
   'SESSION_TRACKING=no-logind' 'NMTUI=not-built-newt-absent' 'SYSTEMD_UNIT=not-installed' 'MODEM_MANAGER=false' 'PPP=false' 'OVS=false' 'NM_CLOUD_SETUP=false' 'NBFT=false' 'TEST_SUITES=not-run-disabled' \
@@ -115,7 +115,7 @@ grep -qx 'BLFS_PLASMA33_BUILT=NSS-3.115' "$ARTIFACTS/blfs-plasma33-progress.txt"
 grep -qx 'BLFS_PLASMA33_BUILT=libndp-1.9' "$ARTIFACTS/blfs-plasma33-progress.txt"
 grep -qx 'BLFS_PLASMA33_BUILT=NetworkManager-1.54.0' "$ARTIFACTS/blfs-plasma33-progress.txt"
 NSS_CONFIG="$ARTIFACTS/blfs-plasma33-nss-config.txt"
-for expected in 'NSPR_VERSION=4.37.0' 'NSS_VERSION=3.115.0' 'NSS_SYSTEM_ZLIB=1' 'NSS_DISABLE_GTESTS=1' 'NSS_TESTS=not-run-gtests-disabled' 'NSS_TOOLS=installed-not-executed' 'P11_KIT=not-reconfigured'; do
+for expected in 'NSPR_VERSION=4.37.0' 'NSS_VERSION=3.115.0' 'NSS_USE_64=1' 'NSS_SYSTEM_ZLIB=1' 'NSS_DISABLE_GTESTS=1' 'NSS_TESTS=not-run-gtests-disabled' 'NSS_TOOLS=installed-not-executed' 'P11_KIT=not-reconfigured'; do
   grep -qxF "$expected" "$NSS_CONFIG"
 done
 grep -qEx 'NSS_SYSTEM_SQLITE=[01]' "$NSS_CONFIG"

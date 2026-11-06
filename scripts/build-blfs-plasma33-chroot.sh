@@ -101,6 +101,7 @@ cd nss
 NSS_SQLITE=()
 if [[ -f /usr/include/sqlite3.h ]]; then NSS_SQLITE=(NSS_USE_SYSTEM_SQLITE=1); fi
 make -j2 BUILD_OPT=1 \
+  USE_64=1 \
   NSPR_INCLUDE_DIR=/usr/include/nspr \
   USE_SYSTEM_ZLIB=1 \
   ZLIB_LIBS=-lz \
@@ -125,7 +126,7 @@ done
 [[ "$(pkg-config --modversion nss)" == 3.115.0 ]]
 {
   printf 'NSPR_VERSION=%s\nNSS_VERSION=%s\n' "$(pkg-config --modversion nspr)" "$(pkg-config --modversion nss)"
-  printf 'NSS_SYSTEM_ZLIB=1\nNSS_DISABLE_GTESTS=1\nNSS_TESTS=not-run-gtests-disabled\nNSS_TOOLS=installed-not-executed\nP11_KIT=not-reconfigured\n'
+  printf 'NSS_USE_64=1\nNSS_SYSTEM_ZLIB=1\nNSS_DISABLE_GTESTS=1\nNSS_TESTS=not-run-gtests-disabled\nNSS_TOOLS=installed-not-executed\nP11_KIT=not-reconfigured\n'
   if [[ -f /usr/include/sqlite3.h ]]; then printf 'NSS_SYSTEM_SQLITE=1\n'; else printf 'NSS_SYSTEM_SQLITE=0\n'; fi
 } >"$NSS_CONFIG"
 printf 'BLFS_PLASMA33_BUILT=NSS-3.115\n' >>"$PROGRESS"
@@ -272,7 +273,7 @@ printf 'PLASMA33_POSTCHECK=nspr-nss-libndp-networkmanager-aarch64-files-static-o
   printf 'BLFS_PLASMA33_RESULT=ok\nPACKAGE_COUNT=4\nSOURCE_COUNT=5\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=not-run-new-installed-tools-post-install\nNEW_EXECUTABLES=installed-not-executed\nELF_ARCH=AArch64\nDYNAMIC_LINKER=%s\n' "$INTERPRETER"
   printf 'PACKAGES=NSPR,NSS,libndp,NetworkManager\nNSPR=4.37\nNSS=3.115\nLIBNDP=1.9\nNETWORKMANAGER=1.54.0\nLIBNM=1.54.0\nELF_FILE_COUNT=%s\n' "$ELF_COUNT"
-  printf 'NSPR_TOOLS=installed-not-executed\nNSS_SYSTEM_ZLIB=1\nNSS_DISABLE_GTESTS=1\nNSS_TESTS=not-run-gtests-disabled\nNSS_TOOLS=installed-not-executed\nP11_KIT=not-reconfigured\n'
+  printf 'NSPR_TOOLS=installed-not-executed\nNSS_USE_64=1\nNSS_SYSTEM_ZLIB=1\nNSS_DISABLE_GTESTS=1\nNSS_TESTS=not-run-gtests-disabled\nNSS_TOOLS=installed-not-executed\nP11_KIT=not-reconfigured\n'
   printf 'NETWORKMANAGER_RUNTIME=not-started\nNMCLI=installed-not-executed\nNM_ONLINE=installed-not-executed\nNDPTOOL=installed-not-executed\nDBUS_SERVICES=installed-not-activated\nUDEV_RULES=installed-not-reloaded\nNETWORK_INTERFACES=not-accessed\nLIVE_NETWORK_CONFIGURATION=not-changed\n'
   printf 'SESSION_TRACKING=no-logind\nNMTUI=not-built-newt-absent\nSYSTEMD_UNIT=not-installed\nMODEM_MANAGER=false\nPPP=false\nOVS=false\nNM_CLOUD_SETUP=false\nNBFT=false\nTEST_SUITES=not-run-disabled\n'
   printf 'OFFICIAL_PLASMA_ACTIVE=56\nOFFICIAL_PLASMA_BUILDABLE_COVERED=54\nOFFICIAL_PLASMA_DEFERRED=2\nOFFICIAL_PLASMA_COMMENTED_OUT=13-not-in-blfs-install-order\n'
