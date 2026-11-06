@@ -2153,7 +2153,42 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-plasma7:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma6-aarch64-v1-{{ checksum "scripts/build-blfs-plasma6-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma6.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma7-sources-v1-{{ checksum "manifests/blfs-plasma7.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma7" }}-{{ checksum "scripts/fetch-blfs-plasma7-sources.sh" }}
+      - run:
+          name: Download and verify Plasma service and integration sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-plasma7-sources bash scripts/fetch-blfs-plasma7-sources.sh 2>&1 | tee artifacts/blfs-plasma7-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-plasma7-sources-v1-{{ checksum "manifests/blfs-plasma7.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma7" }}-{{ checksum "scripts/fetch-blfs-plasma7-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-plasma7-sources
+      - run:
+          name: Build Activity Manager and Plasma Integration without starting services
+          no_output_timeout: 90m
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-plasma7.sh 2>&1 | tee artifacts/blfs-plasma7-host.log
+      - save_cache:
+          key: blfs-12.4-plasma7-aarch64-v1-{{ checksum "scripts/build-blfs-plasma7-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma7.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma6
+      - blfs-plasma7
