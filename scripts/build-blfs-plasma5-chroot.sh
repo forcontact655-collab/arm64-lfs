@@ -34,6 +34,7 @@ done
 for path in \
   /opt/qt6/lib/cmake/Qt6Location/Qt6LocationConfig.cmake \
   /opt/qt6/lib/cmake/Qt6Positioning/Qt6PositioningConfig.cmake \
+  /opt/qt6/lib/cmake/Qt6PositioningQuick/Qt6PositioningQuickConfig.cmake \
   /opt/kf6/bin/plasmashell \
   /opt/kf6/lib/cmake/LibKWorkspace/LibKWorkspaceConfig.cmake; do
   [[ ! -e "$path" && ! -L "$path" ]]
@@ -58,8 +59,32 @@ finish_package() {
   /sbin/ldconfig
 }
 
-# plasma-workspace requires Qt Location and Positioning. Build their official
-# Qt 6.9.2 submodule archive against the already accepted modular Qt prefix.
+# Qt Location is a separate submodule and refuses to build unless Positioning
+# and PositioningQuick already exist. Build the official Positioning archive
+# first rather than accepting qtlocation's silent "no work to do" path.
+extract_package qtpositioning-everywhere-src-6.9.2.tar.xz qtpositioning-everywhere-src-6.9.2
+mkdir build
+cd build
+printf 'BUILD_BLFS_PLASMA5=qtpositioning\n'
+/opt/qt6/bin/qt-configure-module "$SOURCES/$EXTRACTED_DIR" -- \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DQT_BUILD_EXAMPLES=OFF \
+  -DQT_BUILD_TESTS=OFF \
+  -DQT_BUILD_MANUAL_TESTS=OFF \
+  -DQT_GENERATE_SBOM=OFF
+ninja
+ninja install
+finish_package
+for path in \
+  /opt/qt6/lib/libQt6Positioning.so \
+  /opt/qt6/lib/libQt6PositioningQuick.so \
+  /opt/qt6/lib/cmake/Qt6Positioning/Qt6PositioningConfig.cmake \
+  /opt/qt6/lib/cmake/Qt6PositioningQuick/Qt6PositioningQuickConfig.cmake; do
+  [[ -e "$path" ]]
+done
+find /opt/qt6 -name '*Positioning*.prl' -exec sed -i -e '/^QMAKE_PRL_BUILD_DIR/d' '{}' \;
+
+# Now build Qt Location against the accepted Qt prefix and new Positioning.
 extract_package qtlocation-everywhere-src-6.9.2.tar.xz qtlocation-everywhere-src-6.9.2
 mkdir build
 cd build
@@ -98,14 +123,16 @@ ninja install
 finish_package
 rm -rf /opt/kf6/lib/systemd
 /sbin/ldconfig
-[[ "$(grep -c '^BLFS_PLASMA5_BUILT=' "$PROGRESS")" -eq 2 ]]
+[[ "$(grep -c '^BLFS_PLASMA5_BUILT=' "$PROGRESS")" -eq 3 ]]
 
 printf 'PLASMA5_POSTCHECK=qtlocation\n'
 for path in \
   /opt/qt6/lib/libQt6Location.so \
   /opt/qt6/lib/libQt6Positioning.so \
+  /opt/qt6/lib/libQt6PositioningQuick.so \
   /opt/qt6/lib/cmake/Qt6Location/Qt6LocationConfig.cmake \
-  /opt/qt6/lib/cmake/Qt6Positioning/Qt6PositioningConfig.cmake; do
+  /opt/qt6/lib/cmake/Qt6Positioning/Qt6PositioningConfig.cmake \
+  /opt/qt6/lib/cmake/Qt6PositioningQuick/Qt6PositioningQuickConfig.cmake; do
   [[ -e "$path" ]]
 done
 printf 'PLASMA5_POSTCHECK=workspace-files\n'
@@ -213,10 +240,10 @@ INTERPRETER="$(readelf -l /tmp/blfs-plasma5-smoke-build/blfs-plasma5-smoke | sed
 [[ "$INTERPRETER" == /lib/ld-linux-aarch64.so.1 ]]
 
 {
-  printf 'BLFS_PLASMA5_RESULT=ok\nPACKAGE_COUNT=2\nSOURCE_COUNT=2\nARCH=%s\n' "$(uname -m)"
+  printf 'BLFS_PLASMA5_RESULT=ok\nPACKAGE_COUNT=3\nSOURCE_COUNT=3\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=BLFS_PLASMA5_EXEC_OK\nNATIVE_SMOKE_OUTPUT=%s\nNATIVE_SMOKE_STATUS=0\nDYNAMIC_LINKER=%s\n' "$OUTPUT" "$INTERPRETER"
-  printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=qtlocation+plasma-workspace\n'
-  printf 'QTLOCATION=6.9.2\nPLASMA_WORKSPACE=6.4.4\n'
+  printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=qtpositioning+qtlocation+plasma-workspace\n'
+  printf 'QTPOSITIONING=6.9.2\nQTLOCATION=6.9.2\nPLASMA_WORKSPACE=6.4.4\n'
   printf 'QT_LOCATION_SMOKE=native-coordinate-and-location-type-no-provider\n'
   printf 'KWORKSPACE_SMOKE=native-autostart-path-no-file-or-session\n'
   printf 'NATIVE_SMOKE=cmake-targets+execution-no-shell-or-session\n'

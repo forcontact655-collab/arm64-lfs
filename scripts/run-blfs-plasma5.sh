@@ -21,11 +21,12 @@ done
 for path in \
   "$LFS/opt/qt6/lib/cmake/Qt6Location/Qt6LocationConfig.cmake" \
   "$LFS/opt/qt6/lib/cmake/Qt6Positioning/Qt6PositioningConfig.cmake" \
+  "$LFS/opt/qt6/lib/cmake/Qt6PositioningQuick/Qt6PositioningQuickConfig.cmake" \
   "$LFS/opt/kf6/bin/plasmashell" \
   "$LFS/opt/kf6/lib/cmake/LibKWorkspace/LibKWorkspaceConfig.cmake"; do
   [[ ! -e "$path" && ! -L "$path" ]] || preflight_fail "existing-$path"
 done
-for name in qtlocation-everywhere-src-6.9.2.tar.xz plasma-workspace-6.4.4.tar.xz; do
+for name in qtpositioning-everywhere-src-6.9.2.tar.xz qtlocation-everywhere-src-6.9.2.tar.xz plasma-workspace-6.4.4.tar.xz; do
   [[ -f "$HOST_SOURCES/$name" ]] || preflight_fail "missing-source-$name"
 done
 printf 'BLFS_PLASMA5_RUN_PRECONDITIONS=ok\n'
@@ -71,12 +72,12 @@ sudo -n rm -f "$LFS/root/build-blfs-plasma5-chroot.sh" \
   "$LFS/root/blfs-plasma5-report.txt" "$LFS/root/blfs-plasma5-progress.txt"
 REPORT="$ARTIFACTS/blfs-plasma5-report.txt"
 for expected in \
-  'BLFS_PLASMA5_RESULT=ok' 'PACKAGE_COUNT=2' 'SOURCE_COUNT=2' 'ARCH=aarch64' \
+  'BLFS_PLASMA5_RESULT=ok' 'PACKAGE_COUNT=3' 'SOURCE_COUNT=3' 'ARCH=aarch64' \
   'NATIVE_BINARY_EXEC=BLFS_PLASMA5_EXEC_OK' \
   'NATIVE_SMOKE_OUTPUT=BLFS_PLASMA5_EXEC_OK=6.9.2=geo-coordinate=location-type=kworkspace-autostart-path' \
   'NATIVE_SMOKE_STATUS=0' 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' \
-  'QT=6.9.2' 'PLASMA_VERSION=6.4.4' 'PACKAGES=qtlocation+plasma-workspace' \
-  'QTLOCATION=6.9.2' 'PLASMA_WORKSPACE=6.4.4' \
+  'QT=6.9.2' 'PLASMA_VERSION=6.4.4' 'PACKAGES=qtpositioning+qtlocation+plasma-workspace' \
+  'QTPOSITIONING=6.9.2' 'QTLOCATION=6.9.2' 'PLASMA_WORKSPACE=6.4.4' \
   'QT_LOCATION_SMOKE=native-coordinate-and-location-type-no-provider' \
   'KWORKSPACE_SMOKE=native-autostart-path-no-file-or-session' \
   'NATIVE_SMOKE=cmake-targets+execution-no-shell-or-session' \
@@ -88,5 +89,5 @@ for expected in \
   'CAMERA=not-accessed' 'SMOKE_NETWORK=not-used' 'BOOTABLE=no'; do
   grep -qxF "$expected" "$REPORT"
 done
-[[ "$(grep -c '^BLFS_PLASMA5_BUILT=' "$ARTIFACTS/blfs-plasma5-progress.txt")" -eq 2 ]]
+[[ "$(grep -c '^BLFS_PLASMA5_BUILT=' "$ARTIFACTS/blfs-plasma5-progress.txt")" -eq 3 ]]
 cat "$REPORT"
