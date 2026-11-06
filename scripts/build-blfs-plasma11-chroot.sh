@@ -99,7 +99,7 @@ rm -rf /opt/kf6/lib/systemd
 PAM_MODULE=/opt/kf6/lib/security/pam_kwallet5.so
 PAM_INIT=/opt/kf6/libexec/pam_kwallet_init
 [[ -f "$PAM_MODULE" && -x "$PAM_INIT" ]]
-[[ -f /opt/kf6/share/autostart/pam_kwallet_init.desktop ]]
+[[ -f /opt/kf6/etc/xdg/autostart/pam_kwallet_init.desktop ]]
 readelf -h "$PAM_MODULE" | grep -q 'Machine:.*AArch64'
 for symbol in pam_sm_authenticate pam_sm_open_session pam_sm_close_session pam_sm_setcred pam_sm_chauthtok; do
   readelf --wide -Ws "$PAM_MODULE" | grep -Eq "[[:space:]]${symbol}$"
