@@ -2258,7 +2258,42 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-plasma10:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma9-aarch64-v1-{{ checksum "scripts/build-blfs-plasma9-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma9.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma10-sources-v1-{{ checksum "manifests/blfs-plasma10.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma10" }}-{{ checksum "scripts/fetch-blfs-plasma10-sources.sh" }}
+      - run:
+          name: Download and verify KWrited and Milou sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-plasma10-sources bash scripts/fetch-blfs-plasma10-sources.sh 2>&1 | tee artifacts/blfs-plasma10-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-plasma10-sources-v1-{{ checksum "manifests/blfs-plasma10.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma10" }}-{{ checksum "scripts/fetch-blfs-plasma10-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-plasma10-sources
+      - run:
+          name: Build KWrited and Milou plugins without starting services
+          no_output_timeout: 90m
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-plasma10.sh 2>&1 | tee artifacts/blfs-plasma10-host.log
+      - save_cache:
+          key: blfs-12.4-plasma10-aarch64-v1-{{ checksum "scripts/build-blfs-plasma10-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma10.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma9
+      - blfs-plasma10
