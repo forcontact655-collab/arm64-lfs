@@ -124,7 +124,11 @@ QT_VERSION="$(/opt/qt6/bin/qmake6 -query QT_VERSION)"
 QTPS=/opt/qt6/lib/libQt6PrintSupport.so.6.9.2
 QCUPS_HEADER=/opt/qt6/include/QtPrintSupport/6.9.2/QtPrintSupport/private/qcups_p.h
 [[ -f "$QTPS" && -f "$QCUPS_HEADER" ]]
-nm -D --defined-only "$QTPS" | c++filt | grep -q 'QCUPSSupport::setPageSet'
+QT_SYMBOLS=/tmp/blfs-plasma17-qtprintsupport-symbols.txt
+nm -D --defined-only "$QTPS" | c++filt >"$QT_SYMBOLS"
+grep -q 'QCUPSSupport::setPageSet' "$QT_SYMBOLS"
+rm -f "$QT_SYMBOLS"
+printf 'QT_CUPS_POSTCHECK=symbols-exported\n'
 readelf -d "$QTPS" | grep -q 'NEEDED.*libcups\.so\.2'
 
 printf 'BUILD_BLFS_PLASMA17=xdg-desktop-portal-kde\n'
