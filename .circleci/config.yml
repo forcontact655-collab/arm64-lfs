@@ -2223,7 +2223,42 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-plasma9:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma8-aarch64-v1-{{ checksum "scripts/build-blfs-plasma8-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma8.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma9-sources-v1-{{ checksum "manifests/blfs-plasma9.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma9" }}-{{ checksum "scripts/fetch-blfs-plasma9-sources.sh" }}
+      - run:
+          name: Download and verify Plasma menu and screen sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-plasma9-sources bash scripts/fetch-blfs-plasma9-sources.sh 2>&1 | tee artifacts/blfs-plasma9-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-plasma9-sources-v1-{{ checksum "manifests/blfs-plasma9.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma9" }}-{{ checksum "scripts/fetch-blfs-plasma9-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-plasma9-sources
+      - run:
+          name: Build KMenuEdit and KScreen without display backends
+          no_output_timeout: 90m
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-plasma9.sh 2>&1 | tee artifacts/blfs-plasma9-host.log
+      - save_cache:
+          key: blfs-12.4-plasma9-aarch64-v1-{{ checksum "scripts/build-blfs-plasma9-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma9.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma8
+      - blfs-plasma9
