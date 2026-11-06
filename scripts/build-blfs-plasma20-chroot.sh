@@ -69,12 +69,17 @@ cmake -G Ninja \
   -D BUILD_TESTING=OFF \
   -D WITH_SIMULATION=OFF \
   -W no-dev ..
-grep -qx 'WITH_SIMULATION:BOOL=OFF' CMakeCache.txt
+# cmake_dependent_option may keep a different cache representation in
+# Release.  Verify the generated build graph instead of that cache spelling.
+if grep -Eq 'simulation(devicenotifier|ctl|\.qrc)' build.ninja; then
+  printf 'UNEXPECTED_DISKS_SIMULATION_SOURCE=present\n' >&2
+  exit 1
+fi
 {
   grep -E '^(smartctl_EXE|WITH_SIMULATION|CMAKE_INSTALL_PREFIX)' CMakeCache.txt || true
-  printf 'DISKS_RUNTIME=not-started\n'
+  printf 'DISKS_RUNTIME=not-started\nSIMULATION_SOURCES=excluded\n'
 } >"$DISKS_CONFIG"
-grep -qx 'WITH_SIMULATION:BOOL=OFF' "$DISKS_CONFIG"
+grep -qx 'SIMULATION_SOURCES=excluded' "$DISKS_CONFIG"
 grep -qx 'DISKS_RUNTIME=not-started' "$DISKS_CONFIG"
 ninja
 ninja install

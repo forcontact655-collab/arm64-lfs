@@ -95,7 +95,7 @@ for expected in \
   grep -qxF "$expected" "$REPORT"
 done
 [[ "$(grep -c '^BLFS_PLASMA20_BUILT=' "$ARTIFACTS/blfs-plasma20-progress.txt")" -eq 2 ]]
-grep -qx 'WITH_SIMULATION:BOOL=OFF' "$ARTIFACTS/blfs-plasma20-disks-config.txt"
+grep -qx 'SIMULATION_SOURCES=excluded' "$ARTIFACTS/blfs-plasma20-disks-config.txt"
 grep -qx 'DISKS_RUNTIME=not-started' "$ARTIFACTS/blfs-plasma20-disks-config.txt"
 grep -Eq '^Sass_EXECUTABLE(:[^=]+)?=/usr/bin/sassc$' "$ARTIFACTS/blfs-plasma20-gtk-config.txt"
 grep -qx 'GTK_SETTINGS=not-applied' "$ARTIFACTS/blfs-plasma20-gtk-config.txt"
