@@ -2363,7 +2363,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-plasma24:
+  blfs-plasma25:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -2371,28 +2371,28 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-plasma23-aarch64-v1-{{ checksum "scripts/build-blfs-plasma23-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma23.sh" }}
+            - blfs-12.4-plasma24-aarch64-v1-{{ checksum "scripts/build-blfs-plasma24-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma24.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-plasma24-sources-v1-{{ checksum "manifests/blfs-plasma24.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma24" }}-{{ checksum "scripts/fetch-blfs-plasma24-sources.sh" }}
+            - blfs-12.4-plasma25-sources-v1-{{ checksum "manifests/blfs-plasma25.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma25" }}-{{ checksum "scripts/fetch-blfs-plasma25-sources.sh" }}
       - run:
-          name: Download and verify Oxygen sources
+          name: Download and verify Spectacle sources
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-plasma24-sources bash scripts/fetch-blfs-plasma24-sources.sh 2>&1 | tee artifacts/blfs-plasma24-sources-circleci.log
+            LFS=/home/circleci/blfs-plasma25-sources bash scripts/fetch-blfs-plasma25-sources.sh 2>&1 | tee artifacts/blfs-plasma25-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-plasma24-sources-v1-{{ checksum "manifests/blfs-plasma24.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma24" }}-{{ checksum "scripts/fetch-blfs-plasma24-sources.sh" }}
+          key: blfs-12.4-plasma25-sources-v1-{{ checksum "manifests/blfs-plasma25.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma25" }}-{{ checksum "scripts/fetch-blfs-plasma25-sources.sh" }}
           paths:
-            - /home/circleci/blfs-plasma24-sources
+            - /home/circleci/blfs-plasma25-sources
       - run:
-          name: Build Oxygen without UI execution or theme application
+          name: Build Spectacle without capture or UI execution
           no_output_timeout: 90m
           command: |
             set -o pipefail
-            bash scripts/run-blfs-plasma24.sh 2>&1 | tee artifacts/blfs-plasma24-host.log
+            bash scripts/run-blfs-plasma25.sh 2>&1 | tee artifacts/blfs-plasma25-host.log
       - save_cache:
-          key: blfs-12.4-plasma24-aarch64-v1-{{ checksum "scripts/build-blfs-plasma24-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma24.sh" }}
+          key: blfs-12.4-plasma25-aarch64-v1-{{ checksum "scripts/build-blfs-plasma25-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma25.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -2401,4 +2401,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma24
+      - blfs-plasma25
