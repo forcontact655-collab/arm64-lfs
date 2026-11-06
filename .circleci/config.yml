@@ -2363,7 +2363,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-plasma22:
+  blfs-plasma23:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -2371,28 +2371,28 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-plasma21-aarch64-v1-{{ checksum "scripts/build-blfs-plasma21-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma21.sh" }}
+            - blfs-12.4-plasma22-aarch64-v1-{{ checksum "scripts/build-blfs-plasma22-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma22.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-plasma22-sources-v1-{{ checksum "manifests/blfs-plasma22.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma22" }}-{{ checksum "scripts/fetch-blfs-plasma22-sources.sh" }}
+            - blfs-12.4-plasma23-sources-v1-{{ checksum "manifests/blfs-plasma23.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma23" }}-{{ checksum "scripts/fetch-blfs-plasma23-sources.sh" }}
       - run:
-          name: Download and verify Plasma Addons and Welcome sources
+          name: Download and verify Oxygen and Ocean sound theme sources
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-plasma22-sources bash scripts/fetch-blfs-plasma22-sources.sh 2>&1 | tee artifacts/blfs-plasma22-sources-circleci.log
+            LFS=/home/circleci/blfs-plasma23-sources bash scripts/fetch-blfs-plasma23-sources.sh 2>&1 | tee artifacts/blfs-plasma23-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-plasma22-sources-v1-{{ checksum "manifests/blfs-plasma22.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma22" }}-{{ checksum "scripts/fetch-blfs-plasma22-sources.sh" }}
+          key: blfs-12.4-plasma23-sources-v1-{{ checksum "manifests/blfs-plasma23.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma23" }}-{{ checksum "scripts/fetch-blfs-plasma23-sources.sh" }}
           paths:
-            - /home/circleci/blfs-plasma22-sources
+            - /home/circleci/blfs-plasma23-sources
       - run:
-          name: Build Plasma Addons and Welcome without UI helper or device access
+          name: Install and statically verify sound themes without playback
           no_output_timeout: 90m
           command: |
             set -o pipefail
-            bash scripts/run-blfs-plasma22.sh 2>&1 | tee artifacts/blfs-plasma22-host.log
+            bash scripts/run-blfs-plasma23.sh 2>&1 | tee artifacts/blfs-plasma23-host.log
       - save_cache:
-          key: blfs-12.4-plasma22-aarch64-v1-{{ checksum "scripts/build-blfs-plasma22-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma22.sh" }}
+          key: blfs-12.4-plasma23-aarch64-v1-{{ checksum "scripts/build-blfs-plasma23-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma23.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -2401,4 +2401,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma22
+      - blfs-plasma23
