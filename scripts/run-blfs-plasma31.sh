@@ -19,7 +19,7 @@ for path in \
   "$LFS/opt/kf6/lib/liboxygenstyle6.so.6.4.4"; do
   [[ -e "$path" ]] || preflight_fail "missing-existing-$path"
 done
-for name in libkbolt.so kcm_bolt.so kded_bolt.so libkcm_firewall_core.so kcm_firewall.so kde_ufw_plugin_helper; do
+for name in libkbolt.so kcm_bolt.so kded_bolt.so libkcm_firewall_core.so kcm_firewall.so firewalldbackend.so ufwbackend.so kde_ufw_plugin_helper; do
   [[ -z "$(find "$LFS/opt/kf6" -type f -name "$name" -print -quit)" ]] || preflight_fail "existing-$name"
 done
 for name in plasma-thunderbolt-6.4.4.tar.xz plasma-firewall-6.4.4.tar.xz; do
@@ -73,11 +73,11 @@ for expected in \
   'BLFS_PLASMA31_RESULT=ok' 'PACKAGE_COUNT=2' 'SOURCE_COUNT=2' 'ARCH=aarch64' \
   'NATIVE_BINARY_EXEC=not-run-new-kcm-kded-library-or-helper-programs' 'NEW_EXECUTABLES=installed-not-executed' \
   'ELF_ARCH=AArch64' 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' 'PLASMA_VERSION=6.4.4' \
-  'PACKAGES=plasma-thunderbolt,plasma-firewall' 'PLASMA_THUNDERBOLT=6.4.4' 'PLASMA_FIREWALL=6.4.4' 'ELF_FILE_COUNT=6' 'BUILD_TESTING=OFF' \
+  'PACKAGES=plasma-thunderbolt,plasma-firewall' 'PLASMA_THUNDERBOLT=6.4.4' 'PLASMA_FIREWALL=6.4.4' 'ELF_FILE_COUNT=8' 'BUILD_TESTING=OFF' \
   'QML_RESOURCES=15-embedded-not-run' 'QML_UI=not-started' 'BOLT_RUNTIME=not-started' 'THUNDERBOLT_DEVICES=not-accessed' 'KDED_MODULES=installed-not-loaded' \
-  'FIREWALLD_BACKEND=compiled-not-contacted' 'UFW_BACKEND=compiled-not-used' 'FIREWALL_RULES=not-read-or-changed' \
+  'FIREWALLD_BACKEND=compiled-not-contacted' 'UFW_BACKEND=compiled-not-used' 'FIREWALL_BACKENDS=installed-not-loaded' 'FIREWALL_RULES=not-read-or-changed' \
   'POLKIT_HELPERS=installed-not-executed' 'PYTHON_HELPERS=installed-not-executed' 'DBUS_ACTIVATION=not-performed' \
-  'DRKONQI=deferred-requires-systemd-journal-and-coredumpd' 'PLASMA_NM=deferred-requires-networkmanager-modemmanager-backends' 'WACOMTABLET=deferred-requires-xorg-wacom' \
+  'PLASMA31_PREVIOUS=failed-pipeline-221-six-elf-postcheck-eight-actual' 'DRKONQI=deferred-requires-systemd-journal-and-coredumpd' 'PLASMA_NM=deferred-requires-networkmanager-modemmanager-backends' 'WACOMTABLET=deferred-requires-xorg-wacom' \
   'OFFICIAL_PLASMA_ACTIVE=56' 'OFFICIAL_PLASMA_BUILDABLE_COVERED=53' 'OFFICIAL_PLASMA_DEFERRED=3' 'OFFICIAL_PLASMA_COMMENTED_OUT=13-not-in-blfs-install-order' \
   'TEST_SUITES=not-run' 'NETWORK=not-used-by-built-programs' 'PLASMA30=preserved-pipeline-220' 'SPECTACLE=preserved-pipeline-220-not-started' \
   'PLASMASHELL=not-started' 'STARTPLASMA=not-run' 'COMPOSITOR=not-started' 'DBUS_SESSION=not-started' 'DBUS_SYSTEM=not-started-by-this-stage' 'KDED=not-started' 'KWIN=preserved-not-rebuilt-not-running' \
@@ -95,5 +95,5 @@ BOLT_MANIFEST="$ARTIFACTS/blfs-plasma31-thunderbolt-install-manifest.txt"
 FIREWALL_MANIFEST="$ARTIFACTS/blfs-plasma31-firewall-install-manifest.txt"
 [[ -s "$BOLT_MANIFEST" && -s "$FIREWALL_MANIFEST" ]]
 for name in libkbolt.so kcm_bolt.so kded_bolt.so; do grep -q "/$name$" "$BOLT_MANIFEST"; done
-for name in libkcm_firewall_core.so kcm_firewall.so kde_ufw_plugin_helper; do grep -q "/$name$" "$FIREWALL_MANIFEST"; done
+for name in libkcm_firewall_core.so kcm_firewall.so firewalldbackend.so ufwbackend.so kde_ufw_plugin_helper kde_ufw_plugin_helper.py; do grep -q "/$name$" "$FIREWALL_MANIFEST"; done
 cat "$REPORT"

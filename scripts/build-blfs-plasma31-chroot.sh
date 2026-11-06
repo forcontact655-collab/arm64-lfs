@@ -30,7 +30,7 @@ for path in \
   /opt/kf6/lib/liboxygenstyle6.so.6.4.4; do
   [[ -e "$path" ]]
 done
-for name in libkbolt.so kcm_bolt.so kded_bolt.so libkcm_firewall_core.so kcm_firewall.so kde_ufw_plugin_helper; do
+for name in libkbolt.so kcm_bolt.so kded_bolt.so libkcm_firewall_core.so kcm_firewall.so firewalldbackend.so ufwbackend.so kde_ufw_plugin_helper; do
   [[ -z "$(find /opt/kf6 -type f -name "$name" -print -quit)" ]]
 done
 : >"$PROGRESS"
@@ -107,7 +107,7 @@ printf 'BLFS_PLASMA31_BUILT=plasma-firewall-6.4.4\n' >>"$PROGRESS"
 
 /sbin/ldconfig
 [[ "$(grep -c '^BLFS_PLASMA31_BUILT=' "$PROGRESS")" -eq 2 ]]
-for name in libkbolt.so kcm_bolt.so kded_bolt.so libkcm_firewall_core.so kcm_firewall.so kde_ufw_plugin_helper; do
+for name in libkbolt.so kcm_bolt.so kded_bolt.so libkcm_firewall_core.so kcm_firewall.so firewalldbackend.so ufwbackend.so kde_ufw_plugin_helper; do
   [[ "$(find /opt/kf6 -type f -name "$name" | wc -l)" -eq 1 ]]
 done
 ELF_COUNT=0
@@ -124,15 +124,15 @@ for manifest in "$BOLT_MANIFEST" "$FIREWALL_MANIFEST"; do
   done <"$manifest"
 done
 rm -f "$ELF_HEADER"
-[[ "$ELF_COUNT" -eq 6 ]]
-printf 'PLASMA31_POSTCHECK=two-packages-six-aarch64-elf-files-static-only\n'
+[[ "$ELF_COUNT" -eq 8 ]]
+printf 'PLASMA31_POSTCHECK=two-packages-eight-aarch64-elf-files-static-only\n'
 {
   printf 'BLFS_PLASMA31_RESULT=ok\nPACKAGE_COUNT=2\nSOURCE_COUNT=2\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=not-run-new-kcm-kded-library-or-helper-programs\nNEW_EXECUTABLES=installed-not-executed\nELF_ARCH=AArch64\nDYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1\n'
   printf 'PLASMA_VERSION=6.4.4\nPACKAGES=plasma-thunderbolt,plasma-firewall\nPLASMA_THUNDERBOLT=6.4.4\nPLASMA_FIREWALL=6.4.4\nELF_FILE_COUNT=%s\nBUILD_TESTING=OFF\n' "$ELF_COUNT"
   printf 'QML_RESOURCES=15-embedded-not-run\nQML_UI=not-started\nBOLT_RUNTIME=not-started\nTHUNDERBOLT_DEVICES=not-accessed\nKDED_MODULES=installed-not-loaded\n'
-  printf 'FIREWALLD_BACKEND=compiled-not-contacted\nUFW_BACKEND=compiled-not-used\nFIREWALL_RULES=not-read-or-changed\nPOLKIT_HELPERS=installed-not-executed\nPYTHON_HELPERS=installed-not-executed\nDBUS_ACTIVATION=not-performed\n'
-  printf 'DRKONQI=deferred-requires-systemd-journal-and-coredumpd\nPLASMA_NM=deferred-requires-networkmanager-modemmanager-backends\nWACOMTABLET=deferred-requires-xorg-wacom\n'
+  printf 'FIREWALLD_BACKEND=compiled-not-contacted\nUFW_BACKEND=compiled-not-used\nFIREWALL_BACKENDS=installed-not-loaded\nFIREWALL_RULES=not-read-or-changed\nPOLKIT_HELPERS=installed-not-executed\nPYTHON_HELPERS=installed-not-executed\nDBUS_ACTIVATION=not-performed\n'
+  printf 'PLASMA31_PREVIOUS=failed-pipeline-221-six-elf-postcheck-eight-actual\nDRKONQI=deferred-requires-systemd-journal-and-coredumpd\nPLASMA_NM=deferred-requires-networkmanager-modemmanager-backends\nWACOMTABLET=deferred-requires-xorg-wacom\n'
   printf 'OFFICIAL_PLASMA_ACTIVE=56\nOFFICIAL_PLASMA_BUILDABLE_COVERED=53\nOFFICIAL_PLASMA_DEFERRED=3\nOFFICIAL_PLASMA_COMMENTED_OUT=13-not-in-blfs-install-order\n'
   printf 'TEST_SUITES=not-run\nNETWORK=not-used-by-built-programs\nPLASMA30=preserved-pipeline-220\nSPECTACLE=preserved-pipeline-220-not-started\n'
   printf 'PLASMASHELL=not-started\nSTARTPLASMA=not-run\nCOMPOSITOR=not-started\nDBUS_SESSION=not-started\nDBUS_SYSTEM=not-started-by-this-stage\nKDED=not-started\nKWIN=preserved-not-rebuilt-not-running\n'
