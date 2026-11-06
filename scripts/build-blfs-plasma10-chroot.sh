@@ -65,7 +65,6 @@ for name in kwrited milou; do
     -D CMAKE_BUILD_TYPE=Release \
     -D BUILD_QT5=OFF \
     -D BUILD_TESTING=OFF \
-    -D BUILD_AS_EXECUTABLE=OFF \
     -W no-dev ..
   ninja
   ninja install
@@ -73,27 +72,29 @@ for name in kwrited milou; do
 done
 rm -rf /opt/kf6/lib/systemd
 [[ "$(grep -c '^BLFS_PLASMA10_BUILT=' "$PROGRESS")" -eq 2 ]]
-[[ ! -e /opt/kf6/bin/kwrited ]]
-KWRITED_PLUGIN="$(find /opt/kf6/lib/plugins/kf6/kded -type f -name kwrited.so -print -quit)"
+[[ -x /opt/kf6/bin/kwrited ]]
+KWRITED_BINARY=/opt/kf6/bin/kwrited
 MILOU_PLUGIN="$(find /opt/kf6/lib/qml/org/kde/milou -type f -name '*milouqmlplugin.so' -print -quit)"
-[[ -n "$KWRITED_PLUGIN" && -n "$MILOU_PLUGIN" ]]
+[[ -n "$MILOU_PLUGIN" ]]
 for path in \
-  "$KWRITED_PLUGIN" "$MILOU_PLUGIN" \
+  "$KWRITED_BINARY" "$MILOU_PLUGIN" \
   /opt/kf6/lib/qml/org/kde/milou/qmldir \
   /opt/kf6/share/plasma/plasmoids/org.kde.milou/metadata.json \
   /opt/kf6/share/plasma/plasmoids/org.kde.milou/contents/ui/main.qml; do
   [[ -e "$path" ]]
 done
 [[ ! -d /opt/kf6/lib/systemd ]]
-for binary in "$KWRITED_PLUGIN" "$MILOU_PLUGIN"; do
+for binary in "$KWRITED_BINARY" "$MILOU_PLUGIN"; do
   readelf -h "$binary" | grep -q 'Machine:.*AArch64'
 done
-printf 'PLASMA10_POSTCHECK=kded-and-milou-plugins\n'
+[[ "$(stat -c '%a' "$KWRITED_BINARY")" == 4755 ]]
+readelf -l "$KWRITED_BINARY" | grep -q '/lib/ld-linux-aarch64.so.1'
+printf 'PLASMA10_POSTCHECK=kwrited-and-milou-files\n'
 {
   printf 'BLFS_PLASMA10_RESULT=ok\nPACKAGE_COUNT=2\nSOURCE_COUNT=2\nARCH=%s\n' "$(uname -m)"
-  printf 'NATIVE_BINARY_EXEC=not-run-plugin-only\nNEW_EXECUTABLES=none-kded-and-qml-plugins\nELF_ARCH=AArch64\n'
+  printf 'NATIVE_BINARY_EXEC=not-run-setuid-and-qml-code\nNEW_EXECUTABLES=kwrited-setuid-not-executed\nELF_ARCH=AArch64\n'
   printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=kwrited+milou\nKWRITED=6.4.4\nMILOU=6.4.4\n'
-  printf 'KWRITED_MODE=kded-plugin-no-setuid\nKWRITED_EXEC=not-run-service-plugin\nSETUID_FILES=not-created-this-stage\n'
+  printf 'KWRITED_MODE=executable-setuid-root-no-utempter\nKWRITED_EXEC=not-run-setuid-service\nKWRITED_SETUID_MODE=4755\nSETUID_FILES=kwrited-upstream-installed-not-executed\n'
   printf 'MILOU_QML_PLUGIN=built-not-loaded\nMILOU_PLASMOID=installed-not-loaded\n'
   printf 'KWALLET_PAM=deferred-requires-socat-not-built\nTEST_SUITES=not-run\nSYSTEMD_USER_UNITS=removed-sysv-inapplicable\n'
   printf 'PLASMA9=preserved-pipeline-189\nKSCREEN=preserved-build-and-elf-only-no-display-backend\n'

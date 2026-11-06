@@ -69,10 +69,10 @@ sudo -n rm -f "$LFS/root/build-blfs-plasma10-chroot.sh" \
 REPORT="$ARTIFACTS/blfs-plasma10-report.txt"
 for expected in \
   'BLFS_PLASMA10_RESULT=ok' 'PACKAGE_COUNT=2' 'SOURCE_COUNT=2' 'ARCH=aarch64' \
-  'NATIVE_BINARY_EXEC=not-run-plugin-only' 'NEW_EXECUTABLES=none-kded-and-qml-plugins' 'ELF_ARCH=AArch64' \
+  'NATIVE_BINARY_EXEC=not-run-setuid-and-qml-code' 'NEW_EXECUTABLES=kwrited-setuid-not-executed' 'ELF_ARCH=AArch64' \
   'QT=6.9.2' 'PLASMA_VERSION=6.4.4' 'PACKAGES=kwrited+milou' 'KWRITED=6.4.4' 'MILOU=6.4.4' \
-  'KWRITED_MODE=kded-plugin-no-setuid' 'KWRITED_EXEC=not-run-service-plugin' \
-  'SETUID_FILES=not-created-this-stage' 'MILOU_QML_PLUGIN=built-not-loaded' \
+  'KWRITED_MODE=executable-setuid-root-no-utempter' 'KWRITED_EXEC=not-run-setuid-service' \
+  'KWRITED_SETUID_MODE=4755' 'SETUID_FILES=kwrited-upstream-installed-not-executed' 'MILOU_QML_PLUGIN=built-not-loaded' \
   'MILOU_PLASMOID=installed-not-loaded' 'KWALLET_PAM=deferred-requires-socat-not-built' \
   'TEST_SUITES=not-run' 'SYSTEMD_USER_UNITS=removed-sysv-inapplicable' \
   'PLASMA9=preserved-pipeline-189' 'KSCREEN=preserved-build-and-elf-only-no-display-backend' \
