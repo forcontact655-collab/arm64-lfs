@@ -2188,7 +2188,42 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-plasma8:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma7-aarch64-v1-{{ checksum "scripts/build-blfs-plasma7-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma7.sh" }}
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma8-sources-v1-{{ checksum "manifests/blfs-plasma8.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma8" }}-{{ checksum "scripts/fetch-blfs-plasma8-sources.sh" }}
+      - run:
+          name: Download and verify Plasma CLI and System Settings sources
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-plasma8-sources bash scripts/fetch-blfs-plasma8-sources.sh 2>&1 | tee artifacts/blfs-plasma8-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-plasma8-sources-v1-{{ checksum "manifests/blfs-plasma8.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma8" }}-{{ checksum "scripts/fetch-blfs-plasma8-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-plasma8-sources
+      - run:
+          name: Build Plasma CLI tools and System Settings without opening windows
+          no_output_timeout: 90m
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-plasma8.sh 2>&1 | tee artifacts/blfs-plasma8-host.log
+      - save_cache:
+          key: blfs-12.4-plasma8-aarch64-v1-{{ checksum "scripts/build-blfs-plasma8-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma8.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma7
+      - blfs-plasma8
