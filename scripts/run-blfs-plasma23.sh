@@ -60,7 +60,7 @@ for expected in \
   'BLFS_PLASMA23_RESULT=ok' 'PACKAGE_COUNT=2' 'SOURCE_COUNT=2' 'ARCH=aarch64' \
   'NATIVE_BINARY_EXEC=not-run-data-only-stage' 'NEW_EXECUTABLES=none' 'NEW_ELF_FILES=0' 'ELF_ARCH=not-applicable-data-only' 'DYNAMIC_LINKER=not-applicable-data-only' \
   'PLASMA_VERSION=6.4.4' 'PACKAGES=oxygen-sounds+ocean-sound-theme' 'OXYGEN_SOUNDS=6.4.4' 'OCEAN_SOUND_THEME=6.4.4' \
-  'OXYGEN_OGG_COUNT=113' 'OXYGEN_WAV_COUNT=1' 'OCEAN_OGA_COUNT=44' 'SOUND_FILE_COUNT=158' 'KF5_LEGACY_SOUNDS=installed-not-used' \
+  'OXYGEN_OGG_COUNT=113' 'OXYGEN_LEGACY_SYMLINK_COUNT=50' 'SOUND_SYMLINK_COUNT=77' 'OXYGEN_WAV_COUNT=1' 'OCEAN_OGA_COUNT=44' 'SOUND_FILE_COUNT=158' 'KF5_LEGACY_SOUNDS=installed-not-used' \
   'SOUND_FILES_MAGIC=verified-static-not-played' 'SOUND_FILES=installed-not-played' 'SOUND_THEME=not-applied' 'AUDIO_PLAYBACK=not-run' 'CONVERTERS=not-run' 'AUDIO=not-started' \
   'TEST_SUITES=not-run' 'NETWORK=not-used-by-built-programs' 'PLASMA22=preserved-pipeline-211' 'KDEPLASMA_ADDONS=preserved-pipeline-211-not-loaded' 'PLASMA_WELCOME=preserved-pipeline-211-not-opened' \
   'PLASMA21=preserved-pipeline-210' 'BLUEDEVIL=preserved-pipeline-210-not-started' 'PLASMA20=preserved-pipeline-209' \

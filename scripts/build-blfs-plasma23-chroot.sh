@@ -45,14 +45,22 @@ build_data_package ocean-sound-theme-6.4.4.tar.xz ocean-sound-theme-6.4.4 ''
 [[ "$(grep -c '^BLFS_PLASMA23_BUILT=' "$PROGRESS")" -eq 2 ]]
 SOUNDS=/opt/kf6/share/sounds
 [[ -f "$SOUNDS/oxygen/index.theme" && -f "$SOUNDS/ocean/index.theme" ]]
-mapfile -t OXYGEN_LEGACY < <(find "$SOUNDS" -maxdepth 1 -type f -name 'Oxygen-*.ogg' -print)
-mapfile -t OXYGEN_THEME < <(find "$SOUNDS/oxygen" -type f -name '*.ogg' -print)
-mapfile -t OXYGEN_WAV < <(find "$SOUNDS/oxygen" -type f -name '*.wav' -print)
-mapfile -t OCEAN < <(find "$SOUNDS/ocean" -type f -name '*.oga' -print)
+mapfile -t OXYGEN_LEGACY < <(find "$SOUNDS" -maxdepth 1 \( -type f -o -type l \) -name 'Oxygen-*.ogg' -print)
+mapfile -t OXYGEN_THEME < <(find "$SOUNDS/oxygen" \( -type f -o -type l \) -name '*.ogg' -print)
+mapfile -t OXYGEN_WAV < <(find "$SOUNDS/oxygen" \( -type f -o -type l \) -name '*.wav' -print)
+mapfile -t OCEAN < <(find "$SOUNDS/ocean" \( -type f -o -type l \) -name '*.oga' -print)
 [[ "${#OXYGEN_LEGACY[@]}" -eq 50 && "${#OXYGEN_THEME[@]}" -eq 63 && "${#OXYGEN_WAV[@]}" -eq 1 && "${#OCEAN[@]}" -eq 44 ]]
+sound_symlinks=0
 for sound in "${OXYGEN_LEGACY[@]}" "${OXYGEN_THEME[@]}" "${OCEAN[@]}"; do
+  [[ -f "$sound" ]]
+  if [[ -L "$sound" ]]; then
+    target="$(readlink "$sound")"
+    [[ "$target" != /* && "$target" != *..* ]]
+    sound_symlinks=$((sound_symlinks + 1))
+  fi
   [[ "$(head -c4 "$sound")" == OggS ]]
 done
+[[ "$sound_symlinks" -eq 77 ]]
 [[ "$(head -c4 "${OXYGEN_WAV[0]}")" == RIFF ]]
 [[ "$(dd if="${OXYGEN_WAV[0]}" bs=1 skip=8 count=4 status=none)" == WAVE ]]
 printf 'PLASMA23_POSTCHECK=158-sound-files-static-magic-verified-not-played\n'
@@ -60,7 +68,7 @@ printf 'PLASMA23_POSTCHECK=158-sound-files-static-magic-verified-not-played\n'
   printf 'BLFS_PLASMA23_RESULT=ok\nPACKAGE_COUNT=2\nSOURCE_COUNT=2\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=not-run-data-only-stage\nNEW_EXECUTABLES=none\nNEW_ELF_FILES=0\nELF_ARCH=not-applicable-data-only\nDYNAMIC_LINKER=not-applicable-data-only\n'
   printf 'PLASMA_VERSION=6.4.4\nPACKAGES=oxygen-sounds+ocean-sound-theme\nOXYGEN_SOUNDS=6.4.4\nOCEAN_SOUND_THEME=6.4.4\n'
-  printf 'OXYGEN_OGG_COUNT=113\nOXYGEN_WAV_COUNT=1\nOCEAN_OGA_COUNT=44\nSOUND_FILE_COUNT=158\nKF5_LEGACY_SOUNDS=installed-not-used\n'
+  printf 'OXYGEN_OGG_COUNT=113\nOXYGEN_LEGACY_SYMLINK_COUNT=50\nSOUND_SYMLINK_COUNT=77\nOXYGEN_WAV_COUNT=1\nOCEAN_OGA_COUNT=44\nSOUND_FILE_COUNT=158\nKF5_LEGACY_SOUNDS=installed-not-used\n'
   printf 'SOUND_FILES_MAGIC=verified-static-not-played\nSOUND_FILES=installed-not-played\nSOUND_THEME=not-applied\nAUDIO_PLAYBACK=not-run\nCONVERTERS=not-run\nAUDIO=not-started\n'
   printf 'TEST_SUITES=not-run\nNETWORK=not-used-by-built-programs\nPLASMA22=preserved-pipeline-211\nKDEPLASMA_ADDONS=preserved-pipeline-211-not-loaded\nPLASMA_WELCOME=preserved-pipeline-211-not-opened\n'
   printf 'PLASMA21=preserved-pipeline-210\nBLUEDEVIL=preserved-pipeline-210-not-started\nPLASMA20=preserved-pipeline-209\n'
