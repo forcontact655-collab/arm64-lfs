@@ -2258,7 +2258,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-plasma15:
+  blfs-plasma16:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -2266,28 +2266,28 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-plasma14-aarch64-v1-{{ checksum "scripts/build-blfs-plasma14-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma14.sh" }}
+            - blfs-12.4-plasma15-aarch64-v1-{{ checksum "scripts/build-blfs-plasma15-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma15.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-plasma15-sources-v1-{{ checksum "manifests/blfs-plasma15.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma15" }}-{{ checksum "scripts/fetch-blfs-plasma15-sources.sh" }}
+            - blfs-12.4-plasma16-sources-v1-{{ checksum "manifests/blfs-plasma16.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma16" }}-{{ checksum "scripts/fetch-blfs-plasma16-sources.sh" }}
       - run:
-          name: Download and verify kgamma ksshaskpass and SDDM KCM sources
+          name: Download and verify KDE portal and Plasma Vault sources
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-plasma15-sources bash scripts/fetch-blfs-plasma15-sources.sh 2>&1 | tee artifacts/blfs-plasma15-sources-circleci.log
+            LFS=/home/circleci/blfs-plasma16-sources bash scripts/fetch-blfs-plasma16-sources.sh 2>&1 | tee artifacts/blfs-plasma16-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-plasma15-sources-v1-{{ checksum "manifests/blfs-plasma15.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma15" }}-{{ checksum "scripts/fetch-blfs-plasma15-sources.sh" }}
+          key: blfs-12.4-plasma16-sources-v1-{{ checksum "manifests/blfs-plasma16.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma16" }}-{{ checksum "scripts/fetch-blfs-plasma16-sources.sh" }}
           paths:
-            - /home/circleci/blfs-plasma15-sources
+            - /home/circleci/blfs-plasma16-sources
       - run:
-          name: Build kgamma ksshaskpass and SDDM KCM without prompts or system changes
+          name: Build KDE portal and Plasma Vault without portal requests or vault operations
           no_output_timeout: 90m
           command: |
             set -o pipefail
-            bash scripts/run-blfs-plasma15.sh 2>&1 | tee artifacts/blfs-plasma15-host.log
+            bash scripts/run-blfs-plasma16.sh 2>&1 | tee artifacts/blfs-plasma16-host.log
       - save_cache:
-          key: blfs-12.4-plasma15-aarch64-v1-{{ checksum "scripts/build-blfs-plasma15-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma15.sh" }}
+          key: blfs-12.4-plasma16-aarch64-v1-{{ checksum "scripts/build-blfs-plasma16-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma16.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -2296,4 +2296,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma15
+      - blfs-plasma16
