@@ -12,15 +12,26 @@ for path in \
   "$LFS/usr/bin/ninja" \
   "$LFS/usr/bin/pkg-config" \
   "$LFS/usr/bin/python3" \
-  "$LFS/usr/bin/readelf" \
-  "$LFS/usr/lib/libnl-3.so" \
-  "$LFS/usr/lib/libpsl.so" \
-  "$LFS/usr/lib/libcurl.so" \
-  "$LFS/usr/lib/libnss3.so" \
-  "$LFS/usr/lib/libgirepository-1.0.so"; do
+  "$LFS/usr/bin/patch" \
+  "$LFS/usr/bin/readelf"; do
   [[ -e "$path" ]] || preflight_fail "missing-existing-$path"
 done
+# Existing library dependencies are checked by pkg-config inside the chroot;
+# do not guess their architecture-specific installation paths on the host.
 for path in \
+  "$LFS/usr/lib/libnspr4.so" \
+  "$LFS/usr/lib/libplc4.so" \
+  "$LFS/usr/lib/libplds4.so" \
+  "$LFS/usr/lib/pkgconfig/nspr.pc" \
+  "$LFS/usr/include/nspr" \
+  "$LFS/usr/bin/nspr-config" \
+  "$LFS/usr/lib/libnss3.so" \
+  "$LFS/usr/lib/libssl3.so" \
+  "$LFS/usr/lib/pkgconfig/nss.pc" \
+  "$LFS/usr/include/nss" \
+  "$LFS/usr/bin/certutil" \
+  "$LFS/usr/bin/nss-config" \
+  "$LFS/usr/bin/pk12util" \
   "$LFS/usr/lib/libndp.so" \
   "$LFS/usr/lib/pkgconfig/libndp.pc" \
   "$LFS/usr/bin/ndptool" \
@@ -32,7 +43,7 @@ for path in \
   "$LFS/usr/bin/nm-online"; do
   [[ ! -e "$path" && ! -L "$path" ]] || preflight_fail "existing-$path"
 done
-for name in libndp-1.9.tar.gz NetworkManager-1.54.0.tar.xz; do
+for name in nspr-4.37.tar.gz nss-3.115.tar.gz nss-standalone-1.patch libndp-1.9.tar.gz NetworkManager-1.54.0.tar.xz; do
   [[ -f "$HOST_SOURCES/$name" ]] || preflight_fail "missing-source-$name"
 done
 printf 'BLFS_PLASMA33_RUN_PRECONDITIONS=ok\n'
@@ -65,7 +76,7 @@ CHROOT_STATUS=$?
 set -e
 cleanup
 trap - EXIT
-for name in report progress networkmanager-config ndp-install-manifest networkmanager-install-manifest; do
+for name in report progress nspr-install-manifest nss-install-manifest nss-config networkmanager-config ndp-install-manifest networkmanager-install-manifest; do
   if sudo -n test -f "$LFS/root/blfs-plasma33-$name.txt"; then
     sudo -n cat "$LFS/root/blfs-plasma33-$name.txt" >"$ARTIFACTS/blfs-plasma33-$name.txt"
   fi
@@ -76,15 +87,19 @@ if [[ "$CHROOT_STATUS" -ne 0 ]]; then
 fi
 sudo -n rm -f "$LFS/root/build-blfs-plasma33-chroot.sh" \
   "$LFS/root/blfs-plasma33-report.txt" "$LFS/root/blfs-plasma33-progress.txt" \
+  "$LFS/root/blfs-plasma33-nspr-install-manifest.txt" \
+  "$LFS/root/blfs-plasma33-nss-install-manifest.txt" \
+  "$LFS/root/blfs-plasma33-nss-config.txt" \
   "$LFS/root/blfs-plasma33-networkmanager-config.txt" \
   "$LFS/root/blfs-plasma33-ndp-install-manifest.txt" \
   "$LFS/root/blfs-plasma33-networkmanager-install-manifest.txt"
 REPORT="$ARTIFACTS/blfs-plasma33-report.txt"
 for expected in \
-  'BLFS_PLASMA33_RESULT=ok' 'PACKAGE_COUNT=2' 'SOURCE_COUNT=2' 'ARCH=aarch64' \
-  'NATIVE_BINARY_EXEC=not-run-new-ndptool-networkmanager-nmcli-or-nm-online' 'NEW_EXECUTABLES=installed-not-executed' \
+  'BLFS_PLASMA33_RESULT=ok' 'PACKAGE_COUNT=4' 'SOURCE_COUNT=5' 'ARCH=aarch64' \
+  'NATIVE_BINARY_EXEC=not-run-new-installed-tools-post-install' 'NEW_EXECUTABLES=installed-not-executed' \
   'ELF_ARCH=AArch64' 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' \
-  'PACKAGES=libndp,NetworkManager' 'LIBNDP=1.9' 'NETWORKMANAGER=1.54.0' 'LIBNM=1.54.0' \
+  'PACKAGES=NSPR,NSS,libndp,NetworkManager' 'NSPR=4.37' 'NSS=3.115' 'LIBNDP=1.9' 'NETWORKMANAGER=1.54.0' 'LIBNM=1.54.0' \
+  'NSPR_TOOLS=installed-not-executed' 'NSS_SYSTEM_ZLIB=1' 'NSS_DISABLE_GTESTS=1' 'NSS_TESTS=not-run-gtests-disabled' 'NSS_TOOLS=installed-not-executed' 'P11_KIT=not-reconfigured' \
   'NETWORKMANAGER_RUNTIME=not-started' 'NMCLI=installed-not-executed' 'NM_ONLINE=installed-not-executed' 'NDPTOOL=installed-not-executed' \
   'DBUS_SERVICES=installed-not-activated' 'UDEV_RULES=installed-not-reloaded' 'NETWORK_INTERFACES=not-accessed' 'LIVE_NETWORK_CONFIGURATION=not-changed' \
   'SESSION_TRACKING=no-logind' 'NMTUI=not-built-newt-absent' 'SYSTEMD_UNIT=not-installed' 'MODEM_MANAGER=false' 'PPP=false' 'OVS=false' 'NM_CLOUD_SETUP=false' 'NBFT=false' 'TEST_SUITES=not-run-disabled' \
@@ -94,9 +109,16 @@ for expected in \
   'REAL_DISPLAY=not-tested' 'HARDWARE_GRAPHICS=not-tested' 'AUDIO=not-started' 'CAMERA=not-accessed' 'BOOTABLE=no'; do
   grep -qxF "$expected" "$REPORT"
 done
-[[ "$(grep -c '^BLFS_PLASMA33_BUILT=' "$ARTIFACTS/blfs-plasma33-progress.txt")" -eq 2 ]]
+[[ "$(grep -c '^BLFS_PLASMA33_BUILT=' "$ARTIFACTS/blfs-plasma33-progress.txt")" -eq 4 ]]
+grep -qx 'BLFS_PLASMA33_BUILT=NSPR-4.37' "$ARTIFACTS/blfs-plasma33-progress.txt"
+grep -qx 'BLFS_PLASMA33_BUILT=NSS-3.115' "$ARTIFACTS/blfs-plasma33-progress.txt"
 grep -qx 'BLFS_PLASMA33_BUILT=libndp-1.9' "$ARTIFACTS/blfs-plasma33-progress.txt"
 grep -qx 'BLFS_PLASMA33_BUILT=NetworkManager-1.54.0' "$ARTIFACTS/blfs-plasma33-progress.txt"
+NSS_CONFIG="$ARTIFACTS/blfs-plasma33-nss-config.txt"
+for expected in 'NSPR_VERSION=4.37' 'NSS_VERSION=3.115' 'NSS_SYSTEM_ZLIB=1' 'NSS_DISABLE_GTESTS=1' 'NSS_TESTS=not-run-gtests-disabled' 'NSS_TOOLS=installed-not-executed' 'P11_KIT=not-reconfigured'; do
+  grep -qxF "$expected" "$NSS_CONFIG"
+done
+grep -qEx 'NSS_SYSTEM_SQLITE=[01]' "$NSS_CONFIG"
 NM_CONFIG="$ARTIFACTS/blfs-plasma33-networkmanager-config.txt"
 for expected in \
   'NETWORKMANAGER_VERSION=1.54.0' 'prefix=/usr' 'buildtype=release' 'libaudit=no' 'nmtui=false' \
@@ -108,9 +130,17 @@ for expected in \
   'NETWORK_INTERFACES=not-accessed' 'LIVE_NETWORK_CONFIGURATION=not-changed'; do
   grep -qxF "$expected" "$NM_CONFIG"
 done
+NSPR_MANIFEST="$ARTIFACTS/blfs-plasma33-nspr-install-manifest.txt"
+NSS_MANIFEST="$ARTIFACTS/blfs-plasma33-nss-install-manifest.txt"
 NDP_MANIFEST="$ARTIFACTS/blfs-plasma33-ndp-install-manifest.txt"
 NM_MANIFEST="$ARTIFACTS/blfs-plasma33-networkmanager-install-manifest.txt"
-[[ -s "$NDP_MANIFEST" && -s "$NM_MANIFEST" ]]
+[[ -s "$NSPR_MANIFEST" && -s "$NSS_MANIFEST" && -s "$NDP_MANIFEST" && -s "$NM_MANIFEST" ]]
+for path in /usr/lib/libnspr4.so /usr/lib/libplc4.so /usr/lib/libplds4.so /usr/lib/pkgconfig/nspr.pc /usr/include/nspr/prinit.h /usr/bin/nspr-config; do
+  grep -qxF "$path" "$NSPR_MANIFEST"
+done
+for path in /usr/lib/libnss3.so /usr/lib/libssl3.so /usr/lib/libsmime3.so /usr/lib/libsoftokn3.so /usr/lib/libnssckbi.so /usr/lib/pkgconfig/nss.pc /usr/include/nss/nss.h /usr/bin/certutil /usr/bin/nss-config /usr/bin/pk12util; do
+  grep -qxF "$path" "$NSS_MANIFEST"
+done
 for path in /usr/lib/libndp.so /usr/lib/pkgconfig/libndp.pc /usr/include/ndp.h /usr/bin/ndptool; do
   grep -qxF "$path" "$NDP_MANIFEST"
 done

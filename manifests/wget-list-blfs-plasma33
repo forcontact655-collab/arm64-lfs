@@ -1,2 +1,5 @@
+https://archive.mozilla.org/pub/nspr/releases/v4.37/src/nspr-4.37.tar.gz
+https://archive.mozilla.org/pub/security/nss/releases/NSS_3_115_RTM/src/nss-3.115.tar.gz
+https://www.linuxfromscratch.org/patches/blfs/12.4/nss-standalone-1.patch
 http://libndp.org/files/libndp-1.9.tar.gz
 https://gitlab.freedesktop.org/NetworkManager/NetworkManager/-/releases/1.54.0/downloads/NetworkManager-1.54.0.tar.xz

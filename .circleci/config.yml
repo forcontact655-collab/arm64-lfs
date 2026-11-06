@@ -2446,7 +2446,7 @@ jobs:
           keys:
             - blfs-12.4-plasma33-sources-v1-{{ checksum "manifests/blfs-plasma33.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma33" }}-{{ checksum "scripts/fetch-blfs-plasma33-sources.sh" }}
       - run:
-          name: Download and verify libndp and NetworkManager sources
+          name: Download and verify NSPR, NSS, libndp and NetworkManager sources
           command: |
             set -o pipefail
             mkdir -p artifacts
@@ -2456,7 +2456,7 @@ jobs:
           paths:
             - /home/circleci/blfs-plasma33-sources
       - run:
-          name: Build libndp and NetworkManager without daemon or network execution
+          name: Build NSPR, NSS, libndp and NetworkManager without tool or network execution
           no_output_timeout: 90m
           command: |
             set -o pipefail
