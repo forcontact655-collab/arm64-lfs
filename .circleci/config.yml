@@ -2258,7 +2258,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-plasma14:
+  blfs-plasma15:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -2266,28 +2266,28 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-plasma13-aarch64-v1-{{ checksum "scripts/build-blfs-plasma13-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma13.sh" }}
+            - blfs-12.4-plasma14-aarch64-v1-{{ checksum "scripts/build-blfs-plasma14-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma14.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-plasma14-sources-v1-{{ checksum "manifests/blfs-plasma14.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma14" }}-{{ checksum "scripts/fetch-blfs-plasma14-sources.sh" }}
+            - blfs-12.4-plasma15-sources-v1-{{ checksum "manifests/blfs-plasma15.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma15" }}-{{ checksum "scripts/fetch-blfs-plasma15-sources.sh" }}
       - run:
-          name: Download and verify PowerDevil sources
+          name: Download and verify kgamma ksshaskpass and SDDM KCM sources
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-plasma14-sources bash scripts/fetch-blfs-plasma14-sources.sh 2>&1 | tee artifacts/blfs-plasma14-sources-circleci.log
+            LFS=/home/circleci/blfs-plasma15-sources bash scripts/fetch-blfs-plasma15-sources.sh 2>&1 | tee artifacts/blfs-plasma15-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-plasma14-sources-v1-{{ checksum "manifests/blfs-plasma14.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma14" }}-{{ checksum "scripts/fetch-blfs-plasma14-sources.sh" }}
+          key: blfs-12.4-plasma15-sources-v1-{{ checksum "manifests/blfs-plasma15.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma15" }}-{{ checksum "scripts/fetch-blfs-plasma15-sources.sh" }}
           paths:
-            - /home/circleci/blfs-plasma14-sources
+            - /home/circleci/blfs-plasma15-sources
       - run:
-          name: Build PowerDevil without starting power management or KAuth helpers
+          name: Build kgamma ksshaskpass and SDDM KCM without prompts or system changes
           no_output_timeout: 90m
           command: |
             set -o pipefail
-            bash scripts/run-blfs-plasma14.sh 2>&1 | tee artifacts/blfs-plasma14-host.log
+            bash scripts/run-blfs-plasma15.sh 2>&1 | tee artifacts/blfs-plasma15-host.log
       - save_cache:
-          key: blfs-12.4-plasma14-aarch64-v1-{{ checksum "scripts/build-blfs-plasma14-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma14.sh" }}
+          key: blfs-12.4-plasma15-aarch64-v1-{{ checksum "scripts/build-blfs-plasma15-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma15.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -2296,4 +2296,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma14
+      - blfs-plasma15
