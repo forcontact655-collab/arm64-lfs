@@ -2258,7 +2258,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-plasma11:
+  blfs-plasma12:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -2266,28 +2266,28 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-plasma10-aarch64-v1-{{ checksum "scripts/build-blfs-plasma10-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma10.sh" }}
+            - blfs-12.4-plasma11-aarch64-v1-{{ checksum "scripts/build-blfs-plasma11-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma11.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-plasma11-sources-v1-{{ checksum "manifests/blfs-plasma11.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma11" }}-{{ checksum "scripts/fetch-blfs-plasma11-sources.sh" }}
+            - blfs-12.4-plasma12-sources-v1-{{ checksum "manifests/blfs-plasma12.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma12" }}-{{ checksum "scripts/fetch-blfs-plasma12-sources.sh" }}
       - run:
-          name: Download and verify socat and KWallet PAM sources
+          name: Download and verify Plasma PA sources
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-plasma11-sources bash scripts/fetch-blfs-plasma11-sources.sh 2>&1 | tee artifacts/blfs-plasma11-sources-circleci.log
+            LFS=/home/circleci/blfs-plasma12-sources bash scripts/fetch-blfs-plasma12-sources.sh 2>&1 | tee artifacts/blfs-plasma12-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-plasma11-sources-v1-{{ checksum "manifests/blfs-plasma11.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma11" }}-{{ checksum "scripts/fetch-blfs-plasma11-sources.sh" }}
+          key: blfs-12.4-plasma12-sources-v1-{{ checksum "manifests/blfs-plasma12.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma12" }}-{{ checksum "scripts/fetch-blfs-plasma12-sources.sh" }}
           paths:
-            - /home/circleci/blfs-plasma11-sources
+            - /home/circleci/blfs-plasma12-sources
       - run:
-          name: Build socat and KWallet PAM without authentication or a session
+          name: Build Plasma PA without audio playback or backend connections
           no_output_timeout: 90m
           command: |
             set -o pipefail
-            bash scripts/run-blfs-plasma11.sh 2>&1 | tee artifacts/blfs-plasma11-host.log
+            bash scripts/run-blfs-plasma12.sh 2>&1 | tee artifacts/blfs-plasma12-host.log
       - save_cache:
-          key: blfs-12.4-plasma11-aarch64-v1-{{ checksum "scripts/build-blfs-plasma11-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma11.sh" }}
+          key: blfs-12.4-plasma12-aarch64-v1-{{ checksum "scripts/build-blfs-plasma12-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma12.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -2296,4 +2296,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma11
+      - blfs-plasma12
