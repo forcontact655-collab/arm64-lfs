@@ -2258,7 +2258,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-plasma12:
+  blfs-plasma13:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -2266,28 +2266,28 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-plasma11-aarch64-v1-{{ checksum "scripts/build-blfs-plasma11-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma11.sh" }}
+            - blfs-12.4-plasma12-aarch64-v1-{{ checksum "scripts/build-blfs-plasma12-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma12.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-plasma12-sources-v1-{{ checksum "manifests/blfs-plasma12.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma12" }}-{{ checksum "scripts/fetch-blfs-plasma12-sources.sh" }}
+            - blfs-12.4-plasma13-sources-v1-{{ checksum "manifests/blfs-plasma13.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma13" }}-{{ checksum "scripts/fetch-blfs-plasma13-sources.sh" }}
       - run:
-          name: Download and verify Plasma PA sources
+          name: Download and verify wallpaper and Polkit agent sources
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-plasma12-sources bash scripts/fetch-blfs-plasma12-sources.sh 2>&1 | tee artifacts/blfs-plasma12-sources-circleci.log
+            LFS=/home/circleci/blfs-plasma13-sources bash scripts/fetch-blfs-plasma13-sources.sh 2>&1 | tee artifacts/blfs-plasma13-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-plasma12-sources-v1-{{ checksum "manifests/blfs-plasma12.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma12" }}-{{ checksum "scripts/fetch-blfs-plasma12-sources.sh" }}
+          key: blfs-12.4-plasma13-sources-v1-{{ checksum "manifests/blfs-plasma13.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma13" }}-{{ checksum "scripts/fetch-blfs-plasma13-sources.sh" }}
           paths:
-            - /home/circleci/blfs-plasma12-sources
+            - /home/circleci/blfs-plasma13-sources
       - run:
-          name: Build Plasma PA without audio playback or backend connections
+          name: Install wallpaper data and build Polkit agent without applying or starting them
           no_output_timeout: 90m
           command: |
             set -o pipefail
-            bash scripts/run-blfs-plasma12.sh 2>&1 | tee artifacts/blfs-plasma12-host.log
+            bash scripts/run-blfs-plasma13.sh 2>&1 | tee artifacts/blfs-plasma13-host.log
       - save_cache:
-          key: blfs-12.4-plasma12-aarch64-v1-{{ checksum "scripts/build-blfs-plasma12-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma12.sh" }}
+          key: blfs-12.4-plasma13-aarch64-v1-{{ checksum "scripts/build-blfs-plasma13-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma13.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -2296,4 +2296,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma12
+      - blfs-plasma13
