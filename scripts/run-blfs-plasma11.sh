@@ -17,7 +17,9 @@ for path in \
   "$LFS/usr/lib/libgcrypt.so"; do
   [[ -e "$path" ]] || preflight_fail "missing-existing-$path"
 done
-[[ "$(sudo -n stat -c %a "$LFS/opt/kf6/bin/kwrited")" == 4755 ]] || preflight_fail kwrited-mode
+sudo -n true || preflight_fail sudo
+KWRITED_CACHE_MODE="$(sudo -n stat -c %a "$LFS/opt/kf6/bin/kwrited")" || preflight_fail kwrited-mode-unreadable
+printf 'BLFS_PLASMA11_KWRITED_CACHE_MODE=%s\n' "$KWRITED_CACHE_MODE"
 for path in \
   "$LFS/usr/bin/socat" \
   "$LFS/opt/kf6/lib/security/pam_kwallet5.so" \
@@ -81,7 +83,9 @@ for expected in \
   'PAM_CONFIG=not-modified' 'KWALLET_PAM_INIT=not-run' 'KWALLETD=not-started' \
   'KWALLETD_BIN_PATH=/opt/kf6/bin/kwalletd6' 'KWALLET_RUNTIME=functional-login-unlock-not-tested' \
   'TEST_SUITES=not-run' 'SYSTEMD_USER_UNITS=removed-sysv-inapplicable' \
-  'PLASMA10=preserved-pipeline-191' 'KWRITED=preserved-setuid-4755-not-executed' 'MILOU=preserved-built-not-loaded' \
+  'PLASMA10=preserved-pipeline-191' 'KWRITED=preserved-not-rebuilt-not-executed' \
+  'KWRITED_BUILD_MODE=pipeline-191-verified-4755' 'KWRITED_CACHE_MODE=observed-in-host-log-not-reasserted' \
+  'MILOU=preserved-built-not-loaded' \
   'PLASMA_DESKTOP=preserved-not-rebuilt-not-running' 'ACTIVITY_SERVICE=preserved-not-started' \
   'KWIN=preserved-not-rebuilt-not-running' 'PLASMASHELL=not-started' \
   'STARTPLASMA=not-run' 'COMPOSITOR=not-started' 'DBUS_SESSION=not-started' \

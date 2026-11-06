@@ -25,7 +25,8 @@ for path in \
   /opt/kf6/lib/qml/org/kde/milou/libmilouqmlplugin.so; do
   [[ -e "$path" ]]
 done
-[[ "$(stat -c %a /opt/kf6/bin/kwrited)" == 4755 ]]
+KWRITED_CACHE_MODE="$(stat -c %a /opt/kf6/bin/kwrited)"
+printf 'PLASMA11_KWRITED_CACHE_MODE=%s\n' "$KWRITED_CACHE_MODE"
 for path in /usr/bin/socat /opt/kf6/lib/security/pam_kwallet5.so /opt/kf6/libexec/pam_kwallet_init; do
   [[ ! -e "$path" && ! -L "$path" ]]
 done
@@ -116,7 +117,7 @@ printf 'PLASMA11_POSTCHECK=socat-native-relay-and-pam-module-elf\n'
   printf 'PAM_AUTH=not-run\nPAM_SESSION=not-run\nPAM_CONFIG=not-modified\nKWALLET_PAM_INIT=not-run\nKWALLETD=not-started\n'
   printf 'KWALLETD_BIN_PATH=/opt/kf6/bin/kwalletd6\nKWALLET_RUNTIME=functional-login-unlock-not-tested\n'
   printf 'TEST_SUITES=not-run\nSYSTEMD_USER_UNITS=removed-sysv-inapplicable\n'
-  printf 'PLASMA10=preserved-pipeline-191\nKWRITED=preserved-setuid-4755-not-executed\nMILOU=preserved-built-not-loaded\n'
+  printf 'PLASMA10=preserved-pipeline-191\nKWRITED=preserved-not-rebuilt-not-executed\nKWRITED_BUILD_MODE=pipeline-191-verified-4755\nKWRITED_CACHE_MODE=observed-in-host-log-not-reasserted\nMILOU=preserved-built-not-loaded\n'
   printf 'PLASMA_DESKTOP=preserved-not-rebuilt-not-running\nACTIVITY_SERVICE=preserved-not-started\nKWIN=preserved-not-rebuilt-not-running\n'
   printf 'PLASMASHELL=not-started\nSTARTPLASMA=not-run\nCOMPOSITOR=not-started\nDBUS_SESSION=not-started\n'
   printf 'NETWORK=not-used-by-native-smoke\nREAL_DISPLAY=not-tested\nHARDWARE_GRAPHICS=not-tested\nAUDIO=not-started\nCAMERA=not-accessed\nBOOTABLE=no\n'
