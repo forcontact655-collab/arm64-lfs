@@ -21,7 +21,7 @@ for path in \
   "$LFS/opt/kf6/lib/libplasma-volume.so.6.4.4" \
   "$LFS/opt/kf6/lib/plugins/kf6/kded/audioshortcutsservice.so" \
   "$LFS/opt/kf6/lib/qml/org/kde/plasma/private/volume" \
-  "$LFS/opt/kf6/share/plasma/plasmoids/org.kde.plasma.volume"; do
+  "$LFS/opt/kf6/lib/plugins/plasma/applets/org.kde.plasma.volume.so"; do
   [[ ! -e "$path" && ! -L "$path" ]] || preflight_fail "existing-$path"
 done
 [[ -f "$HOST_SOURCES/plasma-pa-6.4.4.tar.xz" ]] || preflight_fail missing-source-plasma-pa
@@ -72,10 +72,12 @@ for expected in \
   'NATIVE_BINARY_EXEC=not-run-audio-and-kcm-code' 'NEW_EXECUTABLES=none-audio-plugins-and-library-only' 'ELF_ARCH=AArch64' \
   'QT=6.9.2' 'PLASMA_VERSION=6.4.4' 'PACKAGES=plasma-pa' 'PLASMA_PA=6.4.4' \
   'VOLUME_LIBRARY=built-elf-not-loaded' 'VOLUME_QML_PLUGIN=built-not-loaded' 'VOLUME_KCM=built-not-loaded' \
-  'VOLUME_KDED=built-not-loaded' 'VOLUME_PLASMOID=installed-not-loaded' \
+  'VOLUME_KDED=built-not-loaded' 'VOLUME_APPLET_PLUGIN=built-not-loaded' \
   'NATIVE_SMOKE=not-run-no-audio-backend' 'AUDIO=not-started' 'SOUND=not-played' \
   'PULSEAUDIO=not-connected' 'PIPEWIRE=not-connected' 'CANBERRA=linked-not-used' \
   'TEST_SUITES=not-run' 'TEST_TARGETS=not-executed' 'DOCUMENTATION=disabled-not-built' \
+  'OPTIONAL_RUNTIME_MISSING=canberra-pulse+sound-theme-freedesktop+kirigami-addons+kitemmodels' \
+  'VOLUME_FEEDBACK=not-tested-runtime-components-missing' 'KCM_RUNTIME=not-tested-optional-runtime-dependencies-missing' \
   'PLASMA_NM=deferred-requires-networkmanager-modemmanager-backends' \
   'PLASMA11=preserved-pipeline-194' 'KWALLET_PAM=preserved-built-not-configured' 'KWRITED=preserved-not-rebuilt-not-executed' \
   'PLASMA_DESKTOP=preserved-not-rebuilt-not-running' 'ACTIVITY_SERVICE=preserved-not-started' \

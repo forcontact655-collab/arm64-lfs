@@ -31,7 +31,7 @@ for path in \
   /opt/kf6/lib/libplasma-volume.so.6.4.4 \
   /opt/kf6/lib/plugins/kf6/kded/audioshortcutsservice.so \
   /opt/kf6/lib/qml/org/kde/plasma/private/volume \
-  /opt/kf6/share/plasma/plasmoids/org.kde.plasma.volume; do
+  /opt/kf6/lib/plugins/plasma/applets/org.kde.plasma.volume.so; do
   [[ ! -e "$path" && ! -L "$path" ]]
 done
 : >"$PROGRESS"
@@ -69,20 +69,21 @@ VOLUME_LIBRARY="$(find /opt/kf6/lib -maxdepth 1 -type f -name 'libplasma-volume.
 VOLUME_QML_PLUGIN="$(find /opt/kf6/lib/qml/org/kde/plasma/private/volume -type f -name '*.so' -print -quit)"
 VOLUME_KCM="$(find /opt/kf6/lib/plugins -type f -name kcm_pulseaudio.so -print -quit)"
 VOLUME_KDED=/opt/kf6/lib/plugins/kf6/kded/audioshortcutsservice.so
-[[ -n "$VOLUME_LIBRARY" && -n "$VOLUME_QML_PLUGIN" && -n "$VOLUME_KCM" && -f "$VOLUME_KDED" ]]
+VOLUME_APPLET=/opt/kf6/lib/plugins/plasma/applets/org.kde.plasma.volume.so
+[[ -n "$VOLUME_LIBRARY" && -n "$VOLUME_QML_PLUGIN" && -n "$VOLUME_KCM" && -f "$VOLUME_KDED" && -f "$VOLUME_APPLET" ]]
 [[ -f /opt/kf6/lib/qml/org/kde/plasma/private/volume/qmldir ]]
-[[ -f /opt/kf6/share/plasma/plasmoids/org.kde.plasma.volume/metadata.json ]]
-for elf in "$VOLUME_LIBRARY" "$VOLUME_QML_PLUGIN" "$VOLUME_KCM" "$VOLUME_KDED"; do
+for elf in "$VOLUME_LIBRARY" "$VOLUME_QML_PLUGIN" "$VOLUME_KCM" "$VOLUME_KDED" "$VOLUME_APPLET"; do
   readelf -h "$elf" | grep -q 'Machine:.*AArch64'
 done
-printf 'PLASMA12_POSTCHECK=volume-library-qml-kcm-kded-and-plasmoid\n'
+printf 'PLASMA12_POSTCHECK=volume-library-qml-kcm-kded-and-applet\n'
 {
   printf 'BLFS_PLASMA12_RESULT=ok\nPACKAGE_COUNT=1\nSOURCE_COUNT=1\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=not-run-audio-and-kcm-code\nNEW_EXECUTABLES=none-audio-plugins-and-library-only\nELF_ARCH=AArch64\n'
   printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=plasma-pa\nPLASMA_PA=6.4.4\n'
-  printf 'VOLUME_LIBRARY=built-elf-not-loaded\nVOLUME_QML_PLUGIN=built-not-loaded\nVOLUME_KCM=built-not-loaded\nVOLUME_KDED=built-not-loaded\nVOLUME_PLASMOID=installed-not-loaded\n'
+  printf 'VOLUME_LIBRARY=built-elf-not-loaded\nVOLUME_QML_PLUGIN=built-not-loaded\nVOLUME_KCM=built-not-loaded\nVOLUME_KDED=built-not-loaded\nVOLUME_APPLET_PLUGIN=built-not-loaded\n'
   printf 'NATIVE_SMOKE=not-run-no-audio-backend\nAUDIO=not-started\nSOUND=not-played\nPULSEAUDIO=not-connected\nPIPEWIRE=not-connected\nCANBERRA=linked-not-used\n'
   printf 'TEST_SUITES=not-run\nTEST_TARGETS=not-executed\nDOCUMENTATION=disabled-not-built\n'
+  printf 'OPTIONAL_RUNTIME_MISSING=canberra-pulse+sound-theme-freedesktop+kirigami-addons+kitemmodels\nVOLUME_FEEDBACK=not-tested-runtime-components-missing\nKCM_RUNTIME=not-tested-optional-runtime-dependencies-missing\n'
   printf 'PLASMA_NM=deferred-requires-networkmanager-modemmanager-backends\n'
   printf 'PLASMA11=preserved-pipeline-194\nKWALLET_PAM=preserved-built-not-configured\nKWRITED=preserved-not-rebuilt-not-executed\n'
   printf 'PLASMA_DESKTOP=preserved-not-rebuilt-not-running\nACTIVITY_SERVICE=preserved-not-started\nKWIN=preserved-not-rebuilt-not-running\n'
