@@ -2363,7 +2363,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-plasma20:
+  blfs-plasma21:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -2371,28 +2371,28 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-plasma19-aarch64-v1-{{ checksum "scripts/build-blfs-plasma19-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma19.sh" }}
+            - blfs-12.4-plasma20-aarch64-v1-{{ checksum "scripts/build-blfs-plasma20-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma20.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-plasma20-sources-v1-{{ checksum "manifests/blfs-plasma20.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma20" }}-{{ checksum "scripts/fetch-blfs-plasma20-sources.sh" }}
+            - blfs-12.4-plasma21-sources-v1-{{ checksum "manifests/blfs-plasma21.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma21" }}-{{ checksum "scripts/fetch-blfs-plasma21-sources.sh" }}
       - run:
-          name: Download and verify Plasma Disks and KDE GTK Config sources
+          name: Download and verify BlueDevil sources
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-plasma20-sources bash scripts/fetch-blfs-plasma20-sources.sh 2>&1 | tee artifacts/blfs-plasma20-sources-circleci.log
+            LFS=/home/circleci/blfs-plasma21-sources bash scripts/fetch-blfs-plasma21-sources.sh 2>&1 | tee artifacts/blfs-plasma21-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-plasma20-sources-v1-{{ checksum "manifests/blfs-plasma20.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma20" }}-{{ checksum "scripts/fetch-blfs-plasma20-sources.sh" }}
+          key: blfs-12.4-plasma21-sources-v1-{{ checksum "manifests/blfs-plasma21.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma21" }}-{{ checksum "scripts/fetch-blfs-plasma21-sources.sh" }}
           paths:
-            - /home/circleci/blfs-plasma20-sources
+            - /home/circleci/blfs-plasma21-sources
       - run:
-          name: Build Plasma Disks and KDE GTK Config without accessing devices or applying settings
+          name: Build BlueDevil without Bluetooth or daemon access
           no_output_timeout: 90m
           command: |
             set -o pipefail
-            bash scripts/run-blfs-plasma20.sh 2>&1 | tee artifacts/blfs-plasma20-host.log
+            bash scripts/run-blfs-plasma21.sh 2>&1 | tee artifacts/blfs-plasma21-host.log
       - save_cache:
-          key: blfs-12.4-plasma20-aarch64-v1-{{ checksum "scripts/build-blfs-plasma20-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma20.sh" }}
+          key: blfs-12.4-plasma21-aarch64-v1-{{ checksum "scripts/build-blfs-plasma21-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma21.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -2401,4 +2401,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma20
+      - blfs-plasma21
