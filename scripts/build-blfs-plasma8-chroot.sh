@@ -79,7 +79,7 @@ rm -rf /opt/kf6/lib/systemd
 for path in \
   /opt/kf6/bin/kmimetypefinder \
   /opt/kf6/bin/kstart \
-  /opt/kf6/bin/kdesu \
+  /opt/kf6/libexec/kf6/kdesu \
   /opt/kf6/bin/systemsettings \
   /opt/kf6/share/applications/systemsettings.desktop \
   /opt/kf6/share/applications/kdesystemsettings.desktop \
@@ -88,7 +88,7 @@ for path in \
 done
 [[ ! -d /opt/kf6/lib/systemd ]]
 for binary in /opt/kf6/bin/kmimetypefinder /opt/kf6/bin/kstart \
-  /opt/kf6/bin/kdesu /opt/kf6/bin/systemsettings; do
+  /opt/kf6/libexec/kf6/kdesu /opt/kf6/bin/systemsettings; do
   readelf -h "$binary" | grep -q 'Machine:.*AArch64'
   readelf -l "$binary" | grep -q '/lib/ld-linux-aarch64.so.1'
 done
