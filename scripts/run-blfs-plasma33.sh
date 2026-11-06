@@ -121,7 +121,7 @@ done
 grep -qEx 'NSS_SYSTEM_SQLITE=[01]' "$NSS_CONFIG"
 NM_CONFIG="$ARTIFACTS/blfs-plasma33-networkmanager-config.txt"
 for expected in \
-  'NETWORKMANAGER_VERSION=1.54.0' 'prefix=/usr' 'buildtype=release' 'libaudit=no' 'nmtui=false' \
+  'NETWORKMANAGER_VERSION=1.54.0' 'prefix=/usr' 'libdir=/usr/lib' 'buildtype=release' 'libaudit=no' 'nmtui=false' \
   'ovs=false' 'ppp=false' 'nbft=false' 'selinux=false' 'session_tracking=no' 'modem_manager=false' \
   'systemdsystemunitdir=no' 'systemd_journal=false' 'nm_cloud_setup=false' 'qt=false' 'tests=no' 'docs=false' \
   'crypto=nss' 'introspection=true' 'wifi=true' 'nmcli=true' 'concheck=true' 'libpsl=true' 'polkit=true' \
