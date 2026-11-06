@@ -31,6 +31,7 @@ done
 for path in \
   /usr/include/cups/cups.h \
   /opt/qt6/include/QtPrintSupport/6.9.2/QtPrintSupport/private/qcups_p.h \
+  /opt/qt6/plugins/printsupport/libcupsprintersupport.so \
   /opt/kf6/libexec/xdg-desktop-portal-kde \
   /opt/kf6/share/xdg-desktop-portal/portals/kde.portal; do
   [[ ! -e "$path" && ! -L "$path" ]]
@@ -129,7 +130,10 @@ nm -D --defined-only "$QTPS" | c++filt >"$QT_SYMBOLS"
 grep -q 'QCUPSSupport::setPageSet' "$QT_SYMBOLS"
 rm -f "$QT_SYMBOLS"
 printf 'QT_CUPS_POSTCHECK=symbols-exported\n'
-readelf -d "$QTPS" | grep -q 'NEEDED.*libcups\.so\.2'
+CUPS_PLUGIN=/opt/qt6/plugins/printsupport/libcupsprintersupport.so
+[[ -f "$CUPS_PLUGIN" ]]
+readelf -d "$CUPS_PLUGIN" | grep 'NEEDED.*libcups\.so\.2' >/dev/null
+printf 'QT_CUPS_PLUGIN_POSTCHECK=linked-libcups\n'
 
 printf 'BUILD_BLFS_PLASMA17=xdg-desktop-portal-kde\n'
 extract_package xdg-desktop-portal-kde-6.4.4.tar.xz xdg-desktop-portal-kde-6.4.4
@@ -163,7 +167,7 @@ for path in \
   /opt/kf6/share/plasma/plasmoids/org.kde.plasma.vault/metadata.json; do
   [[ -f "$path" ]]
 done
-for elf in "$PORTAL" "$CUPSD" "$LIBCUPS" "$QTPS"; do
+for elf in "$PORTAL" "$CUPSD" "$LIBCUPS" "$QTPS" "$CUPS_PLUGIN"; do
   readelf -h "$elf" | grep -q 'Machine:.*AArch64'
 done
 INTERPRETER="$(readelf -l "$PORTAL" | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
@@ -175,7 +179,7 @@ printf 'PLASMA17_POSTCHECK=cups-qtbase-portal-elf-not-executed\n'
 {
   printf 'BLFS_PLASMA17_RESULT=ok\nPACKAGE_COUNT=3\nSOURCE_COUNT=3\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=not-run-portal-cups-or-print-tools\nNEW_EXECUTABLES=portal-and-cups-installed-not-executed\nELF_ARCH=AArch64\nDYNAMIC_LINKER=%s\n' "$INTERPRETER"
-  printf 'QT=%s\nQTBASE=rebuilt-with-cups-6.9.2\nQT_CUPS=enabled\nQCUPS_PRIVATE_HEADER=installed\nQCUPS_SYMBOLS=exported\nQT_CONFIG_SUMMARY=artifact\n' "$QT_VERSION"
+  printf 'QT=%s\nQTBASE=rebuilt-with-cups-6.9.2\nQT_CUPS=enabled\nQCUPS_PRIVATE_HEADER=installed\nQCUPS_SYMBOLS=exported\nCUPS_QT_PLUGIN=installed-linked-libcups\nQT_CONFIG_SUMMARY=artifact\n' "$QT_VERSION"
   printf 'CUPS=2.4.12\nCUPS_TLS=openssl-verified-config\nCUPS_TLS_REPORT=artifact\nCUPSD=installed-not-executed\nCUPS_BOOTSCRIPT=removed\nCUPS_SYSTEMD=disabled\n'
   printf 'PRINT_TOOLS=not-run\nPRINT_JOBS=not-created\nPRINTERS=not-configured\nPRINTING=not-tested\n'
   printf 'PLASMA_VERSION=6.4.4\nPACKAGES=cups+qtbase+xdg-desktop-portal-kde\nXDG_PORTAL_KDE=6.4.4\n'

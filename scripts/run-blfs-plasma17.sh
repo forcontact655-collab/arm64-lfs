@@ -21,6 +21,7 @@ done
 for path in \
   "$LFS/usr/include/cups/cups.h" \
   "$LFS/opt/qt6/include/QtPrintSupport/6.9.2/QtPrintSupport/private/qcups_p.h" \
+  "$LFS/opt/qt6/plugins/printsupport/libcupsprintersupport.so" \
   "$LFS/opt/kf6/libexec/xdg-desktop-portal-kde" \
   "$LFS/opt/kf6/share/xdg-desktop-portal/portals/kde.portal"; do
   [[ ! -e "$path" && ! -L "$path" ]] || preflight_fail "existing-$path"
@@ -76,7 +77,7 @@ for expected in \
   'NATIVE_BINARY_EXEC=not-run-portal-cups-or-print-tools' 'NEW_EXECUTABLES=portal-and-cups-installed-not-executed' \
   'ELF_ARCH=AArch64' 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' \
   'QT=6.9.2' 'QTBASE=rebuilt-with-cups-6.9.2' 'QT_CUPS=enabled' \
-  'QCUPS_PRIVATE_HEADER=installed' 'QCUPS_SYMBOLS=exported' 'QT_CONFIG_SUMMARY=artifact' \
+  'QCUPS_PRIVATE_HEADER=installed' 'QCUPS_SYMBOLS=exported' 'CUPS_QT_PLUGIN=installed-linked-libcups' 'QT_CONFIG_SUMMARY=artifact' \
   'CUPS=2.4.12' 'CUPS_TLS=openssl-verified-config' 'CUPS_TLS_REPORT=artifact' \
   'CUPSD=installed-not-executed' 'CUPS_BOOTSCRIPT=removed' 'CUPS_SYSTEMD=disabled' \
   'PRINT_TOOLS=not-run' 'PRINT_JOBS=not-created' 'PRINTERS=not-configured' 'PRINTING=not-tested' \
