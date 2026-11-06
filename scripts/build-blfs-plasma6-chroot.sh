@@ -12,7 +12,7 @@ SOURCES=/sources
 REPORT=/root/blfs-plasma6-report.txt
 PROGRESS=/root/blfs-plasma6-progress.txt
 [[ "$(id -u)" -eq 0 && "$(uname -m)" == aarch64 ]]
-[[ ! -e /tools && -x /usr/bin/g++ && -x /usr/bin/cmake && -x /usr/bin/ninja && -x /usr/bin/pkg-config ]]
+[[ ! -e /tools && -x /usr/bin/g++ && -x /usr/bin/cmake && -x /usr/bin/ninja && -x /usr/bin/pkg-config && -x /usr/bin/meson && -x /usr/bin/python3 ]]
 [[ "$(/opt/qt6/bin/qmake6 -query QT_VERSION)" == 6.9.2 ]]
 for path in \
   /opt/qt6/lib/cmake/Qt6QuickWidgets/Qt6QuickWidgetsConfig.cmake \
@@ -38,10 +38,11 @@ for path in \
 done
 for path in \
   /opt/kf6/share/plasma/shells/org.kde.plasma.desktop \
-  /opt/kf6/bin/knetattach; do
+  /opt/kf6/bin/knetattach \
+  /usr/lib/libwacom.so; do
   [[ ! -e "$path" && ! -L "$path" ]]
 done
-pkg-config --exists xkbregistry xcb xcb-shm xcb-image libcanberra
+pkg-config --exists xkbregistry xcb xcb-shm xcb-image libcanberra libevdev gudev-1.0 glib-2.0
 : >"$PROGRESS"
 EXTRACTED_DIR=''
 extract_package() {
@@ -61,6 +62,28 @@ finish_package() {
   printf 'BLFS_PLASMA6_BUILT=%s\n' "$EXTRACTED_DIR" >>"$PROGRESS"
   /sbin/ldconfig
 }
+
+# Plasma Desktop's Tablet KCM requires libwacom. Keep that feature and use
+# the BLFS build with advanced hardware/Python tests disabled.
+extract_package libwacom-2.16.1.tar.xz libwacom-2.16.1
+mkdir build
+cd build
+printf 'BUILD_BLFS_PLASMA6=libwacom\n'
+meson setup .. \
+  --prefix=/usr \
+  --libdir=lib \
+  --buildtype=release \
+  -D documentation=disabled \
+  -D tests=disabled \
+  -D udev-dir=/usr/lib/udev
+ninja
+ninja install
+finish_package
+[[ "$(pkg-config --modversion libwacom)" == 2.16.1 ]]
+for path in /usr/lib/libwacom.so /usr/lib/pkgconfig/libwacom.pc \
+  /usr/bin/libwacom-list-devices /usr/share/libwacom; do
+  [[ -e "$path" ]]
+done
 
 extract_package plasma-desktop-6.4.4.tar.xz plasma-desktop-6.4.4
 mkdir build
@@ -85,9 +108,14 @@ ninja
 ninja install
 finish_package
 rm -rf /opt/kf6/lib/systemd
-[[ "$(grep -c '^BLFS_PLASMA6_BUILT=' "$PROGRESS")" -eq 1 ]]
+[[ "$(grep -c '^BLFS_PLASMA6_BUILT=' "$PROGRESS")" -eq 2 ]]
 
 printf 'PLASMA6_POSTCHECK=shell-and-applets\n'
+TABLET_KCM="$(find /opt/kf6/lib/plugins -type f -name kcm_tablet.so -print -quit)"
+[[ -n "$TABLET_KCM" ]]
+readelf -h "$TABLET_KCM" | grep -q 'Machine:.*AArch64'
+readelf -d "$TABLET_KCM" | grep -q 'libwacom.so'
+printf 'PLASMA6_POSTCHECK=tablet-kcm-libwacom\n'
 for path in \
   /opt/kf6/share/plasma/shells/org.kde.plasma.desktop/metadata.json \
   /opt/kf6/share/plasma/shells/org.kde.plasma.desktop/contents/main.js \
@@ -137,11 +165,12 @@ INTERPRETER="$(readelf -l /opt/kf6/bin/knetattach | sed -n 's/.*Requesting progr
 [[ "$INTERPRETER" == /lib/ld-linux-aarch64.so.1 ]]
 
 {
-  printf 'BLFS_PLASMA6_RESULT=ok\nPACKAGE_COUNT=1\nSOURCE_COUNT=1\nARCH=%s\n' "$(uname -m)"
+  printf 'BLFS_PLASMA6_RESULT=ok\nPACKAGE_COUNT=2\nSOURCE_COUNT=2\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=knetattach-version\nDYNAMIC_LINKER=%s\n' "$INTERPRETER"
   printf 'KNETATTACH_VERSION_STATUS=0\nKNETATTACH_VERSION_OUTPUT=%s\n' "$KNETATTACH_VERSION_OUTPUT"
   printf 'KNETATTACH_SMOKE=native-version-no-wizard-or-network\n'
-  printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=plasma-desktop\nPLASMA_DESKTOP=6.4.4\n'
+  printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=libwacom+plasma-desktop\nLIBWACOM=2.16.1\nPLASMA_DESKTOP=6.4.4\n'
+  printf 'TABLET_KCM=built-with-libwacom-no-hardware\nLIBWACOM_TESTS=disabled\nINPUT_RUNTIME=not-tested-no-devices\n'
   printf 'SHELL_PACKAGE=org.kde.plasma.desktop-installed-not-started\n'
   printf 'TASKMANAGER_APPLET=installed-not-loaded\n'
   printf 'PLASMA_DESKTOP_TESTS=not-run-BUILD_TESTING_OFF\nSYSTEMD_USER_UNITS=removed-sysv-inapplicable\n'
