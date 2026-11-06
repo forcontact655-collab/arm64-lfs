@@ -2363,7 +2363,7 @@ jobs:
       - store_artifacts:
           path: artifacts
 
-  blfs-plasma21:
+  blfs-plasma22:
     machine:
       image: ubuntu-2404:current
     resource_class: arm.large
@@ -2371,28 +2371,28 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - blfs-12.4-plasma20-aarch64-v1-{{ checksum "scripts/build-blfs-plasma20-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma20.sh" }}
+            - blfs-12.4-plasma21-aarch64-v1-{{ checksum "scripts/build-blfs-plasma21-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma21.sh" }}
       - restore_cache:
           keys:
-            - blfs-12.4-plasma21-sources-v1-{{ checksum "manifests/blfs-plasma21.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma21" }}-{{ checksum "scripts/fetch-blfs-plasma21-sources.sh" }}
+            - blfs-12.4-plasma22-sources-v1-{{ checksum "manifests/blfs-plasma22.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma22" }}-{{ checksum "scripts/fetch-blfs-plasma22-sources.sh" }}
       - run:
-          name: Download and verify BlueDevil sources
+          name: Download and verify Plasma Addons and Welcome sources
           command: |
             set -o pipefail
             mkdir -p artifacts
-            LFS=/home/circleci/blfs-plasma21-sources bash scripts/fetch-blfs-plasma21-sources.sh 2>&1 | tee artifacts/blfs-plasma21-sources-circleci.log
+            LFS=/home/circleci/blfs-plasma22-sources bash scripts/fetch-blfs-plasma22-sources.sh 2>&1 | tee artifacts/blfs-plasma22-sources-circleci.log
       - save_cache:
-          key: blfs-12.4-plasma21-sources-v1-{{ checksum "manifests/blfs-plasma21.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma21" }}-{{ checksum "scripts/fetch-blfs-plasma21-sources.sh" }}
+          key: blfs-12.4-plasma22-sources-v1-{{ checksum "manifests/blfs-plasma22.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma22" }}-{{ checksum "scripts/fetch-blfs-plasma22-sources.sh" }}
           paths:
-            - /home/circleci/blfs-plasma21-sources
+            - /home/circleci/blfs-plasma22-sources
       - run:
-          name: Build BlueDevil without Bluetooth or daemon access
+          name: Build Plasma Addons and Welcome without UI helper or device access
           no_output_timeout: 90m
           command: |
             set -o pipefail
-            bash scripts/run-blfs-plasma21.sh 2>&1 | tee artifacts/blfs-plasma21-host.log
+            bash scripts/run-blfs-plasma22.sh 2>&1 | tee artifacts/blfs-plasma22-host.log
       - save_cache:
-          key: blfs-12.4-plasma21-aarch64-v1-{{ checksum "scripts/build-blfs-plasma21-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma21.sh" }}
+          key: blfs-12.4-plasma22-aarch64-v1-{{ checksum "scripts/build-blfs-plasma22-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma22.sh" }}
           paths:
             - /home/circleci/lfs
       - store_artifacts:
@@ -2401,4 +2401,4 @@ jobs:
 workflows:
   staged-lfs:
     jobs:
-      - blfs-plasma21
+      - blfs-plasma22
