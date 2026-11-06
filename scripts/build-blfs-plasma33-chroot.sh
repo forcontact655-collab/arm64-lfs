@@ -184,7 +184,7 @@ options={row['name']:row['value'] for row in json.loads(Path('meson-info/intro-b
 project=json.loads(Path('meson-info/intro-projectinfo.json').read_text())
 assert project['version']=='1.54.0',project
 expected={
- 'prefix':'/usr','libdir':'/usr/lib','buildtype':'release','libaudit':'no','nmtui':False,
+ 'prefix':'/usr','libdir':'lib','buildtype':'release','libaudit':'no','nmtui':False,
  'ovs':False,'ppp':False,'nbft':False,'selinux':False,
  'session_tracking':'no','modem_manager':False,'systemdsystemunitdir':'no',
  'systemd_journal':False,'nm_cloud_setup':False,'qt':'false','tests':'no',
