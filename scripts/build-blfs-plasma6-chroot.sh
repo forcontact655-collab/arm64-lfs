@@ -6,6 +6,7 @@ export PATH=/opt/kf6/bin:/opt/qt6/bin:/usr/bin:/usr/sbin
 export PKG_CONFIG_PATH=/opt/kf6/lib/pkgconfig:/opt/qt6/lib/pkgconfig:/usr/lib64/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig
 export CMAKE_PREFIX_PATH=/opt/kf6:/opt/qt6:/usr
 export MAKEFLAGS="-j$(nproc)"
+export XORG_CONFIG="--prefix=/usr --sysconfdir=/etc --localstatedir=/var --libdir=/usr/lib --disable-static"
 umask 022
 set +h
 SOURCES=/sources
@@ -39,10 +40,12 @@ done
 for path in \
   /opt/kf6/share/plasma/shells/org.kde.plasma.desktop \
   /opt/kf6/bin/knetattach \
-  /usr/lib/libwacom.so; do
+  /usr/lib/libwacom.so \
+  /usr/lib/xorg/modules/input/libinput_drv.so \
+  /usr/lib/pkgconfig/xorg-libinput.pc; do
   [[ ! -e "$path" && ! -L "$path" ]]
 done
-pkg-config --exists xkbregistry xcb xcb-shm xcb-image libcanberra libevdev gudev-1.0 glib-2.0
+pkg-config --exists xkbregistry xcb xcb-shm xcb-image libcanberra libevdev gudev-1.0 glib-2.0 libinput xorg-server
 : >"$PROGRESS"
 EXTRACTED_DIR=''
 extract_package() {
@@ -85,6 +88,17 @@ for path in /usr/lib/libwacom.so /usr/lib/pkgconfig/libwacom.pc \
   [[ -e "$path" ]]
 done
 
+# The X11 mouse and touchpad KCMs both require the Xorg libinput driver.
+extract_package xf86-input-libinput-1.5.0.tar.xz xf86-input-libinput-1.5.0
+printf 'BUILD_BLFS_PLASMA6=xf86-input-libinput\n'
+./configure $XORG_CONFIG
+make
+make check
+make install
+finish_package
+[[ "$(pkg-config --modversion xorg-libinput)" == 1.5.0 ]]
+[[ -e /usr/lib/xorg/modules/input/libinput_drv.so && -e /usr/lib/pkgconfig/xorg-libinput.pc ]]
+
 extract_package plasma-desktop-6.4.4.tar.xz plasma-desktop-6.4.4
 mkdir build
 cd build
@@ -108,7 +122,7 @@ ninja
 ninja install
 finish_package
 rm -rf /opt/kf6/lib/systemd
-[[ "$(grep -c '^BLFS_PLASMA6_BUILT=' "$PROGRESS")" -eq 2 ]]
+[[ "$(grep -c '^BLFS_PLASMA6_BUILT=' "$PROGRESS")" -eq 3 ]]
 
 printf 'PLASMA6_POSTCHECK=shell-and-applets\n'
 TABLET_KCM="$(find /opt/kf6/lib/plugins -type f -name kcm_tablet.so -print -quit)"
@@ -124,12 +138,15 @@ for path in \
   /opt/kf6/lib/qml/org/kde/plasma/private/taskmanager/qmldir \
   /opt/kf6/bin/knetattach \
   /opt/kf6/bin/plasma-emojier \
+  /opt/kf6/bin/kapplymousetheme \
+  /opt/kf6/bin/kcm-touchpad-list-devices \
   /opt/kf6/bin/plasmashell \
   /opt/kf6/bin/startplasma-x11; do
   [[ -e "$path" ]]
 done
 [[ ! -d /opt/kf6/lib/systemd ]]
-for program in /opt/kf6/bin/knetattach /opt/kf6/bin/plasma-emojier; do
+for program in /opt/kf6/bin/knetattach /opt/kf6/bin/plasma-emojier \
+  /opt/kf6/bin/kapplymousetheme /opt/kf6/bin/kcm-touchpad-list-devices; do
   readelf -h "$program" | grep -q 'Machine:.*AArch64'
   readelf -l "$program" | grep -q '/lib/ld-linux-aarch64.so.1'
 done
@@ -165,12 +182,12 @@ INTERPRETER="$(readelf -l /opt/kf6/bin/knetattach | sed -n 's/.*Requesting progr
 [[ "$INTERPRETER" == /lib/ld-linux-aarch64.so.1 ]]
 
 {
-  printf 'BLFS_PLASMA6_RESULT=ok\nPACKAGE_COUNT=2\nSOURCE_COUNT=2\nARCH=%s\n' "$(uname -m)"
+  printf 'BLFS_PLASMA6_RESULT=ok\nPACKAGE_COUNT=3\nSOURCE_COUNT=3\nARCH=%s\n' "$(uname -m)"
   printf 'NATIVE_BINARY_EXEC=knetattach-version\nDYNAMIC_LINKER=%s\n' "$INTERPRETER"
   printf 'KNETATTACH_VERSION_STATUS=0\nKNETATTACH_VERSION_OUTPUT=%s\n' "$KNETATTACH_VERSION_OUTPUT"
   printf 'KNETATTACH_SMOKE=native-version-no-wizard-or-network\n'
-  printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=libwacom+plasma-desktop\nLIBWACOM=2.16.1\nPLASMA_DESKTOP=6.4.4\n'
-  printf 'TABLET_KCM=built-with-libwacom-no-hardware\nLIBWACOM_TESTS=disabled\nINPUT_RUNTIME=not-tested-no-devices\n'
+  printf 'QT=6.9.2\nPLASMA_VERSION=6.4.4\nPACKAGES=libwacom+xf86-input-libinput+plasma-desktop\nLIBWACOM=2.16.1\nXORG_LIBINPUT=1.5.0\nPLASMA_DESKTOP=6.4.4\n'
+  printf 'TABLET_KCM=built-with-libwacom-no-hardware\nLIBWACOM_TESTS=disabled\nXORG_LIBINPUT_TESTS=make-check-passed\nX11_INPUT_KCMS=built-not-run-no-display-or-devices\nINPUT_RUNTIME=not-tested-no-devices\n'
   printf 'SHELL_PACKAGE=org.kde.plasma.desktop-installed-not-started\n'
   printf 'TASKMANAGER_APPLET=installed-not-loaded\n'
   printf 'PLASMA_DESKTOP_TESTS=not-run-BUILD_TESTING_OFF\nSYSTEMD_USER_UNITS=removed-sysv-inapplicable\n'

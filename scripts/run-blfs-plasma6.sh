@@ -23,10 +23,12 @@ done
 for path in \
   "$LFS/opt/kf6/share/plasma/shells/org.kde.plasma.desktop" \
   "$LFS/opt/kf6/bin/knetattach" \
-  "$LFS/usr/lib/libwacom.so"; do
+  "$LFS/usr/lib/libwacom.so" \
+  "$LFS/usr/lib/xorg/modules/input/libinput_drv.so" \
+  "$LFS/usr/lib/pkgconfig/xorg-libinput.pc"; do
   [[ ! -e "$path" && ! -L "$path" ]] || preflight_fail "existing-$path"
 done
-for name in libwacom-2.16.1.tar.xz plasma-desktop-6.4.4.tar.xz; do
+for name in libwacom-2.16.1.tar.xz xf86-input-libinput-1.5.0.tar.xz plasma-desktop-6.4.4.tar.xz; do
   [[ -f "$HOST_SOURCES/$name" ]] || preflight_fail "missing-source-$name"
 done
 printf 'BLFS_PLASMA6_RUN_PRECONDITIONS=ok\n'
@@ -72,12 +74,13 @@ sudo -n rm -f "$LFS/root/build-blfs-plasma6-chroot.sh" \
   "$LFS/root/blfs-plasma6-report.txt" "$LFS/root/blfs-plasma6-progress.txt"
 REPORT="$ARTIFACTS/blfs-plasma6-report.txt"
 for expected in \
-  'BLFS_PLASMA6_RESULT=ok' 'PACKAGE_COUNT=2' 'SOURCE_COUNT=2' 'ARCH=aarch64' \
+  'BLFS_PLASMA6_RESULT=ok' 'PACKAGE_COUNT=3' 'SOURCE_COUNT=3' 'ARCH=aarch64' \
   'NATIVE_BINARY_EXEC=knetattach-version' 'DYNAMIC_LINKER=/lib/ld-linux-aarch64.so.1' \
   'KNETATTACH_VERSION_STATUS=0' 'KNETATTACH_VERSION_OUTPUT=knetattach 6.4.4' \
   'KNETATTACH_SMOKE=native-version-no-wizard-or-network' \
-  'QT=6.9.2' 'PLASMA_VERSION=6.4.4' 'PACKAGES=libwacom+plasma-desktop' 'LIBWACOM=2.16.1' 'PLASMA_DESKTOP=6.4.4' \
-  'TABLET_KCM=built-with-libwacom-no-hardware' 'LIBWACOM_TESTS=disabled' 'INPUT_RUNTIME=not-tested-no-devices' \
+  'QT=6.9.2' 'PLASMA_VERSION=6.4.4' 'PACKAGES=libwacom+xf86-input-libinput+plasma-desktop' 'LIBWACOM=2.16.1' 'XORG_LIBINPUT=1.5.0' 'PLASMA_DESKTOP=6.4.4' \
+  'TABLET_KCM=built-with-libwacom-no-hardware' 'LIBWACOM_TESTS=disabled' 'XORG_LIBINPUT_TESTS=make-check-passed' \
+  'X11_INPUT_KCMS=built-not-run-no-display-or-devices' 'INPUT_RUNTIME=not-tested-no-devices' \
   'SHELL_PACKAGE=org.kde.plasma.desktop-installed-not-started' \
   'TASKMANAGER_APPLET=installed-not-loaded' \
   'PLASMA_DESKTOP_TESTS=not-run-BUILD_TESTING_OFF' 'SYSTEMD_USER_UNITS=removed-sysv-inapplicable' \
@@ -89,5 +92,5 @@ for expected in \
   'CAMERA=not-accessed' 'BOOTABLE=no'; do
   grep -qxF "$expected" "$REPORT"
 done
-[[ "$(grep -c '^BLFS_PLASMA6_BUILT=' "$ARTIFACTS/blfs-plasma6-progress.txt")" -eq 2 ]]
+[[ "$(grep -c '^BLFS_PLASMA6_BUILT=' "$ARTIFACTS/blfs-plasma6-progress.txt")" -eq 3 ]]
 cat "$REPORT"
