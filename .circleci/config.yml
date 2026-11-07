@@ -2503,7 +2503,47 @@ jobs:
       - store_artifacts:
           path: artifacts
 
+  blfs-plasma35:
+    machine:
+      image: ubuntu-2404:current
+    resource_class: arm.large
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma34-aarch64-v1-{{ checksum "scripts/build-blfs-plasma34-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma34.sh" }}
+            - blfs-12.4-plasma34-aarch64-v1-
+            - blfs-12.4-plasma33-aarch64-v1-
+      - restore_cache:
+          keys:
+            - blfs-12.4-plasma35-sources-v1-{{ checksum "manifests/blfs-plasma35.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma35" }}-{{ checksum "scripts/fetch-blfs-plasma35-sources.sh" }}
+      - run:
+          name: Download and verify DrKonqi source
+          command: |
+            set -o pipefail
+            mkdir -p artifacts
+            LFS=/home/circleci/blfs-plasma35-sources bash scripts/fetch-blfs-plasma35-sources.sh 2>&1 | tee artifacts/blfs-plasma35-sources-circleci.log
+      - save_cache:
+          key: blfs-12.4-plasma35-sources-v1-{{ checksum "manifests/blfs-plasma35.sha256" }}-{{ checksum "manifests/wget-list-blfs-plasma35" }}-{{ checksum "scripts/fetch-blfs-plasma35-sources.sh" }}
+          paths:
+            - /home/circleci/blfs-plasma35-sources
+      - run:
+          name: Build DrKonqi without runtime activation
+          no_output_timeout: 90m
+          command: |
+            set -o pipefail
+            bash scripts/run-blfs-plasma35.sh 2>&1 | tee artifacts/blfs-plasma35-host.log
+      - save_cache:
+          key: blfs-12.4-plasma35-aarch64-v1-{{ checksum "scripts/build-blfs-plasma35-chroot.sh" }}-{{ checksum "scripts/run-blfs-plasma35.sh" }}
+          paths:
+            - /home/circleci/lfs
+      - store_artifacts:
+          path: artifacts
+
 workflows:
   staged-lfs:
     jobs:
       - blfs-plasma34
+      - blfs-plasma35:
+          requires:
+            - blfs-plasma34
