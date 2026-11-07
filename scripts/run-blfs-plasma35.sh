@@ -109,7 +109,10 @@ MANIFEST_FILE="$ARTIFACTS/blfs-plasma35-drkonqi-install-manifest.txt"
 [[ -s "$MANIFEST_FILE" ]]
 grep -q '^/opt/kf6/share/applications/org.kde.drkonqi.desktop$' "$MANIFEST_FILE"
 grep -Eq '^/opt/kf6/lib(exec)?/drkonqi$' "$MANIFEST_FILE"
-for name in drkonqi-coredump-launcher drkonqi-coredump-processor drkonqi-coredump-gui drkonqi-coredump-cleanup drkonqi-polkit-helper; do
-  grep -Eq "^/opt/kf6/libexec/${name}$" "$MANIFEST_FILE"
+for path in /opt/kf6/libexec/drkonqi-coredump-launcher /opt/kf6/libexec/drkonqi-coredump-processor \
+  /opt/kf6/bin/drkonqi-coredump-gui /opt/kf6/libexec/drkonqi-coredump-cleanup \
+  /opt/kf6/libexec/kf6/drkonqi-polkit-helper; do
+  grep -qxF "$path" "$MANIFEST_FILE"
 done
+grep -Eq '^HELPER_PATHS=/opt/kf6/\S+' "$REPORT"
 cat "$REPORT"
