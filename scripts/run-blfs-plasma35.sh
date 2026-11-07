@@ -12,7 +12,8 @@ for path in "$LFS/usr/bin/cmake" "$LFS/usr/bin/ninja" "$LFS/usr/bin/pkg-config" 
   "$LFS/opt/qt6/lib/cmake/Qt6/Qt6Config.cmake" \
   "$LFS/opt/kf6/lib/cmake/KF6Kirigami/KF6KirigamiConfig.cmake" \
   "$LFS/opt/kf6/lib/cmake/KF6ItemModels/KF6ItemModelsConfig.cmake" \
-  "$LFS/opt/kf6/lib/cmake/PolkitQt6-1/PolkitQt6-1Config.cmake" \
+  "$LFS/usr/lib/cmake/PolkitQt6-1/PolkitQt6-1Config.cmake" \
+  "$LFS/usr/lib/libpolkit-qt6-core-1.so" \
   "$LFS/opt/kf6/lib/qml/org/kde/kirigami/qmldir" \
   "$LFS/opt/kf6/lib/qml/org/kde/kitemmodels/qmldir" \
   "$LFS/opt/kf6/lib/qml/org/kde/syntaxhighlighting/qmldir"; do

@@ -19,14 +19,13 @@ MANIFEST=/root/blfs-plasma35-drkonqi-install-manifest.txt
 pkg-config --exists libsystemd
 LIB_SYSTEMD_VERSION="$(pkg-config --modversion libsystemd)"
 [[ "$(printf '%s\n254\n' "$LIB_SYSTEMD_VERSION" | sort -V | head -n1)" == "254" ]]
-pkg-config --exists polkit-qt6-1 || pkg-config --exists polkit-qt-1 || [[ -e /opt/kf6/lib/cmake/PolkitQt6-1/PolkitQt6-1Config.cmake ]]
+[[ -e /usr/lib/cmake/PolkitQt6-1/PolkitQt6-1Config.cmake && -e /usr/lib/libpolkit-qt6-core-1.so ]]
 for module in KF6I18n KF6CoreAddons KF6Config KF6Service KF6JobWidgets KF6KIO KF6Crash KF6WidgetsAddons KF6Wallet KF6Notifications KF6IdleTime KF6WindowSystem KF6SyntaxHighlighting KF6StatusNotifierItem; do
   [[ -e "/opt/kf6/lib/cmake/$module/${module}Config.cmake" ]]
 done
 for path in \
   /opt/kf6/lib/cmake/KF6Kirigami/KF6KirigamiConfig.cmake \
   /opt/kf6/lib/cmake/KF6ItemModels/KF6ItemModelsConfig.cmake \
-  /opt/kf6/lib/cmake/PolkitQt6-1/PolkitQt6-1Config.cmake \
   /opt/kf6/lib/qml/org/kde/kirigami/qmldir \
   /opt/kf6/lib/qml/org/kde/kitemmodels/qmldir \
   /opt/kf6/lib/qml/org/kde/syntaxhighlighting/qmldir; do
