@@ -18,7 +18,8 @@ MANIFEST=/root/blfs-plasma35-drkonqi-install-manifest.txt
 [[ "$(/opt/qt6/bin/qmake6 -query QT_VERSION)" == 6.9.2 ]]
 pkg-config --exists libsystemd
 LIB_SYSTEMD_VERSION="$(pkg-config --modversion libsystemd)"
-[[ "$(printf '%s\n254\n' "$LIB_SYSTEMD_VERSION" | sort -V | head -n1)" == "254" ]]
+LIB_SYSTEMD_MAJOR="${LIB_SYSTEMD_VERSION%%.*}"
+[[ "$LIB_SYSTEMD_MAJOR" =~ ^[0-9]+$ && "$LIB_SYSTEMD_MAJOR" -ge 254 ]]
 [[ -e /usr/lib/cmake/PolkitQt6-1/PolkitQt6-1Config.cmake && -e /usr/lib/libpolkit-qt6-core-1.so ]]
 for module in KF6I18n KF6CoreAddons KF6Config KF6Service KF6JobWidgets KF6KIO KF6Crash KF6WidgetsAddons KF6Wallet KF6Notifications KF6IdleTime KF6WindowSystem KF6SyntaxHighlighting KF6StatusNotifierItem; do
   [[ -e "/opt/kf6/lib/cmake/$module/${module}Config.cmake" ]]
@@ -37,7 +38,7 @@ done
 : >"$PROGRESS"
 ARCHIVE=/sources/drkonqi-6.4.4.tar.xz
 [[ -f "$ARCHIVE" ]]
-first="$(tar -tf "$ARCHIVE" | head -n1)"
+first="$(tar -tf "$ARCHIVE" | head -n1)" || true
 [[ "${first%%/*}" == "drkonqi-6.4.4" ]]
 rm -rf /sources/drkonqi-6.4.4
 tar -xf "$ARCHIVE" -C /sources
