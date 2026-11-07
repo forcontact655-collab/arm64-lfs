@@ -90,7 +90,7 @@ for expected in \
   'REAL_DISPLAY=not-tested' 'HARDWARE_GRAPHICS=not-tested' 'AUDIO=not-started' 'CAMERA=not-accessed' 'BOOTABLE=no'; do
   grep -qxF "$expected" "$REPORT"
 done
-grep -Eq '^LIB_SYSTEMD_VERSION=[0-9]+\.[0-9]+' "$REPORT"
+grep -Eq '^LIB_SYSTEMD_VERSION=[0-9]+(\.[0-9]+)*$' "$REPORT"
 grep -Eq '^SYSTEMD_LINK=(libsystemd|libelogind)(\+(libsystemd|libelogind))?$' "$REPORT"
 grep -Eq '^SYSTEMD_UNIT_FILE_COUNT=[0-9]+$' "$REPORT"
 grep -Eq '^ELF_FILE_COUNT=[0-9]+$' "$REPORT"
