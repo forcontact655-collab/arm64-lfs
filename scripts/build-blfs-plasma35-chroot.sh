@@ -78,8 +78,12 @@ for candidate in /opt/kf6/libexec/drkonqi /opt/kf6/lib/libexec/drkonqi; do
   if [[ -x "$candidate" ]]; then DRKONQI_BIN="$candidate"; break; fi
 done
 [[ -n "$DRKONQI_BIN" ]]
+HELPER_PATHS=''
 for name in drkonqi-coredump-launcher drkonqi-coredump-processor drkonqi-coredump-gui drkonqi-coredump-cleanup drkonqi-polkit-helper; do
-  [[ -x "/opt/kf6/libexec/$name" ]]
+  helper_path="$(grep -E "^/opt/kf6/(bin|libexec|libexec/kf6)/${name}\$" "$MANIFEST" | head -n1)" || true
+  [[ -n "$helper_path" ]]
+  [[ -f "$helper_path" ]]
+  HELPER_PATHS="${HELPER_PATHS:+$HELPER_PATHS }$helper_path"
 done
 readelf -h "$DRKONQI_BIN" | grep -q 'Machine:.*AArch64'
 INTERPRETER="$(readelf -l "$DRKONQI_BIN" | sed -n 's/.*Requesting program interpreter: \(.*\)]/\1/p')"
@@ -116,6 +120,7 @@ printf 'PLASMA35_POSTCHECK=drkonqi-and-coredump-helpers-aarch64-files-static-onl
   printf 'LIB_SYSTEMD_VERSION=%s\nSYSTEMD_LINK=%s\nSYSTEMD_UNITS=installed-not-enabled\nSYSTEMD_UNIT_FILE_COUNT=%s\n' "$LIB_SYSTEMD_VERSION" "$SYSTEMD_LINK" "$UNIT_COUNT"
   printf 'COREDUMP_INTEGRATION=compiled-not-started\nPYTHON_VENDORING=disabled-by-official-option\nCMAKE_BUILD_TESTING=OFF\nBUILD_TESTING=OFF\n'
   printf 'ELF_FILE_COUNT=%s\nDRKONQI_BINARY=%s\n' "$ELF_COUNT" "$DRKONQI_BIN"
+  printf 'HELPER_PATHS=%s\n' "$HELPER_PATHS"
   printf 'DRKONQI_RUNTIME=not-started\nCOREDUMPD_RUNTIME=not-started\nJOURNAL_READ=not-performed\nCRASH_DIALOG=not-shown\nQML_UI=not-started\nDBUS_SERVICES=installed-not-activated\nGDB=not-executed\nCOREDUMPCTL=not-executed\n'
   printf 'OFFICIAL_PLASMA_ACTIVE=56\nOFFICIAL_PLASMA_BUILDABLE_COVERED=56\nOFFICIAL_PLASMA_DEFERRED=0\nOFFICIAL_PLASMA_COMMENTED_OUT=13-not-in-blfs-install-order\n'
   printf 'PLASMA_NM=preserved-pipeline-230\nPLASMA33=preserved-pipeline-229\nPLASMA32=preserved-pipeline-223\n'
